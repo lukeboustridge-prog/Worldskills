@@ -56,7 +56,7 @@ Required variables:
 
 ### 3. Generate the Prisma client & run migrations
 
-For local development:
+For local development (this will create the Auth.js tables—`Account`, `Session`, `VerificationToken`—alongside the domain models):
 
 ```bash
 pnpm prisma:generate
