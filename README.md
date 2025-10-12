@@ -69,11 +69,11 @@ When deploying to Vercel, the default build script automatically runs `prisma mi
 
 ### 4. (Optional) Seed sample data
 
-A lightweight seed script creates one SA, one SCM, and an example skill:
+A lightweight seed script creates one SA, one SCM, and all 64 WorldSkills Competition 2026 skills:
 
 - The SA uses the `HOST_EMAIL` value (defaults to `luke.boustridge@gmail.com`).
 - The SA password defaults to `HOST_INITIAL_PASSWORD` (or `ChangeMe123!` when unset).
-- The SCM remains `scm@example.com` with password `SamplePassword123!` for exploration purposes.
+- The SCM remains `scm@example.com` with password `SamplePassword123!` for exploration purposes (every skill is temporarily assigned to this SCM until you reassign it).
 
 ```bash
 pnpm prisma:seed
@@ -86,7 +86,7 @@ pnpm dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000) to create an account or sign in with an existing one. The address defined by `HOST_EMAIL`
-is always granted the Skill Advisor role, and the seed script creates a default SCM user (`scm@example.com` / `SamplePassword123!`) so you can explore the UI locally.
+is always granted the Skill Advisor role, and the seed script creates a default SCM user (`scm@example.com` / `SamplePassword123!`) so you can explore the UI locally with all seeded skills.
 
 ## Running tests & linting
 
@@ -121,7 +121,7 @@ pnpm lint
 | `pnpm prisma:generate` | Regenerate the Prisma client. |
 | `pnpm prisma:migrate` | Apply migrations locally (`prisma migrate dev`). |
 | `pnpm prisma:deploy` | Apply migrations in production (`prisma migrate deploy`). |
-| `pnpm prisma:seed` | Seed the database with sample users and a skill. |
+| `pnpm prisma:seed` | Seed the database with sample users and the WSC 2026 skill list. |
 
 ## Project structure
 
