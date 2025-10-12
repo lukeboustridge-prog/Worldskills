@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "installCommand": "corepack enable && corepack prepare pnpm@9.12.3 --activate && pnpm install",
+  "buildCommand": "pnpm build",
+  "outputDirectory": ".next",
+  "functions": {
+    "*": {
+      "runtime": "nodejs20.x"
+    }
+  }
+}
