@@ -11,6 +11,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserDisplayName } from "@/lib/users";
 import { createSkillAction, deleteSkillAction, updateSkillAction } from "./actions";
+import { SkillCatalogField } from "./skill-catalog-field";
 
 export default async function SkillsPage() {
   const user = await getCurrentUser();
@@ -47,10 +48,7 @@ export default async function SkillsPage() {
         </CardHeader>
         <CardContent>
           <form action={createSkillAction} className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="name">Skill name</Label>
-              <Input id="name" name="name" placeholder="Skill 34 - Cloud Computing" required />
-            </div>
+            <SkillCatalogField />
             <div className="space-y-2">
               <Label htmlFor="saId">Skill Advisor</Label>
               <select
