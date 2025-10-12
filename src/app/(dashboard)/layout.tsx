@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/layout/sign-out-button";
 import { NavLink } from "@/components/layout/nav-link";
 import { getCurrentUser } from "@/lib/auth";
+import { getUserDisplayName } from "@/lib/users";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard" },
@@ -30,7 +31,7 @@ export default async function DashboardLayout({
           </Link>
           <div className="flex items-center gap-4">
             <div className="text-right text-sm">
-              <p className="font-medium text-foreground">{user.name ?? user.email}</p>
+              <p className="font-medium text-foreground">{getUserDisplayName(user)}</p>
               <p className="uppercase text-xs text-muted-foreground">{user.role}</p>
             </div>
             <SignOutButton />

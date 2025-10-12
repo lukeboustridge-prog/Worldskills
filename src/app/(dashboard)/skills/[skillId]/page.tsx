@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDeliverableState, formatDeliverableType } from "@/lib/utils";
+import { getUserDisplayName } from "@/lib/users";
 import {
   appendEvidenceAction,
   createDeliverableAction,
@@ -63,8 +64,8 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
   }
 
   const isAdvisor = user.role === Role.SA && skill.saId === user.id;
-  const advisorLabel = skill.sa.name ?? skill.sa.email;
-  const managerLabel = skill.scm ? skill.scm.name ?? skill.scm.email : "Unassigned";
+  const advisorLabel = getUserDisplayName(skill.sa);
+  const managerLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
 
   const completedStates: DeliverableState[] = [
     DeliverableState.Finalised,
@@ -373,7 +374,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                     <div key={message.id} className="rounded-md border p-4">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium">
-                          {message.author.name ?? message.author.email}
+                          {getUserDisplayName(message.author)}
                         </p>
                         <span className="text-xs text-muted-foreground">
                           {format(message.createdAt, "dd MMM yyyy HH:mm")}
@@ -402,7 +403,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                   <div key={entry.id} className="rounded-md border p-4">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium">
-                        {entry.user.name ?? entry.user.email}
+                        {getUserDisplayName(entry.user)}
                       </p>
                       <span className="text-xs text-muted-foreground">
                         {format(entry.createdAt, "dd MMM yyyy HH:mm")}

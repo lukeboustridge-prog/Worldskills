@@ -44,7 +44,7 @@ export async function createSkillAction(formData: FormData) {
     data: {
       name: parsed.data.name,
       saId: parsed.data.saId,
-      ...(parsed.data.scmId ? { scmId: parsed.data.scmId } : {}),
+      scmId: parsed.data.scmId ?? null,
       notes: parsed.data.notes ?? null
     }
   });

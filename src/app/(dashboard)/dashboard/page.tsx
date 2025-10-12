@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getUserDisplayName } from "@/lib/users";
 import { formatDeliverableState, formatDeliverableType } from "@/lib/utils";
 
 export default async function DashboardPage() {
@@ -52,8 +53,8 @@ export default async function DashboardPage() {
           );
           const totalDeliverables = skill.deliverables.length || 1;
           const completedGates = skill.gates.filter((gate) => gate.status === "Complete");
-          const advisorLabel = skill.sa.name ?? skill.sa.email;
-          const managerLabel = skill.scm ? skill.scm.name ?? skill.scm.email : "Unassigned";
+          const advisorLabel = getUserDisplayName(skill.sa);
+          const managerLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
 
           return (
             <Card key={skill.id}>

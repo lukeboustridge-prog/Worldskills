@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getUserDisplayName } from "@/lib/users";
 import { createSkillAction, deleteSkillAction, updateSkillAction } from "./actions";
 
 export default async function SkillsPage() {
@@ -64,7 +65,7 @@ export default async function SkillsPage() {
                 </option>
                 {advisors.map((advisor) => (
                   <option key={advisor.id} value={advisor.id}>
-                    {advisor.name ?? advisor.email}
+                    {getUserDisplayName(advisor)}
                   </option>
                 ))}
               </select>
@@ -82,7 +83,7 @@ export default async function SkillsPage() {
                 </option>
                 {managers.map((manager) => (
                   <option key={manager.id} value={manager.id}>
-                    {manager.name ?? manager.email}
+                    {getUserDisplayName(manager)}
                   </option>
                 ))}
               </select>
@@ -109,8 +110,8 @@ export default async function SkillsPage() {
                 <CardHeader>
                   <CardTitle>{skill.name}</CardTitle>
                   <CardDescription>
-                    SA: {skill.sa.name ?? skill.sa.email} · SCM: {skill.scm
-                      ? skill.scm.name ?? skill.scm.email
+                    SA: {getUserDisplayName(skill.sa)} · SCM: {skill.scm
+                      ? getUserDisplayName(skill.scm)
                       : "Unassigned"}
                   </CardDescription>
                 </CardHeader>
@@ -131,7 +132,7 @@ export default async function SkillsPage() {
                       >
                         {advisors.map((advisor) => (
                           <option key={advisor.id} value={advisor.id}>
-                            {advisor.name ?? advisor.email}
+                            {getUserDisplayName(advisor)}
                           </option>
                         ))}
                       </select>
@@ -147,7 +148,7 @@ export default async function SkillsPage() {
                         <option value="">Unassigned</option>
                         {managers.map((manager) => (
                           <option key={manager.id} value={manager.id}>
-                            {manager.name ?? manager.email}
+                            {getUserDisplayName(manager)}
                           </option>
                         ))}
                       </select>
