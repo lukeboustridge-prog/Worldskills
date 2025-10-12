@@ -17,7 +17,10 @@ const registrationSchema = z.object({
     .trim()
     .toLowerCase()
     .email("Enter a valid email address."),
-  password: z.string().min(8, "Password must be at least 8 characters long.")
+  password: z
+    .string()
+    .trim()
+    .min(8, "Password must be at least 8 characters long.")
 });
 
 export type RegistrationState = {
@@ -32,7 +35,7 @@ const initialState: RegistrationState = {
 const defaultHostEmail = "luke.boustridge@gmail.com";
 const normalizedHostEmail = (env.HOST_EMAIL ?? defaultHostEmail).toLowerCase();
 
-function getFormValue(formData: FormData, field: string): string {
+function coerceField(formData: FormData, field: string): string {
   const value = formData.get(field);
   return typeof value === "string" ? value : "";
 }
@@ -42,9 +45,9 @@ export async function registerUser(
   formData: FormData
 ): Promise<RegistrationState> {
   const parsed = registrationSchema.safeParse({
-    name: getFormValue(formData, "name"),
-    email: getFormValue(formData, "email"),
-    password: getFormValue(formData, "password")
+    name: coerceField(formData, "name"),
+    email: coerceField(formData, "email"),
+    password: coerceField(formData, "password")
   });
 
   if (!parsed.success) {
@@ -55,18 +58,35 @@ export async function registerUser(
   }
 
   try {
-    const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+    const { email, name, password } = parsed.data;
+    const normalizedEmail = email.toLowerCase();
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email: normalizedEmail }
+    });
+
+    if (existingUser) {
+      return {
+        success: false,
+        error: "An account with that email already exists. Try signing in instead."
+      };
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
 
     await prisma.user.create({
       data: {
-        name: parsed.data.name,
-        email: parsed.data.email,
+        name,
+        email: normalizedEmail,
         passwordHash,
-        role: parsed.data.email === normalizedHostEmail ? Role.SA : Role.SCM
+        role: normalizedEmail === normalizedHostEmail ? Role.SA : Role.SCM
       }
     });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError ||
+      (typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "P2002")
+    ) {
       return {
         success: false,
         error: "An account with that email already exists."
