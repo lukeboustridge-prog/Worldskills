@@ -6,6 +6,11 @@ import EmailProvider from "next-auth/providers/email";
 import { env } from "@/env";
 import { prisma } from "@/lib/prisma";
 
+const defaultHostEmail = "luke.boustridge@gmail.com";
+const hostEmailValue = env.HOST_EMAIL ?? defaultHostEmail;
+const normalizedHostEmail = hostEmailValue.toLowerCase();
+const fallbackFromAddress = env.EMAIL_FROM ?? `WorldSkills Skill Advisor Tracker <${hostEmailValue}>`;
+
 function createTransporter(): Transporter | null {
   if (env.EMAIL_SERVER) {
     return nodemailer.createTransport(env.EMAIL_SERVER);
@@ -48,9 +53,9 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     EmailProvider({
-      from: env.EMAIL_FROM ?? "no-reply@example.com",
+      from: fallbackFromAddress,
       async sendVerificationRequest({ identifier, url }) {
-        if (!transporter || !env.EMAIL_FROM) {
+        if (!transporter) {
           const message = `[Auth] EMAIL transport misconfigured. Magic link for ${identifier}: ${url}`;
           if (process.env.NODE_ENV === "production") {
             console.error(message);
@@ -64,7 +69,7 @@ export const authOptions: NextAuthOptions = {
         try {
           await transporter.sendMail({
             to: identifier,
-            from: env.EMAIL_FROM,
+            from: fallbackFromAddress,
             subject: "Your WorldSkills Skill Advisor Tracker sign-in link",
             text: `Sign in to the WorldSkills Skill Advisor Tracker by clicking the link below.\n${url}`,
             html: `<p>Sign in to the WorldSkills Skill Advisor Tracker by clicking the link below.</p><p><a href="${url}">Sign in</a></p>`
@@ -80,27 +85,49 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role?: Role }).role ?? Role.SCM;
+        const email = (user.email ?? "").toLowerCase();
+        if (email) {
+          token.email = email;
+        }
+        const userRole = (user as { role?: Role }).role ?? Role.SCM;
+        token.role = email === normalizedHostEmail ? Role.SA : userRole;
+      }
+
+      const tokenEmail = typeof token.email === "string" ? (token.email as string).toLowerCase() : undefined;
+      if (tokenEmail && tokenEmail === normalizedHostEmail) {
+        token.role = Role.SA;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = token.id as string;
-        session.user.role = (token.role as Role) ?? Role.SCM;
-        session.user.email = session.user.email ?? (token.email as string);
+        const tokenEmail = typeof token.email === "string" ? (token.email as string) : undefined;
+        const sessionEmail = session.user.email ?? tokenEmail ?? undefined;
+        if (sessionEmail) {
+          session.user.email = sessionEmail;
+        }
+        const normalizedEmail = session.user.email?.toLowerCase();
+        if (normalizedEmail === normalizedHostEmail) {
+          session.user.role = Role.SA;
+        } else {
+          session.user.role = (token.role as Role) ?? Role.SCM;
+        }
       }
       return session;
     }
   },
   events: {
     async createUser({ user }) {
-      if (!user.role) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { role: Role.SCM }
-        });
-      }
+      const email = user.email?.toLowerCase();
+      const role = email === normalizedHostEmail ? Role.SA : user.role ?? Role.SCM;
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          role,
+          ...(email ? { email } : {})
+        }
+      });
     }
   }
 };

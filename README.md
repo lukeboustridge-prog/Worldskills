@@ -51,11 +51,12 @@ Required variables:
 | `DATABASE_URL` | Neon PostgreSQL connection string (`?sslmode=require` recommended). |
 | `NEXTAUTH_SECRET` | Long random string used to sign NextAuth JWTs. |
 | `NEXTAUTH_URL` | Application URL (e.g. `http://localhost:3000` for local dev). |
+| `HOST_EMAIL` | Primary Skill Advisor email. This account is treated as the host/admin and always receives the SA role. |
 | `EMAIL_SERVER` | SMTP connection string used by Nodemailer (e.g. `smtp://user:pass@smtp.example.com:587`). |
 | `EMAIL_SERVER_HOST`/`EMAIL_SERVER_PORT` | Host and port used when providing granular SMTP settings instead of `EMAIL_SERVER`. |
 | `EMAIL_SERVER_USER`/`EMAIL_SERVER_PASSWORD` | Credentials for the SMTP server (used with granular settings). |
 | `EMAIL_SERVER_SECURE` | Set to `true` to use TLS when using granular SMTP settings (defaults based on port). |
-| `EMAIL_FROM` | Friendly from address for outgoing magic link emails. |
+| `EMAIL_FROM` | Friendly from address for outgoing magic link emails (defaults to the host email when omitted). |
 
 > **Note:** In production builds the app requires a working SMTP configuration. Missing credentials will cause sign-in attempts to
 > fail so emails are never silently dropped. During local development the magic link URL is logged to the server console when no
@@ -76,6 +77,9 @@ When deploying to Vercel, the default build script automatically runs `prisma mi
 
 A lightweight seed script creates one SA, one SCM, and an example skill:
 
+- The SA uses the `HOST_EMAIL` value (defaults to `luke.boustridge@gmail.com`).
+- The SCM remains `scm@example.com` for exploration purposes.
+
 ```bash
 pnpm prisma:seed
 ```
@@ -86,7 +90,9 @@ pnpm prisma:seed
 pnpm dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) to sign in with your configured email. Magic link emails are sent using the SMTP settings above (the link is also logged to the server console when SMTP is absent).
+Visit [http://localhost:3000](http://localhost:3000) to sign in with your configured email. The address defined by `HOST_EMAIL`
+is automatically granted the Skill Advisor role and is used as the default sender for magic links. Emails are sent using the SMTP
+settings above (the link is also logged to the server console when SMTP is absent).
 
 ## Running tests & linting
 
@@ -104,6 +110,7 @@ pnpm lint
    - `DATABASE_URL`
    - `NEXTAUTH_SECRET`
    - `NEXTAUTH_URL` (e.g. `https://your-vercel-app.vercel.app`)
+   - `HOST_EMAIL`
    - `EMAIL_SERVER`
    - `EMAIL_FROM`
 4. Trigger a deployment. The build pipeline runs `pnpm build`, which in turn executes `prisma generate`, `prisma migrate deploy`, and `next build` so your Neon database is migrated during the build step.
