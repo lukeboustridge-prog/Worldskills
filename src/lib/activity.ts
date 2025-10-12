@@ -1,19 +1,26 @@
+import type { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 
 interface LogActivityParams {
   skillId: string;
   userId: string;
   action: string;
-  payload: Record<string, unknown>;
+  payload?: Prisma.InputJsonValue;
 }
 
-export async function logActivity({ skillId, userId, action, payload }: LogActivityParams) {
+export async function logActivity({
+  skillId,
+  userId,
+  action,
+  payload
+}: LogActivityParams) {
   await prisma.activityLog.create({
     data: {
       skillId,
       userId,
       action,
-      payload
+      payload: payload ?? Prisma.JsonNull
     }
   });
 }
