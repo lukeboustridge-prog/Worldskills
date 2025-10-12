@@ -63,7 +63,7 @@ pnpm prisma:generate
 pnpm prisma:migrate
 ```
 
-When deploying to Vercel, use `pnpm prisma:deploy` in a build hook so migrations run in production.
+When deploying to Vercel, the default build script automatically runs `prisma migrate deploy` after generating the client, so your production database stays in sync with the schema.
 
 ### 4. (Optional) Seed sample data
 
@@ -99,8 +99,8 @@ pnpm lint
    - `NEXTAUTH_URL` (e.g. `https://your-vercel-app.vercel.app`)
    - `EMAIL_SERVER`
    - `EMAIL_FROM`
-4. Configure the build command to `pnpm install && pnpm prisma:deploy && pnpm build` (Vercel automatically runs `pnpm install` and `pnpm build`; the Prisma deploy step can be added as a [Project Command Override](https://vercel.com/docs/projects/project-configuration#build-and-development-settings)).
-5. Ensure the Neon database has the latest schema by running `pnpm prisma:deploy` locally or via a CI workflow before the first deploy.
+4. Trigger a deployment. The build pipeline runs `pnpm build`, which in turn executes `prisma generate`, `prisma migrate deploy`, and `next build` so your Neon database is migrated during the build step.
+5. For additional safety you can also run `pnpm prisma:deploy` locally or via CI prior to the first deploy.
 
 ## Scripts
 
