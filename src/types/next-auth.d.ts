@@ -21,3 +21,9 @@ declare module "next-auth/jwt" {
     role?: Role;
   }
 }
+
+declare module "@auth/core/adapters" {
+  interface AdapterUser {
+    role: Role;
+  }
+}
