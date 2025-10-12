@@ -3,6 +3,26 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 const defaultHostEmail = "luke.boustridge@gmail.com";
+const defaultHostName = "Luke Boustridge";
+const advisorNames = [
+  "Dave Summerville",
+  "Luke Boustridge",
+  "Sue Collins",
+  "Sue Lefort",
+  "Vesa Iltola",
+  "Steve Brooks",
+  "Jeff Boulton",
+  "Arwid Wibom"
+];
+
+const advisorEmailDomain = "worldskills-sa.test";
+
+function slugifyName(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ".")
+    .replace(/^\.+|\.+$/g, "");
+}
 
 async function main() {
   const hostEmailEnv = process.env.HOST_EMAIL ?? defaultHostEmail;
@@ -13,6 +33,13 @@ async function main() {
       data: { email: normalizedHostEmail }
     });
   }
+  const hostNameEnv = process.env.HOST_NAME?.trim();
+  const hostDisplayName =
+    hostNameEnv && hostNameEnv.length > 0
+      ? hostNameEnv
+      : normalizedHostEmail === defaultHostEmail
+        ? defaultHostName
+        : "WorldSkills Host";
   const hostPassword = process.env.HOST_INITIAL_PASSWORD ?? "ChangeMe123!";
   const hostPasswordHash = await bcrypt.hash(hostPassword, 12);
 
@@ -26,6 +53,7 @@ async function main() {
       where: { id: hostUser.id },
       data: {
         role: Role.SA,
+        name: hostDisplayName,
         ...(needsPassword ? { passwordHash: hostPasswordHash } : {})
       }
     });
@@ -33,7 +61,7 @@ async function main() {
     hostUser = await prisma.user.create({
       data: {
         email: normalizedHostEmail,
-        name: "WorldSkills Host",
+        name: hostDisplayName,
         role: Role.SA,
         passwordHash: hostPasswordHash
       }
@@ -64,6 +92,37 @@ async function main() {
         passwordHash: scmPasswordHash
       }
     });
+  }
+
+  const advisorSeeds = advisorNames
+    .map((name) => ({
+      name,
+      email: `${slugifyName(name)}@${advisorEmailDomain}`
+    }))
+    .filter((advisor) => advisor.name.toLowerCase() !== hostDisplayName.toLowerCase());
+
+  for (const advisor of advisorSeeds) {
+    const normalizedEmail = advisor.email.toLowerCase();
+    const existingAdvisor = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (existingAdvisor) {
+      if (existingAdvisor.name !== advisor.name || existingAdvisor.role !== Role.SA) {
+        await prisma.user.update({
+          where: { id: existingAdvisor.id },
+          data: {
+            name: advisor.name,
+            role: Role.SA
+          }
+        });
+      }
+    } else {
+      await prisma.user.create({
+        data: {
+          email: normalizedEmail,
+          name: advisor.name,
+          role: Role.SA
+        }
+      });
+    }
   }
 
   const skillSeeds = [

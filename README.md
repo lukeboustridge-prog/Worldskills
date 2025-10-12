@@ -52,6 +52,7 @@ Required variables:
 | `NEXTAUTH_SECRET` | Long random string used to sign NextAuth JWTs. |
 | `NEXTAUTH_URL` | Application URL (e.g. `http://localhost:3000` for local dev). |
 | `HOST_EMAIL` | Primary Skill Advisor email. This account is treated as the host/admin and always receives the SA role. |
+| `HOST_NAME` | Optional. Display name for the host Skill Advisor (defaults to `Luke Boustridge`). |
 | `HOST_INITIAL_PASSWORD` | Optional. Plaintext password assigned to the host account during seeding (defaults to `ChangeMe123!`). |
 
 > **Note:** The optional `HOST_INITIAL_PASSWORD` is only used when the seed script creates the host account. Update the password after logging in or rerun the seed with a new value whenever you need to rotate it.
@@ -71,8 +72,9 @@ When deploying to Vercel, the default build script automatically runs `prisma mi
 
 A lightweight seed script creates one SA, one SCM, and all 64 WorldSkills Competition 2026 skills:
 
-- The SA uses the `HOST_EMAIL` value (defaults to `luke.boustridge@gmail.com`).
+- The SA uses the `HOST_EMAIL` value (defaults to `luke.boustridge@gmail.com`) and the name defined by `HOST_NAME`.
 - The SA password defaults to `HOST_INITIAL_PASSWORD` (or `ChangeMe123!` when unset).
+- Additional Skill Advisor records are provisioned for Dave Summerville, Sue Collins, Sue Lefort, Vesa Iltola, Steve Brooks, Jeff Boulton, and Arwid Wibom so they are available in dropdowns. These placeholder accounts use addresses like `dave.summerville@worldskills-sa.test` and can be updated later with real credentials.
 - The SCM remains `scm@example.com` with password `SamplePassword123!` for exploration purposes (every skill is temporarily assigned to this SCM until you reassign it).
 
 ```bash
@@ -105,6 +107,7 @@ pnpm lint
    - `NEXTAUTH_SECRET`
    - `NEXTAUTH_URL` (e.g. `https://your-vercel-app.vercel.app`)
    - `HOST_EMAIL`
+   - Optional: `HOST_NAME` (display name for the host Skill Advisor)
    - Optional: `HOST_INITIAL_PASSWORD` (if you want to set the host password during seeding)
 4. Trigger a deployment. The build pipeline runs `pnpm build`, which in turn executes `prisma generate`, `prisma migrate deploy`, and `next build` so your Neon database is migrated during the build step.
    - Vercel detects the pinned pnpm version from `package.json`/`packageManager` and runs `pnpm install` on its Node.js 22 runtime, matching the local toolchain without extra Corepack steps.
