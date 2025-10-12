@@ -8,8 +8,15 @@ import { env } from "@/env";
 import { prisma } from "@/lib/prisma";
 
 const registrationSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters long."),
-  email: z.string().email("Enter a valid email address."),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters long."),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Enter a valid email address."),
   password: z.string().min(8, "Password must be at least 8 characters long.")
 });
 
@@ -25,18 +32,19 @@ const initialState: RegistrationState = {
 const defaultHostEmail = "luke.boustridge@gmail.com";
 const normalizedHostEmail = (env.HOST_EMAIL ?? defaultHostEmail).toLowerCase();
 
+function getFormValue(formData: FormData, field: string): string {
+  const value = formData.get(field);
+  return typeof value === "string" ? value : "";
+}
+
 export async function registerUser(
   _prevState: RegistrationState,
   formData: FormData
 ): Promise<RegistrationState> {
-  const nameValue = formData.get("name");
-  const emailValue = formData.get("email");
-  const passwordValue = formData.get("password");
-
   const parsed = registrationSchema.safeParse({
-    name: typeof nameValue === "string" ? nameValue.trim() : "",
-    email: typeof emailValue === "string" ? emailValue.trim() : "",
-    password: typeof passwordValue === "string" ? passwordValue : ""
+    name: getFormValue(formData, "name"),
+    email: getFormValue(formData, "email"),
+    password: getFormValue(formData, "password")
   });
 
   if (!parsed.success) {
@@ -46,28 +54,15 @@ export async function registerUser(
     };
   }
 
-  const email = parsed.data.email.toLowerCase();
-
-  const existingUser = await prisma.user.findUnique({
-    where: { email }
-  });
-
-  if (existingUser) {
-    return {
-      success: false,
-      error: "An account with that email already exists."
-    };
-  }
-
-  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
-
   try {
+    const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+
     await prisma.user.create({
       data: {
         name: parsed.data.name,
-        email,
+        email: parsed.data.email,
         passwordHash,
-        role: email === normalizedHostEmail ? Role.SA : Role.SCM
+        role: parsed.data.email === normalizedHostEmail ? Role.SA : Role.SCM
       }
     });
   } catch (error) {
@@ -78,7 +73,12 @@ export async function registerUser(
       };
     }
 
-    throw error;
+    console.error("registerUser failed", error);
+
+    return {
+      success: false,
+      error: "We couldn't create your account right now. Please try again."
+    };
   }
 
   return {
