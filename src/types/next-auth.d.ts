@@ -27,3 +27,9 @@ declare module "@auth/core/adapters" {
     role: Role;
   }
 }
+
+declare module "next-auth/adapters" {
+  interface AdapterUser {
+    role: Role;
+  }
+}
