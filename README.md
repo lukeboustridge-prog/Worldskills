@@ -135,7 +135,8 @@ prisma/
 - Deliverable state changes, evidence submissions, gate updates, and chat messages all write to the `ActivityLog` table for auditability.
 - Only Skill Advisors can adjust deliverable states or gate statuses. SCMs can add evidence links and messages.
 - Uploads are tracked as evidence URLs (file storage integration can be added later).
-- A tracked `public/` directory is available for static assets and satisfies Vercel's expectation for an output folder during deployment.
+- A tracked `public/` directory is available for static assets.
+- The included `vercel.json` enforces the correct Next.js build output (`.next`) so Vercel serves the application runtime instead of a static 404.
 
 ## License
 
