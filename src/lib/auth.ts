@@ -18,7 +18,6 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     EmailProvider({
-      name: "Email",
       from: env.EMAIL_FROM ?? "no-reply@example.com",
       async sendVerificationRequest({ identifier, url }) {
         if (!transporter || !env.EMAIL_FROM) {
