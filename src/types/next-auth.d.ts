@@ -22,12 +22,6 @@ declare module "next-auth/jwt" {
   }
 }
 
-declare module "@auth/core/adapters" {
-  interface AdapterUser {
-    role: Role;
-  }
-}
-
 declare module "next-auth/adapters" {
   interface AdapterUser {
     role: Role;
