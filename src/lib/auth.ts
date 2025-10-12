@@ -3,7 +3,7 @@ import { Role } from "@prisma/client";
 import nodemailer from "nodemailer";
 import { type NextAuthOptions, getServerSession } from "next-auth";
 import EmailProvider from "next-auth/providers/email";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { prisma } from "@/lib/prisma";
 
 const transporter = env.EMAIL_SERVER ? nodemailer.createTransport(env.EMAIL_SERVER) : null;
