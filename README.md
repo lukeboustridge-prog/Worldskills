@@ -26,7 +26,7 @@ WorldSkills Skill Advisor Tracker is a full-stack Next.js 14 application that he
 - Node.js 22.x (Vercel now builds this project on the Node 22 runtime)
 - pnpm 9.15 (installed via [`corepack`](https://nodejs.org/api/corepack.html) or `npm i -g pnpm`)
 - A Neon PostgreSQL database URL
-- SMTP credentials for sending login links (any provider supported by Nodemailer)
+- Resend API key or SMTP credentials for sending login links
 
 ### 1. Clone and install
 
@@ -52,15 +52,17 @@ Required variables:
 | `NEXTAUTH_SECRET` | Long random string used to sign NextAuth JWTs. |
 | `NEXTAUTH_URL` | Application URL (e.g. `http://localhost:3000` for local dev). |
 | `HOST_EMAIL` | Primary Skill Advisor email. This account is treated as the host/admin and always receives the SA role. |
-| `EMAIL_SERVER` | SMTP connection string used by Nodemailer (e.g. `smtp://user:pass@smtp.example.com:587`). |
-| `EMAIL_SERVER_HOST`/`EMAIL_SERVER_PORT` | Host and port used when providing granular SMTP settings instead of `EMAIL_SERVER`. |
-| `EMAIL_SERVER_USER`/`EMAIL_SERVER_PASSWORD` | Credentials for the SMTP server (used with granular settings). |
-| `EMAIL_SERVER_SECURE` | Set to `true` to use TLS when using granular SMTP settings (defaults based on port). |
+| `RESEND_API_KEY` | Optional. When set, magic links are sent via [Resend](https://resend.com/) (recommended on Vercel). |
+| `RESEND_FROM_EMAIL` | Optional. Verified Resend sender address (falls back to `EMAIL_FROM`/`HOST_EMAIL`). |
+| `EMAIL_SERVER` | Optional SMTP connection string used by Nodemailer (e.g. `smtp://user:pass@smtp.example.com:587`). |
+| `EMAIL_SERVER_HOST`/`EMAIL_SERVER_PORT` | Optional granular SMTP settings if you prefer host + port instead of `EMAIL_SERVER`. |
+| `EMAIL_SERVER_USER`/`EMAIL_SERVER_PASSWORD` | Optional SMTP credentials (used with granular settings). |
+| `EMAIL_SERVER_SECURE` | Optional flag (`true`/`false`) to force TLS when using granular SMTP settings. |
 | `EMAIL_FROM` | Friendly from address for outgoing magic link emails (defaults to the host email when omitted). |
 
-> **Note:** In production builds the app requires a working SMTP configuration. Missing credentials will cause sign-in attempts to
-> fail so emails are never silently dropped. During local development the magic link URL is logged to the server console when no
-> transporter is configured.
+> **Note:** Provide either a Resend API key or SMTP credentials. In production, if neither is configured, the sign-in attempt is
+> rejected so links are never silently lost. During local development the magic link URL is logged to the server console when no
+> email provider is available.
 
 ### 3. Generate the Prisma client & run migrations
 
@@ -91,8 +93,9 @@ pnpm dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000) to sign in with your configured email. The address defined by `HOST_EMAIL`
-is automatically granted the Skill Advisor role and is used as the default sender for magic links. Emails are sent using the SMTP
-settings above (the link is also logged to the server console when SMTP is absent).
+is automatically granted the Skill Advisor role and is used as the default sender for magic links. Emails are sent using Resend
+when `RESEND_API_KEY` is supplied, otherwise the configured SMTP settings are used (and the link is logged to the server console
+when no provider is available).
 
 ## Running tests & linting
 
@@ -111,7 +114,7 @@ pnpm lint
    - `NEXTAUTH_SECRET`
    - `NEXTAUTH_URL` (e.g. `https://your-vercel-app.vercel.app`)
    - `HOST_EMAIL`
-   - `EMAIL_SERVER`
+   - Either `RESEND_API_KEY` (+ optional `RESEND_FROM_EMAIL`) **or** the SMTP variables (`EMAIL_SERVER` / granular settings)
    - `EMAIL_FROM`
 4. Trigger a deployment. The build pipeline runs `pnpm build`, which in turn executes `prisma generate`, `prisma migrate deploy`, and `next build` so your Neon database is migrated during the build step.
    - Vercel detects the pinned pnpm version from `package.json`/`packageManager` and runs `pnpm install` on its Node.js 22 runtime, matching the local toolchain without extra Corepack steps.

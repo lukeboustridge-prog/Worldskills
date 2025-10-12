@@ -1,6 +1,7 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { Role } from "@prisma/client";
 import nodemailer, { type Transporter } from "nodemailer";
+import { Resend } from "resend";
 import { type NextAuthOptions, getServerSession } from "next-auth";
 import EmailProvider from "next-auth/providers/email";
 import { env } from "@/env";
@@ -10,6 +11,9 @@ const defaultHostEmail = "luke.boustridge@gmail.com";
 const hostEmailValue = env.HOST_EMAIL ?? defaultHostEmail;
 const normalizedHostEmail = hostEmailValue.toLowerCase();
 const fallbackFromAddress = env.EMAIL_FROM ?? `WorldSkills Skill Advisor Tracker <${hostEmailValue}>`;
+const resendFromAddress = env.RESEND_FROM_EMAIL ?? fallbackFromAddress;
+
+const resendClient = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
 function createTransporter(): Transporter | null {
   if (env.EMAIL_SERVER) {
@@ -53,31 +57,57 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     EmailProvider({
-      from: fallbackFromAddress,
+      from: resendFromAddress,
       async sendVerificationRequest({ identifier, url }) {
-        if (!transporter) {
-          const message = `[Auth] EMAIL transport misconfigured. Magic link for ${identifier}: ${url}`;
-          if (process.env.NODE_ENV === "production") {
-            console.error(message);
-            throw new Error("Email transport is not configured");
-          }
+        const subject = "Your WorldSkills Skill Advisor Tracker sign-in link";
+        const text = `Sign in to the WorldSkills Skill Advisor Tracker by clicking the link below.\n${url}`;
+        const html = `<p>Sign in to the WorldSkills Skill Advisor Tracker by clicking the link below.</p><p><a href="${url}">Sign in</a></p>`;
 
+        let delivered = false;
+
+        if (resendClient) {
+          try {
+            await resendClient.emails.send({
+              from: resendFromAddress,
+              to: identifier,
+              subject,
+              text,
+              html
+            });
+            delivered = true;
+          } catch (error) {
+            console.error("[Auth] Failed to send magic link via Resend", error);
+          }
+        }
+
+        if (!delivered && transporter) {
+          try {
+            await transporter.sendMail({
+              to: identifier,
+              from: fallbackFromAddress,
+              subject,
+              text,
+              html
+            });
+            delivered = true;
+          } catch (error) {
+            console.error("[Auth] Failed to send magic link via SMTP", error);
+          }
+        }
+
+        if (delivered) {
+          return;
+        }
+
+        const message = `[Auth] Email transport unavailable. Magic link for ${identifier}: ${url}`;
+
+        if (process.env.NODE_ENV !== "production") {
           console.warn(message);
           return;
         }
 
-        try {
-          await transporter.sendMail({
-            to: identifier,
-            from: fallbackFromAddress,
-            subject: "Your WorldSkills Skill Advisor Tracker sign-in link",
-            text: `Sign in to the WorldSkills Skill Advisor Tracker by clicking the link below.\n${url}`,
-            html: `<p>Sign in to the WorldSkills Skill Advisor Tracker by clicking the link below.</p><p><a href="${url}">Sign in</a></p>`
-          });
-        } catch (error) {
-          console.error("[Auth] Failed to send magic link", error);
-          throw new Error("Failed to send verification email");
-        }
+        console.error(message);
+        throw new Error("Failed to send verification email");
       }
     })
   ],
