@@ -52,7 +52,14 @@ Required variables:
 | `NEXTAUTH_SECRET` | Long random string used to sign NextAuth JWTs. |
 | `NEXTAUTH_URL` | Application URL (e.g. `http://localhost:3000` for local dev). |
 | `EMAIL_SERVER` | SMTP connection string used by Nodemailer (e.g. `smtp://user:pass@smtp.example.com:587`). |
+| `EMAIL_SERVER_HOST`/`EMAIL_SERVER_PORT` | Host and port used when providing granular SMTP settings instead of `EMAIL_SERVER`. |
+| `EMAIL_SERVER_USER`/`EMAIL_SERVER_PASSWORD` | Credentials for the SMTP server (used with granular settings). |
+| `EMAIL_SERVER_SECURE` | Set to `true` to use TLS when using granular SMTP settings (defaults based on port). |
 | `EMAIL_FROM` | Friendly from address for outgoing magic link emails. |
+
+> **Note:** In production builds the app requires a working SMTP configuration. Missing credentials will cause sign-in attempts to
+> fail so emails are never silently dropped. During local development the magic link URL is logged to the server console when no
+> transporter is configured.
 
 ### 3. Generate the Prisma client & run migrations
 
