@@ -12,6 +12,10 @@ function normalizeOptionalId(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.length > 0 ? value : null;
 }
 
+function normalizeOptionalText(value: FormDataEntryValue | null) {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
 const skillSchema = z.object({
   name: z.string().min(2, "Skill name must be at least 2 characters"),
   saId: z.string().min(1, "SA is required"),
@@ -29,7 +33,7 @@ export async function createSkillAction(formData: FormData) {
     name: formData.get("name"),
     saId: typeof saIdEntry === "string" && saIdEntry.length > 0 ? saIdEntry : user.id,
     scmId: normalizeOptionalId(formData.get("scmId")),
-    notes: formData.get("notes")
+    notes: normalizeOptionalText(formData.get("notes"))
   });
 
   if (!parsed.success) {
@@ -41,7 +45,7 @@ export async function createSkillAction(formData: FormData) {
       name: parsed.data.name,
       saId: parsed.data.saId,
       ...(parsed.data.scmId ? { scmId: parsed.data.scmId } : {}),
-      notes: parsed.data.notes
+      notes: parsed.data.notes ?? null
     }
   });
 
@@ -73,7 +77,7 @@ export async function updateSkillAction(formData: FormData) {
     name: formData.get("name"),
     saId: formData.get("saId"),
     scmId: normalizeOptionalId(formData.get("scmId")),
-    notes: formData.get("notes")
+    notes: normalizeOptionalText(formData.get("notes"))
   });
 
   if (!parsed.success) {
@@ -86,7 +90,7 @@ export async function updateSkillAction(formData: FormData) {
       name: parsed.data.name,
       saId: parsed.data.saId,
       scmId: parsed.data.scmId ?? null,
-      notes: parsed.data.notes
+      notes: parsed.data.notes ?? null
     }
   });
 
