@@ -29,10 +29,14 @@ export async function registerUser(
   _prevState: RegistrationState,
   formData: FormData
 ): Promise<RegistrationState> {
+  const nameValue = formData.get("name");
+  const emailValue = formData.get("email");
+  const passwordValue = formData.get("password");
+
   const parsed = registrationSchema.safeParse({
-    name: typeof formData.get("name") === "string" ? formData.get("name")?.trim() : formData.get("name"),
-    email: formData.get("email"),
-    password: formData.get("password")
+    name: typeof nameValue === "string" ? nameValue.trim() : "",
+    email: typeof emailValue === "string" ? emailValue.trim() : "",
+    password: typeof passwordValue === "string" ? passwordValue : ""
   });
 
   if (!parsed.success) {
