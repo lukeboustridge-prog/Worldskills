@@ -4,7 +4,8 @@ WorldSkills Skill Advisor Tracker is a full-stack Next.js 14 application that he
 
 ## Features
 
-- 🔐 Passwordless authentication with [NextAuth (Auth.js)] using email magic links.
+- 🔐 Email/password authentication with [NextAuth (Auth.js)] and Prisma-backed user accounts.
+- 🆕 Self-service account registration with secure password hashing.
 - 👥 Role-based permissions for Skill Advisors and Skill Competition Managers.
 - 📋 CRUD management for Skills, Deliverables, and Gates backed by Prisma ORM and Neon PostgreSQL.
 - 💬 Messaging workspace for each skill with an auditable activity log.
@@ -26,7 +27,6 @@ WorldSkills Skill Advisor Tracker is a full-stack Next.js 14 application that he
 - Node.js 22.x (Vercel now builds this project on the Node 22 runtime)
 - pnpm 9.15 (installed via [`corepack`](https://nodejs.org/api/corepack.html) or `npm i -g pnpm`)
 - A Neon PostgreSQL database URL
-- Resend API key or SMTP credentials for sending login links
 
 ### 1. Clone and install
 
@@ -52,17 +52,9 @@ Required variables:
 | `NEXTAUTH_SECRET` | Long random string used to sign NextAuth JWTs. |
 | `NEXTAUTH_URL` | Application URL (e.g. `http://localhost:3000` for local dev). |
 | `HOST_EMAIL` | Primary Skill Advisor email. This account is treated as the host/admin and always receives the SA role. |
-| `RESEND_API_KEY` | Optional. When set, magic links are sent via [Resend](https://resend.com/) (recommended on Vercel). |
-| `RESEND_FROM_EMAIL` | Optional. Verified Resend sender address (falls back to `EMAIL_FROM`/`HOST_EMAIL`). |
-| `EMAIL_SERVER` | Optional SMTP connection string used by Nodemailer (e.g. `smtp://user:pass@smtp.example.com:587`). |
-| `EMAIL_SERVER_HOST`/`EMAIL_SERVER_PORT` | Optional granular SMTP settings if you prefer host + port instead of `EMAIL_SERVER`. |
-| `EMAIL_SERVER_USER`/`EMAIL_SERVER_PASSWORD` | Optional SMTP credentials (used with granular settings). |
-| `EMAIL_SERVER_SECURE` | Optional flag (`true`/`false`) to force TLS when using granular SMTP settings. |
-| `EMAIL_FROM` | Friendly from address for outgoing magic link emails (defaults to the host email when omitted). |
+| `HOST_INITIAL_PASSWORD` | Optional. Plaintext password assigned to the host account during seeding (defaults to `ChangeMe123!`). |
 
-> **Note:** Provide either a Resend API key or SMTP credentials. In production, if neither is configured, the sign-in attempt is
-> rejected so links are never silently lost. During local development the magic link URL is logged to the server console when no
-> email provider is available.
+> **Note:** The optional `HOST_INITIAL_PASSWORD` is only used when the seed script creates the host account. Update the password after logging in or rerun the seed with a new value whenever you need to rotate it.
 
 ### 3. Generate the Prisma client & run migrations
 
@@ -80,7 +72,8 @@ When deploying to Vercel, the default build script automatically runs `prisma mi
 A lightweight seed script creates one SA, one SCM, and an example skill:
 
 - The SA uses the `HOST_EMAIL` value (defaults to `luke.boustridge@gmail.com`).
-- The SCM remains `scm@example.com` for exploration purposes.
+- The SA password defaults to `HOST_INITIAL_PASSWORD` (or `ChangeMe123!` when unset).
+- The SCM remains `scm@example.com` with password `SamplePassword123!` for exploration purposes.
 
 ```bash
 pnpm prisma:seed
@@ -92,10 +85,8 @@ pnpm prisma:seed
 pnpm dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) to sign in with your configured email. The address defined by `HOST_EMAIL`
-is automatically granted the Skill Advisor role and is used as the default sender for magic links. Emails are sent using Resend
-when `RESEND_API_KEY` is supplied, otherwise the configured SMTP settings are used (and the link is logged to the server console
-when no provider is available).
+Visit [http://localhost:3000](http://localhost:3000) to create an account or sign in with an existing one. The address defined by `HOST_EMAIL`
+is always granted the Skill Advisor role, and the seed script creates a default SCM user (`scm@example.com` / `SamplePassword123!`) so you can explore the UI locally.
 
 ## Running tests & linting
 
@@ -114,8 +105,7 @@ pnpm lint
    - `NEXTAUTH_SECRET`
    - `NEXTAUTH_URL` (e.g. `https://your-vercel-app.vercel.app`)
    - `HOST_EMAIL`
-   - Either `RESEND_API_KEY` (+ optional `RESEND_FROM_EMAIL`) **or** the SMTP variables (`EMAIL_SERVER` / granular settings)
-   - `EMAIL_FROM`
+   - Optional: `HOST_INITIAL_PASSWORD` (if you want to set the host password during seeding)
 4. Trigger a deployment. The build pipeline runs `pnpm build`, which in turn executes `prisma generate`, `prisma migrate deploy`, and `next build` so your Neon database is migrated during the build step.
    - Vercel detects the pinned pnpm version from `package.json`/`packageManager` and runs `pnpm install` on its Node.js 22 runtime, matching the local toolchain without extra Corepack steps.
 5. For additional safety you can also run `pnpm prisma:deploy` locally or via CI prior to the first deploy.
