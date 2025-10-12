@@ -24,7 +24,7 @@ WorldSkills Skill Advisor Tracker is a full-stack Next.js 14 application that he
 ### Prerequisites
 
 - Node.js 22.x (Vercel now builds this project on the Node 22 runtime)
-- pnpm 9.12 (installed via [`corepack`](https://nodejs.org/api/corepack.html) or `npm i -g pnpm`)
+- pnpm 9.15 (installed via [`corepack`](https://nodejs.org/api/corepack.html) or `npm i -g pnpm`)
 - A Neon PostgreSQL database URL
 - SMTP credentials for sending login links (any provider supported by Nodemailer)
 
@@ -100,7 +100,7 @@ pnpm lint
    - `EMAIL_SERVER`
    - `EMAIL_FROM`
 4. Trigger a deployment. The build pipeline runs `pnpm build`, which in turn executes `prisma generate`, `prisma migrate deploy`, and `next build` so your Neon database is migrated during the build step.
-   - Vercel detects the pinned pnpm version from `package.json`/`packageManager` and runs `pnpm install` directly on its Node.js 22 runtime, matching the local toolchain without the extra Corepack activation.
+   - Vercel detects the pinned pnpm version from `package.json`/`packageManager` and runs `pnpm install` on its Node.js 22 runtime, matching the local toolchain without extra Corepack steps.
 5. For additional safety you can also run `pnpm prisma:deploy` locally or via CI prior to the first deploy.
 
 ## Scripts
@@ -137,7 +137,7 @@ prisma/
 - Only Skill Advisors can adjust deliverable states or gate statuses. SCMs can add evidence links and messages.
 - Uploads are tracked as evidence URLs (file storage integration can be added later).
 - A tracked `public/` directory is available for static assets.
-- The included `vercel.json` enforces the `.next` build output and asks Vercel to run `pnpm install`, so the deployment uses the same pnpm 9.12 toolchain as local development on Node 22.
+- The included `vercel.json` enforces the `.next` build output so Vercel reuses the same pnpm 9.15 toolchain as local development on Node 22.
 
 ## License
 
