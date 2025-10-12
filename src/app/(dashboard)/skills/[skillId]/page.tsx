@@ -62,10 +62,14 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
 
   const isAdvisor = user.role === Role.SA && skill.saId === user.id;
 
+  const completedStates: DeliverableState[] = [
+    DeliverableState.Finalised,
+    DeliverableState.Uploaded,
+    DeliverableState.Validated
+  ];
+
   const completedDeliverables = skill.deliverables.filter((deliverable) =>
-    [DeliverableState.Finalised, DeliverableState.Uploaded, DeliverableState.Validated].includes(
-      deliverable.state
-    )
+    completedStates.includes(deliverable.state)
   ).length;
 
   return (
