@@ -39,16 +39,28 @@ export async function registerUser(
   _prevState: RegistrationState,
   formData: FormData
 ): Promise<RegistrationState> {
+  const rawName = formData.get("name");
+  const rawEmail = formData.get("email");
+  const rawPassword = formData.get("password");
+
+  const parsed = registrationSchema.safeParse({
+    name: typeof rawName === "string" ? rawName : "",
+    email: typeof rawEmail === "string" ? rawEmail : "",
+    password: typeof rawPassword === "string" ? rawPassword : ""
+  });
+
+  if (!parsed.success) {
+    const firstIssue = parsed.error.issues[0]?.message;
+    return {
+      success: false,
+      error: firstIssue ?? "Enter a valid name, email, and password to continue."
+    };
+  }
+
+  const { email, name, password } = parsed.data;
+  const normalizedEmail = email.toLowerCase();
+
   try {
-    const parsed = registrationSchema.parse({
-      name: typeof formData.get("name") === "string" ? formData.get("name") : "",
-      email: typeof formData.get("email") === "string" ? formData.get("email") : "",
-      password: typeof formData.get("password") === "string" ? formData.get("password") : ""
-    });
-
-    const { email, name, password } = parsed;
-    const normalizedEmail = email.toLowerCase();
-
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail }
     });
@@ -73,15 +85,8 @@ export async function registerUser(
 
     return { success: true };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return {
-        success: false,
-        error: error.errors[0]?.message ?? "Invalid registration details."
-      };
-    }
-
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError ||
+      (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") ||
       (typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "P2002")
     ) {
       return {
