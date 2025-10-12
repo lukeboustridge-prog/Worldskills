@@ -48,7 +48,7 @@
     "tsx": "^4.17.0"
   },
   "engines": {
-    "node": ">=20.11.1"
+    "node": ">=18.18.0 <20"
   },
   "packageManager": "pnpm@9.12.3"
 }
