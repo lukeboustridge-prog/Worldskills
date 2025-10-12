@@ -35,30 +35,18 @@ const initialState: RegistrationState = {
 const defaultHostEmail = "luke.boustridge@gmail.com";
 const normalizedHostEmail = (env.HOST_EMAIL ?? defaultHostEmail).toLowerCase();
 
-function coerceField(formData: FormData, field: string): string {
-  const value = formData.get(field);
-  return typeof value === "string" ? value : "";
-}
-
 export async function registerUser(
   _prevState: RegistrationState,
   formData: FormData
 ): Promise<RegistrationState> {
-  const parsed = registrationSchema.safeParse({
-    name: coerceField(formData, "name"),
-    email: coerceField(formData, "email"),
-    password: coerceField(formData, "password")
-  });
-
-  if (!parsed.success) {
-    return {
-      success: false,
-      error: parsed.error.errors[0]?.message ?? "Invalid registration details."
-    };
-  }
-
   try {
-    const { email, name, password } = parsed.data;
+    const parsed = registrationSchema.parse({
+      name: typeof formData.get("name") === "string" ? formData.get("name") : "",
+      email: typeof formData.get("email") === "string" ? formData.get("email") : "",
+      password: typeof formData.get("password") === "string" ? formData.get("password") : ""
+    });
+
+    const { email, name, password } = parsed;
     const normalizedEmail = email.toLowerCase();
 
     const existingUser = await prisma.user.findUnique({
@@ -82,7 +70,16 @@ export async function registerUser(
         role: normalizedEmail === normalizedHostEmail ? Role.SA : Role.SCM
       }
     });
+
+    return { success: true };
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error: error.errors[0]?.message ?? "Invalid registration details."
+      };
+    }
+
     if (
       error instanceof Prisma.PrismaClientKnownRequestError ||
       (typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "P2002")
@@ -93,17 +90,23 @@ export async function registerUser(
       };
     }
 
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      return {
+        success: false,
+        error: "We couldn't create your account right now. Please check your details and try again."
+      };
+    }
+
     console.error("registerUser failed", error);
+
+    const genericMessage = "We couldn't create your account right now. Please try again.";
+    const showDetailedError = process.env.NODE_ENV === "development" && error instanceof Error;
 
     return {
       success: false,
-      error: "We couldn't create your account right now. Please try again."
+      error: showDetailedError ? error.message : genericMessage
     };
   }
-
-  return {
-    success: true
-  };
 }
 
 export { initialState as registrationInitialState };
