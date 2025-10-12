@@ -169,7 +169,9 @@ export async function appendEvidenceAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (![skill.saId, skill.scmId].includes(user.id)) {
+  const permittedUserIds = [skill.saId, skill.scmId].filter(Boolean) as string[];
+
+  if (!permittedUserIds.includes(user.id)) {
     throw new Error("You do not have access to update this deliverable");
   }
 
@@ -345,7 +347,9 @@ export async function createMessageAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (![skill.saId, skill.scmId].includes(user.id)) {
+  const permittedUserIds = [skill.saId, skill.scmId].filter(Boolean) as string[];
+
+  if (!permittedUserIds.includes(user.id)) {
     throw new Error("You do not have access to this conversation");
   }
 

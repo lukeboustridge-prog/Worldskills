@@ -56,11 +56,15 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     notFound();
   }
 
-  if (![skill.saId, skill.scmId].includes(user.id)) {
+  const permittedUserIds = [skill.saId, skill.scmId].filter(Boolean) as string[];
+
+  if (!permittedUserIds.includes(user.id)) {
     redirect("/dashboard");
   }
 
   const isAdvisor = user.role === Role.SA && skill.saId === user.id;
+  const advisorLabel = skill.sa.name ?? skill.sa.email;
+  const managerLabel = skill.scm ? skill.scm.name ?? skill.scm.email : "Unassigned";
 
   const completedStates: DeliverableState[] = [
     DeliverableState.Finalised,
@@ -77,9 +81,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-semibold">{skill.name}</h1>
-          <p className="text-muted-foreground">
-            SA: {skill.sa.name ?? skill.sa.email} · SCM: {skill.scm.name ?? skill.scm.email}
-          </p>
+          <p className="text-muted-foreground">SA: {advisorLabel} · SCM: {managerLabel}</p>
           <p className="text-sm text-muted-foreground">{skill.notes ?? "No notes added yet."}</p>
         </div>
         <div className="flex gap-3">
@@ -163,9 +165,9 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                 skill.deliverables.map((deliverable) => {
                   const updatedByLabel =
                     deliverable.updatedBy === skill.saId
-                      ? skill.sa.name ?? skill.sa.email
-                      : deliverable.updatedBy === skill.scmId
-                      ? skill.scm.name ?? skill.scm.email
+                      ? advisorLabel
+                      : skill.scmId && deliverable.updatedBy === skill.scmId
+                      ? managerLabel
                       : deliverable.updatedBy ?? "N/A";
                   return (
                   <div key={deliverable.id} className="rounded-md border p-4">

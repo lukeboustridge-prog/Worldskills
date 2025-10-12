@@ -52,6 +52,8 @@ export default async function DashboardPage() {
           );
           const totalDeliverables = skill.deliverables.length || 1;
           const completedGates = skill.gates.filter((gate) => gate.status === "Complete");
+          const advisorLabel = skill.sa.name ?? skill.sa.email;
+          const managerLabel = skill.scm ? skill.scm.name ?? skill.scm.email : "Unassigned";
 
           return (
             <Card key={skill.id}>
@@ -60,7 +62,7 @@ export default async function DashboardPage() {
                   <div>
                     <CardTitle>{skill.name}</CardTitle>
                     <CardDescription>
-                      SA: {skill.sa.name ?? skill.sa.email} · SCM: {skill.scm.name ?? skill.scm.email}
+                      SA: {advisorLabel} · SCM: {managerLabel}
                     </CardDescription>
                   </div>
                   <Badge>

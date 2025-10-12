@@ -55,9 +55,13 @@ export default async function SkillsPage() {
               <select
                 id="saId"
                 name="saId"
-                defaultValue={user.id}
+                defaultValue=""
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                required
               >
+                <option value="" disabled>
+                  Select Skill Advisor
+                </option>
                 {advisors.map((advisor) => (
                   <option key={advisor.id} value={advisor.id}>
                     {advisor.name ?? advisor.email}
@@ -71,11 +75,10 @@ export default async function SkillsPage() {
                 id="scmId"
                 name="scmId"
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                required
                 defaultValue=""
               >
-                <option value="" disabled>
-                  Select SCM
+                <option value="">
+                  Unassigned
                 </option>
                 {managers.map((manager) => (
                   <option key={manager.id} value={manager.id}>
@@ -106,7 +109,9 @@ export default async function SkillsPage() {
                 <CardHeader>
                   <CardTitle>{skill.name}</CardTitle>
                   <CardDescription>
-                    SA: {skill.sa.name ?? skill.sa.email} · SCM: {skill.scm.name ?? skill.scm.email}
+                    SA: {skill.sa.name ?? skill.sa.email} · SCM: {skill.scm
+                      ? skill.scm.name ?? skill.scm.email
+                      : "Unassigned"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -137,8 +142,9 @@ export default async function SkillsPage() {
                         id={`scm-${skill.id}`}
                         name="scmId"
                         className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                        defaultValue={skill.scmId}
+                        defaultValue={skill.scmId ?? ""}
                       >
+                        <option value="">Unassigned</option>
                         {managers.map((manager) => (
                           <option key={manager.id} value={manager.id}>
                             {manager.name ?? manager.email}

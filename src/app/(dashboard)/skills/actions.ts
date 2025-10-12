@@ -8,10 +8,14 @@ import { logActivity } from "@/lib/activity";
 import { assertSA, requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+function normalizeOptionalId(value: FormDataEntryValue | null) {
+  return typeof value === "string" && value.length > 0 ? value : null;
+}
+
 const skillSchema = z.object({
   name: z.string().min(2, "Skill name must be at least 2 characters"),
   saId: z.string().min(1, "SA is required"),
-  scmId: z.string().min(1, "SCM is required"),
+  scmId: z.string().min(1).nullable().optional(),
   notes: z.string().optional()
 });
 
@@ -19,10 +23,12 @@ export async function createSkillAction(formData: FormData) {
   const user = await requireUser();
   assertSA(user.role as Role);
 
+  const saIdEntry = formData.get("saId");
+
   const parsed = skillSchema.safeParse({
     name: formData.get("name"),
-    saId: formData.get("saId") ?? user.id,
-    scmId: formData.get("scmId"),
+    saId: typeof saIdEntry === "string" && saIdEntry.length > 0 ? saIdEntry : user.id,
+    scmId: normalizeOptionalId(formData.get("scmId")),
     notes: formData.get("notes")
   });
 
@@ -34,7 +40,7 @@ export async function createSkillAction(formData: FormData) {
     data: {
       name: parsed.data.name,
       saId: parsed.data.saId,
-      scmId: parsed.data.scmId,
+      ...(parsed.data.scmId ? { scmId: parsed.data.scmId } : {}),
       notes: parsed.data.notes
     }
   });
@@ -43,7 +49,7 @@ export async function createSkillAction(formData: FormData) {
     skillId: skill.id,
     userId: user.id,
     action: "SkillCreated",
-    payload: { name: skill.name, saId: skill.saId, scmId: skill.scmId }
+    payload: { name: skill.name, saId: skill.saId, scmId: skill.scmId ?? null }
   });
 
   revalidatePath("/dashboard");
@@ -54,7 +60,7 @@ const updateSkillSchema = z.object({
   skillId: z.string().min(1),
   name: z.string().min(2),
   saId: z.string().min(1),
-  scmId: z.string().min(1),
+  scmId: z.string().min(1).nullable(),
   notes: z.string().optional()
 });
 
@@ -66,7 +72,7 @@ export async function updateSkillAction(formData: FormData) {
     skillId: formData.get("skillId"),
     name: formData.get("name"),
     saId: formData.get("saId"),
-    scmId: formData.get("scmId"),
+    scmId: normalizeOptionalId(formData.get("scmId")),
     notes: formData.get("notes")
   });
 
@@ -79,7 +85,7 @@ export async function updateSkillAction(formData: FormData) {
     data: {
       name: parsed.data.name,
       saId: parsed.data.saId,
-      scmId: parsed.data.scmId,
+      scmId: parsed.data.scmId ?? null,
       notes: parsed.data.notes
     }
   });
@@ -91,7 +97,7 @@ export async function updateSkillAction(formData: FormData) {
     payload: {
       name: skill.name,
       saId: skill.saId,
-      scmId: skill.scmId
+      scmId: skill.scmId ?? null
     }
   });
 

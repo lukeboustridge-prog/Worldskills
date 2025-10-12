@@ -57,11 +57,11 @@ model Skill {
   notes     String?  @db.Text
   createdAt DateTime @default(now())
 
-  scmId String
+  scmId String?
   saId  String
 
-  scm User @relation("SkillSCM", fields: [scmId], references: [id])
-  sa  User @relation("SkillSA", fields: [saId], references: [id])
+  scm User? @relation("SkillSCM", fields: [scmId], references: [id])
+  sa  User  @relation("SkillSA", fields: [saId], references: [id])
 
   deliverables Deliverable[]
   gates        Gate[]
