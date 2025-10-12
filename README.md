@@ -100,7 +100,7 @@ pnpm lint
    - `EMAIL_SERVER`
    - `EMAIL_FROM`
 4. Trigger a deployment. The build pipeline runs `pnpm build`, which in turn executes `prisma generate`, `prisma migrate deploy`, and `next build` so your Neon database is migrated during the build step.
-   - The repository pins pnpm 9.12 and the install command activates it via Corepack while Vercel installs dependencies on its Node.js 22 runtime (enforced through the `package.json` engine range).
+   - Vercel detects the pinned pnpm version from `package.json`/`packageManager` and runs `pnpm install` directly on its Node.js 22 runtime, matching the local toolchain without the extra Corepack activation.
 5. For additional safety you can also run `pnpm prisma:deploy` locally or via CI prior to the first deploy.
 
 ## Scripts
@@ -137,7 +137,7 @@ prisma/
 - Only Skill Advisors can adjust deliverable states or gate statuses. SCMs can add evidence links and messages.
 - Uploads are tracked as evidence URLs (file storage integration can be added later).
 - A tracked `public/` directory is available for static assets.
-- The included `vercel.json` enforces the correct Next.js build output (`.next`) and activates pnpm 9.12 via Corepack so the deployment uses the same toolchain as local development on Node 22.
+- The included `vercel.json` enforces the `.next` build output and asks Vercel to run `pnpm install`, so the deployment uses the same pnpm 9.12 toolchain as local development on Node 22.
 
 ## License
 
