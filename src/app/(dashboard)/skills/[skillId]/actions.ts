@@ -1,7 +1,6 @@
 "use server";
 
 import {
-  Prisma,
   DeliverableScheduleType,
   DeliverableState,
   GateScheduleType,
@@ -18,7 +17,8 @@ import {
   buildCMonthLabel,
   computeDueDate,
   EVIDENCE_TYPE_VALUES,
-  normaliseEvidenceItems
+  normaliseEvidenceItems,
+  serialiseEvidenceItems
 } from "@/lib/deliverables";
 import { requireAppSettings } from "@/lib/settings";
 
@@ -130,7 +130,7 @@ export async function appendEvidenceAction(formData: FormData) {
     addedAt: new Date().toISOString()
   });
 
-  const evidencePayload: Prisma.InputJsonValue = evidenceItems;
+  const evidencePayload = serialiseEvidenceItems(evidenceItems);
 
   await prisma.deliverable.update({
     where: { id: parsed.data.deliverableId },
@@ -201,7 +201,7 @@ export async function updateEvidenceTypeAction(formData: FormData) {
     index === parsed.data.evidenceIndex ? { ...item, type: parsed.data.type } : item
   );
 
-  const updatedPayload: Prisma.InputJsonValue = updatedItems;
+  const updatedPayload = serialiseEvidenceItems(updatedItems);
 
   await prisma.deliverable.update({
     where: { id: parsed.data.deliverableId },

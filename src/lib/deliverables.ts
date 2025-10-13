@@ -143,6 +143,16 @@ export type DeliverableWithStatus = Omit<Deliverable, "evidenceItems"> & {
   overdueByDays: number;
 };
 
+export function serialiseEvidenceItems(
+  items: DeliverableEvidenceItem[]
+): Prisma.InputJsonValue {
+  return items.map((item) => ({
+    url: item.url,
+    type: item.type,
+    addedAt: item.addedAt
+  })) as Prisma.InputJsonArray;
+}
+
 export function normaliseEvidenceItems(value: Prisma.JsonValue | null | undefined): DeliverableEvidenceItem[] {
   if (!Array.isArray(value)) {
     return [];
