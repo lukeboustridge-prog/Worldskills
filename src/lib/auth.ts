@@ -57,7 +57,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role?: Role }).role ?? Role.SCM;
+        token.role = (user as { role?: Role }).role ?? Role.Pending;
         token.email = user.email;
         token.isAdmin = (user as { isAdmin?: boolean }).isAdmin ?? false;
         return token;
@@ -85,12 +85,16 @@ export const authOptions: NextAuthOptions = {
         token.isAdmin = true;
       }
 
+      if (!token.role) {
+        token.role = Role.Pending;
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = token.id as string;
-        session.user.role = (token.role as Role) ?? Role.SCM;
+        session.user.role = (token.role as Role) ?? Role.Pending;
         if (typeof token.email === "string") {
           session.user.email = token.email;
         }
