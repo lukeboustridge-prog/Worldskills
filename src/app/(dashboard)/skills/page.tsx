@@ -1,12 +1,12 @@
 import { Role } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { format } from "date-fns";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -15,6 +15,7 @@ import { decorateDeliverable } from "@/lib/deliverables";
 import { SKILL_CATALOG } from "@/lib/skill-catalog";
 import { getUserDisplayName } from "@/lib/users";
 import { deleteSkillAction, updateSkillAction } from "./actions";
+import { createMessageAction } from "./[skillId]/actions";
 import { CreateSkillDialog } from "./create-skill-dialog";
 
 export default async function SkillsPage() {
@@ -56,11 +57,6 @@ export default async function SkillsPage() {
             createdAt: true,
             overdueNotifiedAt: true
           }
-        },
-        messages: {
-          include: { author: true },
-          orderBy: { createdAt: "desc" },
-          take: 3
         }
       },
       orderBy: { name: "asc" }
@@ -270,27 +266,24 @@ export default async function SkillsPage() {
                                 )}
 
                                 <div className="space-y-2">
-                                  <p className="text-sm font-semibold text-foreground">Latest messages</p>
-                                  {skill.messages.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground">No messages yet.</p>
+                                  <p className="text-sm font-semibold text-foreground">Send a message</p>
+                                  {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
+                                    <form action={createMessageAction} className="space-y-2">
+                                      <input type="hidden" name="skillId" value={skill.id} />
+                                      <Textarea
+                                        name="body"
+                                        placeholder="Share an update with your counterpart"
+                                        rows={3}
+                                        required
+                                      />
+                                      <Button type="submit" size="sm">
+                                        Post message
+                                      </Button>
+                                    </form>
                                   ) : (
-                                    <ul className="space-y-2">
-                                      {skill.messages.map((message) => (
-                                        <li key={message.id} className="rounded-md border px-3 py-2">
-                                          <div className="flex items-center justify-between gap-2">
-                                            <span className="text-sm font-medium text-foreground">
-                                              {getUserDisplayName(message.author)}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
-                                              {format(message.createdAt, "dd MMM yyyy")}
-                                            </span>
-                                          </div>
-                                          <p className="mt-1 whitespace-pre-line text-xs text-muted-foreground">
-                                            {message.body}
-                                          </p>
-                                        </li>
-                                      ))}
-                                    </ul>
+                                    <p className="text-sm text-muted-foreground">
+                                      Open the workspace to view the full conversation thread.
+                                    </p>
                                   )}
                                 </div>
 
@@ -415,27 +408,24 @@ export default async function SkillsPage() {
                               )}
 
                               <div className="space-y-2">
-                                <p className="text-sm font-semibold text-foreground">Latest messages</p>
-                                {skill.messages.length === 0 ? (
-                                  <p className="text-sm text-muted-foreground">No messages yet.</p>
+                                <p className="text-sm font-semibold text-foreground">Send a message</p>
+                                {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
+                                  <form action={createMessageAction} className="space-y-2">
+                                    <input type="hidden" name="skillId" value={skill.id} />
+                                    <Textarea
+                                      name="body"
+                                      placeholder="Share an update with your counterpart"
+                                      rows={3}
+                                      required
+                                    />
+                                    <Button type="submit" size="sm">
+                                      Post message
+                                    </Button>
+                                  </form>
                                 ) : (
-                                  <ul className="space-y-2">
-                                    {skill.messages.map((message) => (
-                                      <li key={message.id} className="rounded-md border px-3 py-2">
-                                        <div className="flex items-center justify-between gap-2">
-                                          <span className="text-sm font-medium text-foreground">
-                                            {getUserDisplayName(message.author)}
-                                          </span>
-                                          <span className="text-xs text-muted-foreground">
-                                            {format(message.createdAt, "dd MMM yyyy")}
-                                          </span>
-                                        </div>
-                                        <p className="mt-1 whitespace-pre-line text-xs text-muted-foreground">
-                                          {message.body}
-                                        </p>
-                                      </li>
-                                    ))}
-                                  </ul>
+                                  <p className="text-sm text-muted-foreground">
+                                    Open the workspace to view the full conversation thread.
+                                  </p>
                                 )}
                               </div>
 
