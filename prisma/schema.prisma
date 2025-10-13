@@ -10,15 +10,7 @@ datasource db {
 enum Role {
   SA
   SCM
-}
-
-enum DeliverableType {
-  SAG
-  TestProject
-  MarkingScheme
-  Validation
-  MAT
-  CISUpload
+  Secretariat
 }
 
 enum DeliverableState {
@@ -41,6 +33,7 @@ model User {
   email        String   @unique
   passwordHash String?
   role         Role     @default(SCM)
+  isAdmin      Boolean  @default(false)
   createdAt    DateTime @default(now())
 
   accounts    Account[]
@@ -54,14 +47,15 @@ model User {
 model Skill {
   id        String   @id @default(cuid())
   name      String
+  sector    String?
   notes     String?  @db.Text
   createdAt DateTime @default(now())
 
-  scmId String
+  scmId String?
   saId  String
 
-  scm User @relation("SkillSCM", fields: [scmId], references: [id])
-  sa  User @relation("SkillSA", fields: [saId], references: [id])
+  scm User? @relation("SkillSCM", fields: [scmId], references: [id])
+  sa  User  @relation("SkillSA", fields: [saId], references: [id])
 
   deliverables Deliverable[]
   gates        Gate[]
@@ -70,20 +64,41 @@ model Skill {
 
   @@index([scmId])
   @@index([saId])
+  @@unique([name])
+}
+
+model DeliverableTemplate {
+  id           String   @id @default(cuid())
+  key          String   @unique
+  label        String
+  offsetMonths Int
+  position     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  deliverables Deliverable[]
 }
 
 model Deliverable {
-  id            String            @id @default(cuid())
-  skillId       String
-  type          DeliverableType
-  state         DeliverableState  @default(NotStarted)
-  evidenceLinks String[]          @default([])
-  updatedBy     String?
-  updatedAt     DateTime          @updatedAt
+  id               String           @id @default(cuid())
+  skillId          String
+  key              String
+  label            String
+  cMonthOffset     Int
+  dueDate          DateTime
+  cMonthLabel      String
+  state            DeliverableState @default(NotStarted)
+  evidenceLinks    String[]         @default([])
+  updatedBy        String?
+  updatedAt        DateTime         @updatedAt
+  createdAt        DateTime         @default(now())
+  overdueNotifiedAt DateTime?
 
-  skill Skill @relation(fields: [skillId], references: [id])
+  skill     Skill               @relation(fields: [skillId], references: [id])
+  template  DeliverableTemplate @relation(fields: [key], references: [key])
 
   @@index([skillId])
+  @@unique([skillId, key])
 }
 
 model Gate {
@@ -127,6 +142,16 @@ model ActivityLog {
 
   @@index([skillId])
   @@index([userId])
+}
+
+model AppSettings {
+  id                Int      @id @default(1)
+  competitionName   String
+  competitionStart  DateTime
+  competitionEnd    DateTime
+  keyDates          Json     @default("{}")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Account {

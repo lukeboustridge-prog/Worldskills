@@ -1,14 +1,11 @@
+import { Role } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/layout/sign-out-button";
 import { NavLink } from "@/components/layout/nav-link";
 import { getCurrentUser } from "@/lib/auth";
-
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/skills", label: "Skills" }
-];
+import { getUserDisplayName } from "@/lib/users";
 
 export default async function DashboardLayout({
   children
@@ -21,6 +18,17 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  const navItems: { href: string; label: string }[] = [];
+  if (user.isAdmin || user.role === Role.SA || user.role === Role.Secretariat) {
+    navItems.push({ href: "/dashboard", label: "Dashboard" });
+  }
+
+  navItems.push({ href: "/skills", label: "Skills" });
+
+  if (user.isAdmin) {
+    navItems.push({ href: "/settings", label: "Settings" });
+  }
+
   return (
     <div className="min-h-screen bg-muted/30">
       <header className="border-b bg-background">
@@ -30,8 +38,11 @@ export default async function DashboardLayout({
           </Link>
           <div className="flex items-center gap-4">
             <div className="text-right text-sm">
-              <p className="font-medium text-foreground">{user.name ?? user.email}</p>
-              <p className="uppercase text-xs text-muted-foreground">{user.role}</p>
+              <p className="font-medium text-foreground">{getUserDisplayName(user)}</p>
+              <p className="uppercase text-xs text-muted-foreground">
+                {user.role}
+                {user.isAdmin ? " · ADMIN" : ""}
+              </p>
             </div>
             <SignOutButton />
           </div>
@@ -39,7 +50,7 @@ export default async function DashboardLayout({
       </header>
       <div className="mx-auto flex max-w-6xl gap-8 px-6 py-8">
         <aside className="w-56 space-y-2">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <NavLink key={item.href} href={item.href} label={item.label} />
           ))}
         </aside>
