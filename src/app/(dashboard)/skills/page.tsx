@@ -43,8 +43,18 @@ export default async function SkillsPage() {
         deliverables: {
           select: {
             id: true,
+            skillId: true,
+            key: true,
+            label: true,
+            cMonthOffset: true,
             dueDate: true,
-            state: true
+            cMonthLabel: true,
+            state: true,
+            evidenceLinks: true,
+            updatedBy: true,
+            updatedAt: true,
+            createdAt: true,
+            overdueNotifiedAt: true
           }
         },
         messages: {
