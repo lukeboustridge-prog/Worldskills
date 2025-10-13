@@ -1,12 +1,10 @@
-import { DeliverableState, GateStatus, Role } from "@prisma/client";
+import { DeliverableState, GateScheduleType, GateStatus, Role } from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
 import { format } from "date-fns";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,13 +12,9 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDeliverableState } from "@/lib/utils";
 import { getUserDisplayName } from "@/lib/users";
-import {
-  createGateAction,
-  createMessageAction,
-  deleteGateAction,
-  updateGateStatusAction
-} from "./actions";
+import { createMessageAction, deleteGateAction, updateGateStatusAction } from "./actions";
 import { DeliverablesTable, type DeliverableRow } from "./deliverables-table";
+import { CreateGateForm } from "./create-gate-form";
 import {
   DUE_SOON_THRESHOLD_DAYS,
   classifyDeliverables,
@@ -173,20 +167,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                 <CardDescription>Track key deadlines and gate approvals for this skill.</CardDescription>
               </CardHeader>
               <CardContent>
-                <form action={createGateAction} className="grid gap-4 md:grid-cols-2">
-                  <input type="hidden" name="skillId" value={skill.id} />
-                  <div className="space-y-2">
-                    <Label htmlFor="gate-name">Gate name</Label>
-                    <Input id="gate-name" name="name" placeholder="Validation workshop" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="gate-date">Due date</Label>
-                    <Input id="gate-date" name="dueDate" type="date" required />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Button type="submit">Create gate</Button>
-                  </div>
-                </form>
+                <CreateGateForm skillId={skill.id} />
               </CardContent>
             </Card>
           ) : null}
@@ -213,7 +194,16 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                     {skill.gates.map((gate) => (
                       <TableRow key={gate.id}>
                         <TableCell>{gate.name}</TableCell>
-                        <TableCell>{format(gate.dueDate, "dd MMM yyyy")}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span>{format(gate.dueDate, "dd MMM yyyy")}</span>
+                            {gate.scheduleType === GateScheduleType.CMonth && gate.cMonthLabel ? (
+                              <span className="text-xs text-muted-foreground">{gate.cMonthLabel}</span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Calendar date</span>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <Badge variant={gate.status === GateStatus.Complete ? "default" : "outline"}>
                             {gate.status}

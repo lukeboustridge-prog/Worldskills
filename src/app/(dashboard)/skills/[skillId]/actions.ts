@@ -1,12 +1,14 @@
 "use server";
 
-import { DeliverableState, GateStatus, Role } from "@prisma/client";
+import { DeliverableState, GateScheduleType, GateStatus, Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { logActivity } from "@/lib/activity";
 import { assertSA, requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { buildCMonthLabel, computeDueDate } from "@/lib/deliverables";
+import { requireAppSettings } from "@/lib/settings";
 
 async function ensureSkill(skillId: string) {
   const skill = await prisma.skill.findUnique({ where: { id: skillId } });
@@ -116,23 +118,47 @@ export async function appendEvidenceAction(formData: FormData) {
   revalidateSkill(parsed.data.skillId);
 }
 
-const gateSchema = z.object({
-  skillId: z.string().min(1),
-  name: z.string().min(2),
-  dueDate: z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
-    message: "Invalid date"
+const gateSchema = z.discriminatedUnion("scheduleType", [
+  z.object({
+    scheduleType: z.literal("calendar"),
+    skillId: z.string().min(1),
+    name: z.string().min(2),
+    dueDate: z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
+      message: "Invalid date"
+    })
+  }),
+  z.object({
+    scheduleType: z.literal("cmonth"),
+    skillId: z.string().min(1),
+    name: z.string().min(2),
+    offsetMonths: z.coerce
+      .number({ invalid_type_error: "Offset must be a number" })
+      .int({ message: "Offset must be a whole number" })
+      .min(0, { message: "Offset cannot be negative" })
   })
-});
+]);
 
 export async function createGateAction(formData: FormData) {
   const user = await requireUser();
   assertSA(user.role as Role);
 
-  const parsed = gateSchema.safeParse({
-    skillId: formData.get("skillId"),
-    name: formData.get("name"),
-    dueDate: formData.get("dueDate")
-  });
+  const scheduleType = formData.get("scheduleType") ?? "calendar";
+
+  const parsed = gateSchema.safeParse(
+    scheduleType === "cmonth"
+      ? {
+          scheduleType,
+          skillId: formData.get("skillId"),
+          name: formData.get("name"),
+          offsetMonths: formData.get("offsetMonths")
+        }
+      : {
+          scheduleType: "calendar",
+          skillId: formData.get("skillId"),
+          name: formData.get("name"),
+          dueDate: formData.get("dueDate")
+        }
+  );
 
   if (!parsed.success) {
     throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
@@ -143,11 +169,29 @@ export async function createGateAction(formData: FormData) {
     throw new Error("Only the assigned Skill Advisor can create gates");
   }
 
+  let dueDate: Date;
+  let schedule: GateScheduleType = GateScheduleType.Calendar;
+  let offset: number | null = null;
+  let cMonthLabel: string | null = null;
+
+  if (parsed.data.scheduleType === "cmonth") {
+    const settings = await requireAppSettings();
+    offset = parsed.data.offsetMonths;
+    dueDate = computeDueDate(settings.competitionStart, offset);
+    schedule = GateScheduleType.CMonth;
+    cMonthLabel = buildCMonthLabel(offset);
+  } else {
+    dueDate = new Date(parsed.data.dueDate);
+  }
+
   const gate = await prisma.gate.create({
     data: {
       skillId: parsed.data.skillId,
       name: parsed.data.name,
-      dueDate: new Date(parsed.data.dueDate)
+      dueDate,
+      scheduleType: schedule,
+      cMonthOffset: offset,
+      cMonthLabel
     }
   });
 
@@ -157,7 +201,10 @@ export async function createGateAction(formData: FormData) {
     action: "GateCreated",
     payload: {
       gateId: gate.id,
-      name: gate.name
+      name: gate.name,
+      scheduleType: gate.scheduleType,
+      cMonthOffset: gate.cMonthOffset,
+      cMonthLabel: gate.cMonthLabel
     }
   });
 

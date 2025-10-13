@@ -28,6 +28,11 @@ enum GateStatus {
   Complete
 }
 
+enum GateScheduleType {
+  Calendar
+  CMonth
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String?
@@ -124,6 +129,9 @@ model Gate {
   completedBy  String?
   completedAt  DateTime?
   templateKey  String?
+  scheduleType GateScheduleType @default(Calendar)
+  cMonthOffset Int?
+  cMonthLabel  String?
 
   skill Skill @relation(fields: [skillId], references: [id])
   template GateTemplate? @relation(fields: [templateKey], references: [key])

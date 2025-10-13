@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -14,9 +13,10 @@ import { getAppSettings } from "@/lib/settings";
 import { decorateDeliverable } from "@/lib/deliverables";
 import { SKILL_CATALOG } from "@/lib/skill-catalog";
 import { getUserDisplayName } from "@/lib/users";
-import { deleteSkillAction, updateSkillAction } from "./actions";
+import { deleteSkillAction } from "./actions";
 import { createMessageAction } from "./[skillId]/actions";
 import { CreateSkillDialog } from "./create-skill-dialog";
+import { SkillAssignmentForm } from "./skill-assignment-form";
 
 export default async function SkillsPage() {
   const user = await getCurrentUser();
@@ -216,51 +216,14 @@ export default async function SkillsPage() {
                               </summary>
                               <CardContent className="space-y-4 border-t p-6 pt-6">
                                 {canManageSkills ? (
-                                  <form action={updateSkillAction} className="space-y-4">
-                                    <input type="hidden" name="skillId" value={skill.id} />
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                      <div className="space-y-1">
-                                        <Label htmlFor={`sa-${skill.id}`}>Skill Advisor</Label>
-                                        <select
-                                          id={`sa-${skill.id}`}
-                                          name="saId"
-                                          defaultValue={skill.saId}
-                                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                          required
-                                        >
-                                          {advisorOptions.map((advisorOption) => (
-                                            <option key={advisorOption.id} value={advisorOption.id}>
-                                              {advisorOption.label}
-                                            </option>
-                                          ))}
-                                        </select>
-                                      </div>
-                                      <div className="space-y-1">
-                                        <Label htmlFor={`scm-${skill.id}`}>Skill Competition Manager</Label>
-                                        <select
-                                          id={`scm-${skill.id}`}
-                                          name="scmId"
-                                          defaultValue={skill.scmId ?? ""}
-                                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                        >
-                                          <option value="">Unassigned</option>
-                                          {managerOptions.map((manager) => (
-                                            <option key={manager.id} value={manager.id}>
-                                              {manager.label}
-                                            </option>
-                                          ))}
-                                        </select>
-                                      </div>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      <Button type="submit" size="sm">
-                                        Save changes
-                                      </Button>
-                                      <Button asChild size="sm" variant="outline">
-                                        <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                                      </Button>
-                                    </div>
-                                  </form>
+                                  <SkillAssignmentForm
+                                    skillId={skill.id}
+                                    defaultSaId={skill.saId ?? null}
+                                    defaultScmId={skill.scmId ?? null}
+                                    advisorOptions={advisorOptions}
+                                    managerOptions={managerOptions}
+                                    workspaceHref={`/skills/${skill.id}`}
+                                  />
                                 ) : (
                                   <div className="flex justify-end">
                                     <Button asChild size="sm" variant="outline">
@@ -357,52 +320,15 @@ export default async function SkillsPage() {
                             </summary>
                             <CardContent className="space-y-4 border-t p-6 pt-6">
                               {canManageSkills ? (
-                                <form action={updateSkillAction} className="space-y-4">
-                                  <input type="hidden" name="skillId" value={skill.id} />
-                                  <div className="space-y-1">
-                                    <Label htmlFor={`unassigned-sa-${skill.id}`}>Skill Advisor</Label>
-                                    <select
-                                      id={`unassigned-sa-${skill.id}`}
-                                      name="saId"
-                                      defaultValue=""
-                                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                      required
-                                    >
-                                      <option value="" disabled>
-                                        Select Skill Advisor
-                                      </option>
-                                      {advisorOptions.map((advisor) => (
-                                        <option key={advisor.id} value={advisor.id}>
-                                          {advisor.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <Label htmlFor={`unassigned-scm-${skill.id}`}>Skill Competition Manager</Label>
-                                    <select
-                                      id={`unassigned-scm-${skill.id}`}
-                                      name="scmId"
-                                      defaultValue={skill.scmId ?? ""}
-                                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                    >
-                                      <option value="">Unassigned</option>
-                                      {managerOptions.map((manager) => (
-                                        <option key={manager.id} value={manager.id}>
-                                          {manager.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <Button type="submit" size="sm">
-                                      Save changes
-                                    </Button>
-                                    <Button asChild size="sm" variant="outline">
-                                      <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                                    </Button>
-                                  </div>
-                                </form>
+                                <SkillAssignmentForm
+                                  skillId={skill.id}
+                                  defaultSaId={skill.saId ?? null}
+                                  defaultScmId={skill.scmId ?? null}
+                                  advisorOptions={advisorOptions}
+                                  managerOptions={managerOptions}
+                                  workspaceHref={`/skills/${skill.id}`}
+                                  isUnassigned
+                                />
                               ) : (
                                 <div className="flex justify-end">
                                   <Button asChild size="sm" variant="outline">

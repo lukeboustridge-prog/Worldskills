@@ -1,8 +1,13 @@
-import { type AppSettings, type Gate, type GateTemplate } from "@prisma/client";
+import {
+  type AppSettings,
+  type Gate,
+  GateScheduleType,
+  type GateTemplate
+} from "@prisma/client";
 
 import { logActivity } from "@/lib/activity";
 import { prisma } from "@/lib/prisma";
-import { computeDueDate } from "@/lib/deliverables";
+import { buildCMonthLabel, computeDueDate } from "@/lib/deliverables";
 import { hasGateTemplateCatalogSupport } from "@/lib/schema-info";
 
 export interface GateTemplateDefinition {
@@ -106,16 +111,20 @@ export async function ensureStandardGatesForSkill(params: {
     }
 
     const created = await prisma.$transaction(
-      toCreate.map((template) =>
-        prisma.gate.create({
+      toCreate.map((template) => {
+        const dueDate = computeDueDate(settings.competitionStart, template.offsetMonths);
+        return prisma.gate.create({
           data: {
             skillId,
             name: template.name,
-            dueDate: computeDueDate(settings.competitionStart, template.offsetMonths),
-            templateKey: template.key
+            dueDate,
+            templateKey: template.key,
+            scheduleType: GateScheduleType.CMonth,
+            cMonthOffset: template.offsetMonths,
+            cMonthLabel: buildCMonthLabel(template.offsetMonths)
           }
-        })
-      )
+        });
+      })
     );
 
     await logActivity({
@@ -147,14 +156,17 @@ export async function ensureStandardGatesForSkill(params: {
 
   const created = await prisma.$transaction(
     toCreate.map((template) =>
-      prisma.gate.create({
-        data: {
-          skillId,
-          name: template.name,
-          dueDate: computeDueDate(settings.competitionStart, template.offsetMonths)
-        }
-      })
-    )
+        prisma.gate.create({
+          data: {
+            skillId,
+            name: template.name,
+            dueDate: computeDueDate(settings.competitionStart, template.offsetMonths),
+            scheduleType: GateScheduleType.CMonth,
+            cMonthOffset: template.offsetMonths,
+            cMonthLabel: buildCMonthLabel(template.offsetMonths)
+          }
+        })
+      )
   );
 
   await logActivity({
