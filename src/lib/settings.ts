@@ -20,7 +20,7 @@ export async function upsertAppSettings(data: {
   competitionName: string;
   competitionStart: Date;
   competitionEnd: Date;
-  keyDates: Prisma.JsonValue;
+  keyDates: Prisma.InputJsonValue;
 }) {
   return prisma.appSettings.upsert({
     where: { id: SETTINGS_ID },

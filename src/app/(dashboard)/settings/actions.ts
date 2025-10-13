@@ -43,11 +43,11 @@ export async function saveCompetitionSettingsAction(formData: FormData) {
     throw new Error("Competition end date must be after the start date.");
   }
 
-  let keyDatesJson: Prisma.JsonValue = {};
+  let keyDatesJson: Prisma.InputJsonValue = {};
   if (parsed.keyDates && parsed.keyDates.trim().length > 0) {
     try {
       const parsedJson = JSON.parse(parsed.keyDates);
-      if (!isJsonValue(parsedJson)) {
+      if (!isInputJsonValue(parsedJson)) {
         throw new Error();
       }
       keyDatesJson = parsedJson;
@@ -86,7 +86,7 @@ export async function saveCompetitionSettingsAction(formData: FormData) {
   redirect(`/settings?${params.toString()}`);
 }
 
-function isJsonValue(value: unknown): value is Prisma.JsonValue {
+function isInputJsonValue(value: unknown): value is Prisma.InputJsonValue {
   if (
     value === null ||
     typeof value === "string" ||
@@ -97,11 +97,13 @@ function isJsonValue(value: unknown): value is Prisma.JsonValue {
   }
 
   if (Array.isArray(value)) {
-    return value.every((item) => isJsonValue(item));
+    return value.every((item) => isInputJsonValue(item));
   }
 
   if (typeof value === "object") {
-    return Object.values(value as Record<string, unknown>).every((item) => isJsonValue(item));
+    return Object.values(value as Record<string, unknown>).every((item) =>
+      isInputJsonValue(item)
+    );
   }
 
   return false;
