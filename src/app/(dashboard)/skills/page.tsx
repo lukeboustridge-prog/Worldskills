@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAppSettings } from "@/lib/settings";
 import { getUserDisplayName } from "@/lib/users";
 import { createSkillAction, deleteSkillAction, updateSkillAction } from "./actions";
 import { SkillCatalogField } from "./skill-catalog-field";
@@ -27,7 +28,8 @@ export default async function SkillsPage() {
     redirect("/dashboard");
   }
 
-  const [skills, advisors, managers] = await Promise.all([
+  const [settings, skills, advisors, managers] = await Promise.all([
+    getAppSettings(),
     prisma.skill.findMany({
       include: {
         sa: true,
@@ -39,6 +41,8 @@ export default async function SkillsPage() {
     prisma.user.findMany({ where: { role: Role.SCM }, orderBy: { name: "asc" } })
   ]);
 
+  const canCreateSkill = Boolean(settings);
+
   return (
     <div className="space-y-8">
       <Card>
@@ -47,53 +51,69 @@ export default async function SkillsPage() {
           <CardDescription>Assign the SA and SCM responsible for the skill.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={createSkillAction} className="grid gap-4 md:grid-cols-2">
-            <SkillCatalogField />
-            <div className="space-y-2">
-              <Label htmlFor="saId">Skill Advisor</Label>
-              <select
-                id="saId"
-                name="saId"
-                defaultValue=""
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                required
-              >
-                <option value="" disabled>
-                  Select Skill Advisor
-                </option>
-                {advisors.map((advisor) => (
-                  <option key={advisor.id} value={advisor.id}>
-                    {getUserDisplayName(advisor)}
+          {canCreateSkill ? (
+            <form action={createSkillAction} className="grid gap-4 md:grid-cols-2">
+              <SkillCatalogField />
+              <div className="space-y-2">
+                <Label htmlFor="saId">Skill Advisor</Label>
+                <select
+                  id="saId"
+                  name="saId"
+                  defaultValue=""
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  required
+                >
+                  <option value="" disabled>
+                    Select Skill Advisor
                   </option>
-                ))}
-              </select>
+                  {advisors.map((advisor) => (
+                    <option key={advisor.id} value={advisor.id}>
+                      {getUserDisplayName(advisor)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="scmId">Skill Competition Manager</Label>
+                <select
+                  id="scmId"
+                  name="scmId"
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  defaultValue=""
+                >
+                  <option value="">Unassigned</option>
+                  {managers.map((manager) => (
+                    <option key={manager.id} value={manager.id}>
+                      {getUserDisplayName(manager)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea id="notes" name="notes" placeholder="Key competition preparation notes" rows={4} />
+              </div>
+              <div className="md:col-span-2">
+                <Button type="submit">Create skill</Button>
+              </div>
+            </form>
+          ) : (
+            <div className="space-y-4 text-sm">
+              <p className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-destructive">
+                Competition settings are not configured yet. An admin must set the competition start date before new skills can
+                be created and scheduled.
+              </p>
+              {user.role === Role.Admin ? (
+                <Button asChild variant="outline">
+                  <Link href="/settings">Open competition settings</Link>
+                </Button>
+              ) : (
+                <p className="text-muted-foreground">
+                  Please contact an administrator to configure the competition start date.
+                </p>
+              )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="scmId">Skill Competition Manager</Label>
-              <select
-                id="scmId"
-                name="scmId"
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                defaultValue=""
-              >
-                <option value="">
-                  Unassigned
-                </option>
-                {managers.map((manager) => (
-                  <option key={manager.id} value={manager.id}>
-                    {getUserDisplayName(manager)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea id="notes" name="notes" placeholder="Key competition preparation notes" rows={4} />
-            </div>
-            <div className="md:col-span-2">
-              <Button type="submit">Create skill</Button>
-            </div>
-          </form>
+          )}
         </CardContent>
       </Card>
 

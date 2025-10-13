@@ -16,7 +16,11 @@ const skillByName = new Map<string, SkillCatalogEntry>(
   SKILL_CATALOG.map((skill) => [skill.name, skill])
 );
 
-export function SkillCatalogField() {
+interface SkillCatalogFieldProps {
+  disabled?: boolean;
+}
+
+export function SkillCatalogField({ disabled = false }: SkillCatalogFieldProps) {
   const [selectedName, setSelectedName] = useState("");
   const selectedSkill = selectedName ? skillByName.get(selectedName) ?? null : null;
 
@@ -30,6 +34,7 @@ export function SkillCatalogField() {
           required
           value={selectedName}
           onChange={(event) => setSelectedName(event.target.value)}
+          disabled={disabled}
           className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="" disabled>
@@ -48,6 +53,7 @@ export function SkillCatalogField() {
           id="skill-sector"
           value={selectedSkill?.sector ?? ""}
           readOnly
+          disabled={disabled}
           placeholder="Select a skill to see its sector"
         />
         <input type="hidden" name="skillSector" value={selectedSkill?.sector ?? ""} />
