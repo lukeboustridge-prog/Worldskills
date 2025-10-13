@@ -78,16 +78,18 @@ export default function RegisterPage() {
           return;
         }
 
-        setInvitation(data.invitation);
-        const roleLabel = ROLE_LABELS[data.invitation.role] ?? data.invitation.role;
+        const invitationDetails = data.invitation;
+
+        setInvitation(invitationDetails);
+        const roleLabel = ROLE_LABELS[invitationDetails.role] ?? invitationDetails.role;
         setInviteInfo(
           `Invitation confirmed. You'll join as ${
-            data.invitation.isAdmin ? "an administrator" : roleLabel
+            invitationDetails.isAdmin ? "an administrator" : roleLabel
           }.`
         );
         setMessage(null);
-        setName((current) => (current.trim().length > 0 ? current : data.invitation.name ?? ""));
-        setEmail(data.invitation.email);
+        setName((current) => (current.trim().length > 0 ? current : invitationDetails.name ?? ""));
+        setEmail(invitationDetails.email);
       })
       .catch(() => {
         setInvitation(null);
