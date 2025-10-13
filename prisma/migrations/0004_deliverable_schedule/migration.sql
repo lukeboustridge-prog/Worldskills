@@ -1,34 +1,42 @@
 -- Add Admin role
 ALTER TYPE "Role" ADD VALUE IF NOT EXISTS 'Admin';
 
--- Create new deliverable key enum
-CREATE TYPE "DeliverableKey" AS ENUM (
-  'ITPDIdentified',
-  'ITPDAgreementKickoff',
-  'WSOSAlignmentPlanning',
-  'TestProjectDraftV1',
-  'ILConfirmationCPW',
-  'MarkingSchemeDraftWSOS',
-  'PrototypeFeasibilityReview',
-  'ITPVQuestionnaireCompleted',
-  'FinalTPMSPackage',
-  'ValidationDocumentUploads',
-  'SAGFinalReadyMAT',
-  'PreCompetitionReadinessReview'
-);
+-- Create new deliverable key enum if missing
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_type WHERE typname = 'DeliverableKey'
+  ) THEN
+    CREATE TYPE "DeliverableKey" AS ENUM (
+      'ITPDIdentified',
+      'ITPDAgreementKickoff',
+      'WSOSAlignmentPlanning',
+      'TestProjectDraftV1',
+      'ILConfirmationCPW',
+      'MarkingSchemeDraftWSOS',
+      'PrototypeFeasibilityReview',
+      'ITPVQuestionnaireCompleted',
+      'FinalTPMSPackage',
+      'ValidationDocumentUploads',
+      'SAGFinalReadyMAT',
+      'PreCompetitionReadinessReview'
+    );
+  END IF;
+END
+$$;
 
 -- Extend skills with sector metadata
-ALTER TABLE "Skill" ADD COLUMN "sector" TEXT;
+ALTER TABLE "Skill" ADD COLUMN IF NOT EXISTS "sector" TEXT;
 
 -- Extend deliverables with scheduling metadata
 ALTER TABLE "Deliverable"
-  ADD COLUMN "key" "DeliverableKey" DEFAULT 'ITPDIdentified',
-  ADD COLUMN "label" TEXT DEFAULT 'Legacy deliverable',
-  ADD COLUMN "cMonthOffset" INTEGER DEFAULT 0,
-  ADD COLUMN "dueDate" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
-  ADD COLUMN "cMonthLabel" TEXT DEFAULT 'C-0 Month',
-  ADD COLUMN "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  ADD COLUMN "overdueNotifiedAt" TIMESTAMP(3);
+  ADD COLUMN IF NOT EXISTS "key" "DeliverableKey" DEFAULT 'ITPDIdentified',
+  ADD COLUMN IF NOT EXISTS "label" TEXT DEFAULT 'Legacy deliverable',
+  ADD COLUMN IF NOT EXISTS "cMonthOffset" INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS "dueDate" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS "cMonthLabel" TEXT DEFAULT 'C-0 Month',
+  ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS "overdueNotifiedAt" TIMESTAMP(3);
 
 UPDATE "Deliverable"
 SET
@@ -90,13 +98,23 @@ ALTER TABLE "Deliverable"
   ALTER COLUMN "dueDate" DROP DEFAULT,
   ALTER COLUMN "cMonthLabel" DROP DEFAULT;
 
-ALTER TABLE "Deliverable" DROP COLUMN "type";
+ALTER TABLE "Deliverable" DROP COLUMN IF EXISTS "type";
 DROP TYPE IF EXISTS "DeliverableType";
+
+-- Remove any duplicate deliverables that would violate the unique constraint
+WITH ranked AS (
+  SELECT "id",
+         ROW_NUMBER() OVER (PARTITION BY "skillId", "key" ORDER BY "createdAt", "id") AS rn
+  FROM "Deliverable"
+  WHERE "key" IS NOT NULL
+)
+DELETE FROM "Deliverable"
+WHERE "id" IN (SELECT "id" FROM ranked WHERE rn > 1);
 
 CREATE UNIQUE INDEX IF NOT EXISTS "Deliverable_skillId_key_key" ON "Deliverable"("skillId", "key");
 
 -- Create application settings singleton table
-CREATE TABLE "AppSettings" (
+CREATE TABLE IF NOT EXISTS "AppSettings" (
   "id" INTEGER PRIMARY KEY DEFAULT 1,
   "competitionName" TEXT NOT NULL,
   "competitionStart" TIMESTAMP(3) NOT NULL,
