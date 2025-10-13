@@ -30,7 +30,7 @@ ALTER TABLE "Skill" ADD COLUMN IF NOT EXISTS "sector" TEXT;
 
 -- Extend deliverables with scheduling metadata
 ALTER TABLE "Deliverable"
-  ADD COLUMN IF NOT EXISTS "key" "DeliverableKey" DEFAULT 'ITPDIdentified',
+  ADD COLUMN IF NOT EXISTS "key" "DeliverableKey" DEFAULT 'ITPDIdentified'::"DeliverableKey",
   ADD COLUMN IF NOT EXISTS "label" TEXT DEFAULT 'Legacy deliverable',
   ADD COLUMN IF NOT EXISTS "cMonthOffset" INTEGER DEFAULT 0,
   ADD COLUMN IF NOT EXISTS "dueDate" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
@@ -41,13 +41,13 @@ ALTER TABLE "Deliverable"
 UPDATE "Deliverable"
 SET
   "key" = CASE "type"
-    WHEN 'SAG' THEN 'SAGFinalReadyMAT'
-    WHEN 'TestProject' THEN 'TestProjectDraftV1'
-    WHEN 'MarkingScheme' THEN 'MarkingSchemeDraftWSOS'
-    WHEN 'Validation' THEN 'ValidationDocumentUploads'
-    WHEN 'MAT' THEN 'FinalTPMSPackage'
-    WHEN 'CISUpload' THEN 'PreCompetitionReadinessReview'
-    ELSE 'ITPDIdentified'
+    WHEN 'SAG' THEN 'SAGFinalReadyMAT'::"DeliverableKey"
+    WHEN 'TestProject' THEN 'TestProjectDraftV1'::"DeliverableKey"
+    WHEN 'MarkingScheme' THEN 'MarkingSchemeDraftWSOS'::"DeliverableKey"
+    WHEN 'Validation' THEN 'ValidationDocumentUploads'::"DeliverableKey"
+    WHEN 'MAT' THEN 'FinalTPMSPackage'::"DeliverableKey"
+    WHEN 'CISUpload' THEN 'PreCompetitionReadinessReview'::"DeliverableKey"
+    ELSE 'ITPDIdentified'::"DeliverableKey"
   END,
   "label" = CASE "type"
     WHEN 'SAG' THEN 'SAG Final Ready for MAT'
