@@ -1,3 +1,4 @@
+import { Role } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -5,11 +6,6 @@ import { SignOutButton } from "@/components/layout/sign-out-button";
 import { NavLink } from "@/components/layout/nav-link";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserDisplayName } from "@/lib/users";
-
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/skills", label: "Skills" }
-];
 
 export default async function DashboardLayout({
   children
@@ -22,7 +18,13 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const navItems = [...NAV_ITEMS];
+  const navItems: { href: string; label: string }[] = [];
+  if (user.isAdmin || user.role === Role.SA || user.role === Role.Secretariat) {
+    navItems.push({ href: "/dashboard", label: "Dashboard" });
+  }
+
+  navItems.push({ href: "/skills", label: "Skills" });
+
   if (user.isAdmin) {
     navItems.push({ href: "/settings", label: "Settings" });
   }

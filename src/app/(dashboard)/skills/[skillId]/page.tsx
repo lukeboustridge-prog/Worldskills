@@ -60,12 +60,14 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
 
   const permittedUserIds = new Set([skill.saId, skill.scmId].filter(Boolean) as string[]);
   const isAdmin = user.isAdmin;
+  const isSecretariat = user.role === Role.Secretariat;
 
-  if (!isAdmin && !permittedUserIds.has(user.id)) {
+  if (!isAdmin && !isSecretariat && !permittedUserIds.has(user.id)) {
     redirect("/dashboard");
   }
 
   const isAdvisor = user.isAdmin || (user.role === Role.SA && skill.saId === user.id);
+  const canPostMessage = isAdmin || user.id === skill.saId || user.id === skill.scmId;
   const advisorLabel = getUserDisplayName(skill.sa);
   const managerLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
 
@@ -260,16 +262,22 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
               <CardDescription>Use this thread to keep each other informed.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <form action={createMessageAction} className="space-y-3">
-                <input type="hidden" name="skillId" value={skill.id} />
-                <Textarea
-                  name="body"
-                  placeholder="Share an update with your counterpart"
-                  rows={4}
-                  required
-                />
-                <Button type="submit">Send message</Button>
-              </form>
+              {canPostMessage ? (
+                <form action={createMessageAction} className="space-y-3">
+                  <input type="hidden" name="skillId" value={skill.id} />
+                  <Textarea
+                    name="body"
+                    placeholder="Share an update with your counterpart"
+                    rows={4}
+                    required
+                  />
+                  <Button type="submit">Send message</Button>
+                </form>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Secretariat viewers can read the latest messages for awareness.
+                </p>
+              )}
               <div className="space-y-4">
                 {skill.messages.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No messages yet.</p>

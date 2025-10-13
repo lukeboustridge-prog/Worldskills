@@ -1,5 +1,6 @@
 import { Role } from "@prisma/client";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { differenceInCalendarDays, differenceInMinutes, format } from "date-fns";
 
 import { Badge } from "@/components/ui/badge";
@@ -59,16 +60,37 @@ function formatDurationFromMinutes(minutes: number) {
   return parts.slice(0, 2).join(" ");
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams
+}: {
+  searchParams?: { scope?: string };
+}) {
   const user = await getCurrentUser();
   if (!user) {
-    return null;
+    redirect("/login");
   }
 
-  const isAdvisor = user.role === Role.SA || user.isAdmin;
+  const canAccessDashboard =
+    user.isAdmin || user.role === Role.SA || user.role === Role.Secretariat;
+  if (!canAccessDashboard) {
+    const fallbackSkill = await prisma.skill.findFirst({
+      where: { scmId: user.id },
+      select: { id: true }
+    });
+
+    if (fallbackSkill) {
+      redirect(`/skills/${fallbackSkill.id}`);
+    }
+
+    redirect("/skills");
+  }
+
+  const canFilterToMine = user.isAdmin || user.role === Role.SA;
+  const requestedScope = searchParams?.scope === "mine" ? "mine" : "all";
+  const scope = canFilterToMine && requestedScope === "mine" ? "mine" : "all";
 
   const skills = await prisma.skill.findMany({
-    where: isAdvisor ? (user.isAdmin ? {} : { saId: user.id }) : { scmId: user.id },
+    where: scope === "mine" ? { saId: user.id } : {},
     include: {
       deliverables: true,
       scm: true,
@@ -82,7 +104,11 @@ export default async function DashboardPage() {
     deliverables: skill.deliverables.map((deliverable) => decorateDeliverable(deliverable))
   }));
 
-  if (isAdvisor) {
+  const canManageSkills = user.isAdmin || user.role === Role.SA;
+  const canViewSkillsList = user.isAdmin || user.role === Role.SA || user.role === Role.Secretariat;
+  const skillsButtonLabel = user.role === Role.Secretariat && !user.isAdmin ? "View skills" : "Manage skills";
+
+  if (canManageSkills) {
     await Promise.all(
       decoratedSkills.map((skill) =>
         ensureOverdueNotifications({
@@ -313,11 +339,35 @@ export default async function DashboardPage() {
             Portfolio metrics for your WorldSkills responsibilities with clear overdue and upcoming work.
           </p>
         </div>
-        {isAdvisor ? (
-          <Button asChild>
-            <Link href="/skills">Manage skills</Link>
-          </Button>
-        ) : null}
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+          <div className="inline-flex items-center gap-1 rounded-md border bg-background p-1">
+            <Button
+              variant={scope === "all" ? "default" : "ghost"}
+              size="sm"
+              asChild
+            >
+              <Link href="/dashboard">All skills</Link>
+            </Button>
+            {canFilterToMine ? (
+              <Button
+                variant={scope === "mine" ? "default" : "ghost"}
+                size="sm"
+                asChild
+              >
+                <Link href="/dashboard?scope=mine">My skills</Link>
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm" disabled>
+                My skills
+              </Button>
+            )}
+          </div>
+          {canViewSkillsList ? (
+            <Button asChild variant="outline">
+              <Link href="/skills">{skillsButtonLabel}</Link>
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

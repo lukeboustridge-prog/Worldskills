@@ -21,6 +21,12 @@ import {
 import { prisma } from "@/lib/prisma";
 import { getUserDisplayName } from "@/lib/users";
 
+const ROLE_LABELS: Record<Role, string> = {
+  [Role.SA]: "Skill Advisor",
+  [Role.SCM]: "Skill Competition Manager",
+  [Role.Secretariat]: "Secretariat"
+};
+
 function formatDateInput(value: Date | null | undefined) {
   if (!value) return "";
   return format(value, "yyyy-MM-dd");
@@ -317,7 +323,7 @@ export default async function SettingsPage({
                       >
                         {Object.values(Role).map((role) => (
                           <option key={role} value={role}>
-                            {role === Role.SA ? "Skill Advisor" : "Skill Competition Manager"}
+                            {ROLE_LABELS[role]}
                           </option>
                         ))}
                       </select>
@@ -337,7 +343,7 @@ export default async function SettingsPage({
                     <div className="space-y-2">
                       <Label>Current status</Label>
                       <div className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
-                        {record.isAdmin ? "Admin · Skill Advisor" : record.role === Role.SA ? "Skill Advisor" : "Skill Competition Manager"}
+                        {record.isAdmin ? "Admin · Skill Advisor" : ROLE_LABELS[record.role]}
                       </div>
                     </div>
                     <div className="flex items-end">
