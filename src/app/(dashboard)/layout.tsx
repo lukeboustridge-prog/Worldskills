@@ -22,6 +22,11 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  const navItems = [...NAV_ITEMS];
+  if (user.role === "Admin") {
+    navItems.push({ href: "/settings", label: "Settings" });
+  }
+
   return (
     <div className="min-h-screen bg-muted/30">
       <header className="border-b bg-background">
@@ -40,7 +45,7 @@ export default async function DashboardLayout({
       </header>
       <div className="mx-auto flex max-w-6xl gap-8 px-6 py-8">
         <aside className="w-56 space-y-2">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <NavLink key={item.href} href={item.href} label={item.label} />
           ))}
         </aside>

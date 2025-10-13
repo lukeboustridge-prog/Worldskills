@@ -1,4 +1,4 @@
-import { DeliverableState, DeliverableType, GateStatus, Role } from "@prisma/client";
+import { DeliverableState, GateStatus, Role } from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
 import { format } from "date-fns";
 
@@ -12,21 +12,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatDeliverableState, formatDeliverableType } from "@/lib/utils";
+import { formatDeliverableState } from "@/lib/utils";
 import { getUserDisplayName } from "@/lib/users";
 import {
-  appendEvidenceAction,
-  createDeliverableAction,
   createGateAction,
   createMessageAction,
-  deleteDeliverableAction,
   deleteGateAction,
-  updateDeliverableStateAction,
   updateGateStatusAction
 } from "./actions";
+import { DeliverablesTable, type DeliverableRow } from "./deliverables-table";
+import {
+  DUE_SOON_THRESHOLD_DAYS,
+  classifyDeliverables,
+  decorateDeliverable,
+  ensureOverdueNotifications
+} from "@/lib/deliverables";
 
-const deliverableTypes = Object.values(DeliverableType);
-const deliverableStates = Object.values(DeliverableState);
 const gateStatuses = Object.values(GateStatus);
 
 export default async function SkillDetailPage({ params }: { params: { skillId: string } }) {
@@ -40,7 +41,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     include: {
       sa: true,
       scm: true,
-      deliverables: { orderBy: { updatedAt: "desc" } },
+      deliverables: { orderBy: { dueDate: "asc" } },
       gates: { orderBy: { dueDate: "asc" } },
       messages: {
         include: { author: true },
@@ -57,9 +58,10 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     notFound();
   }
 
-  const permittedUserIds = [skill.saId, skill.scmId].filter(Boolean) as string[];
+  const permittedUserIds = new Set([skill.saId, skill.scmId].filter(Boolean) as string[]);
+  const isAdmin = user.role === Role.Admin;
 
-  if (!permittedUserIds.includes(user.id)) {
+  if (!isAdmin && !permittedUserIds.has(user.id)) {
     redirect("/dashboard");
   }
 
@@ -67,15 +69,29 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
   const advisorLabel = getUserDisplayName(skill.sa);
   const managerLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
 
-  const completedStates: DeliverableState[] = [
-    DeliverableState.Finalised,
-    DeliverableState.Uploaded,
-    DeliverableState.Validated
-  ];
+  const decoratedDeliverables = skill.deliverables.map((deliverable) => decorateDeliverable(deliverable));
+  await ensureOverdueNotifications({
+    skillId: skill.id,
+    deliverables: decoratedDeliverables,
+    saId: skill.saId
+  });
 
-  const completedDeliverables = skill.deliverables.filter((deliverable) =>
-    completedStates.includes(deliverable.state)
-  ).length;
+  const summary = classifyDeliverables(decoratedDeliverables);
+  const completedDeliverablesCount =
+    (summary.stateCounts[DeliverableState.Finalised] ?? 0) +
+    (summary.stateCounts[DeliverableState.Uploaded] ?? 0) +
+    (summary.stateCounts[DeliverableState.Validated] ?? 0);
+
+  const deliverablesForClient: DeliverableRow[] = decoratedDeliverables.map((deliverable) => ({
+    id: deliverable.id,
+    label: deliverable.label,
+    cMonthLabel: deliverable.cMonthLabel,
+    dueDateISO: deliverable.dueDate.toISOString(),
+    state: deliverable.state,
+    evidenceLinks: deliverable.evidenceLinks,
+    isOverdue: deliverable.isOverdue,
+    overdueByDays: deliverable.overdueByDays
+  }));
 
   return (
     <div className="space-y-6">
@@ -83,19 +99,26 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
         <div>
           <h1 className="text-3xl font-semibold">{skill.name}</h1>
           <p className="text-muted-foreground">SA: {advisorLabel} · SCM: {managerLabel}</p>
+          <p className="text-sm text-muted-foreground">Sector: {skill.sector ?? "Not recorded"}</p>
           <p className="text-sm text-muted-foreground">{skill.notes ?? "No notes added yet."}</p>
         </div>
         <div className="flex gap-3">
           <Card className="min-w-[160px]">
             <CardHeader className="p-4 pb-0">
               <CardDescription>Deliverables complete</CardDescription>
-              <CardTitle>{completedDeliverables}</CardTitle>
+              <CardTitle>{completedDeliverablesCount}</CardTitle>
             </CardHeader>
           </Card>
           <Card className="min-w-[160px]">
             <CardHeader className="p-4 pb-0">
               <CardDescription>Total deliverables</CardDescription>
-              <CardTitle>{skill.deliverables.length}</CardTitle>
+              <CardTitle>{decoratedDeliverables.length}</CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="min-w-[160px]">
+            <CardHeader className="p-4 pb-0">
+              <CardDescription>Overdue deliverables</CardDescription>
+              <CardTitle className={summary.overdue > 0 ? "text-red-600" : ""}>{summary.overdue}</CardTitle>
             </CardHeader>
           </Card>
         </div>
@@ -110,151 +133,30 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
         </TabsList>
 
         <TabsContent value="deliverables" className="space-y-6">
-          {isAdvisor ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Add a deliverable</CardTitle>
-                <CardDescription>
-                  Select the deliverable type and optionally provide initial evidence for context.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form action={createDeliverableAction} className="grid gap-4 md:grid-cols-2">
-                  <input type="hidden" name="skillId" value={skill.id} />
-                  <div className="space-y-2">
-                    <Label htmlFor="type">Deliverable type</Label>
-                    <select
-                      id="type"
-                      name="type"
-                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                    >
-                      {deliverableTypes.map((type) => (
-                        <option key={type} value={type}>
-                          {formatDeliverableType(type)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="evidence">Initial evidence link (optional)</Label>
-                    <Input
-                      id="evidence"
-                      name="evidence"
-                      placeholder="https://..."
-                      type="url"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Button type="submit">Create deliverable</Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          ) : null}
-
           <Card>
             <CardHeader>
               <CardTitle>Deliverables</CardTitle>
               <CardDescription>
-                Track the status of key competition artefacts and attach supporting evidence.
+                Track the status of key competition artefacts and attach supporting evidence. Due dates are derived from the
+                competition start date (C1) and cannot be edited manually.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {skill.deliverables.length === 0 ? (
+            <CardContent>
+              {decoratedDeliverables.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No deliverables recorded yet.</p>
               ) : (
-                skill.deliverables.map((deliverable) => {
-                  const updatedByLabel =
-                    deliverable.updatedBy === skill.saId
-                      ? advisorLabel
-                      : skill.scmId && deliverable.updatedBy === skill.scmId
-                      ? managerLabel
-                      : deliverable.updatedBy ?? "N/A";
-                  return (
-                  <div key={deliverable.id} className="rounded-md border p-4">
-                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                      <div>
-                        <h3 className="text-lg font-medium">{formatDeliverableType(deliverable.type)}</h3>
-                        <p className="text-xs text-muted-foreground">
-                          Last updated {format(deliverable.updatedAt, "dd MMM yyyy HH:mm")} by {updatedByLabel}
-                        </p>
-                      </div>
-                      <Badge variant="outline">{formatDeliverableState(deliverable.state)}</Badge>
-                    </div>
-
-                    {deliverable.evidenceLinks.length ? (
-                      <ul className="mt-3 space-y-1 text-sm">
-                        {deliverable.evidenceLinks.map((link, index) => (
-                          <li key={index}>
-                            <a className="underline" href={link} target="_blank" rel="noreferrer">
-                              Evidence #{index + 1}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="mt-3 text-sm text-muted-foreground">No evidence links added yet.</p>
-                    )}
-
-                    <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
-                      {isAdvisor ? (
-                        <form action={updateDeliverableStateAction} className="flex items-center gap-2">
-                          <input type="hidden" name="skillId" value={skill.id} />
-                          <input type="hidden" name="deliverableId" value={deliverable.id} />
-                          <Label htmlFor={`state-${deliverable.id}`} className="text-xs uppercase text-muted-foreground">
-                            State
-                          </Label>
-                          <select
-                            id={`state-${deliverable.id}`}
-                            name="state"
-                            defaultValue={deliverable.state}
-                            className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-                          >
-                            {deliverableStates.map((state) => (
-                              <option key={state} value={state}>
-                                {formatDeliverableState(state)}
-                              </option>
-                            ))}
-                          </select>
-                          <Button type="submit" size="sm">
-                            Update
-                          </Button>
-                        </form>
-                      ) : null}
-
-                      <form action={appendEvidenceAction} className="flex flex-1 items-center gap-2">
-                        <input type="hidden" name="skillId" value={skill.id} />
-                        <input type="hidden" name="deliverableId" value={deliverable.id} />
-                        <Input
-                          type="url"
-                          name="evidence"
-                          placeholder="Add evidence URL"
-                          className="flex-1"
-                          required
-                        />
-                        <Button type="submit" variant="secondary">
-                          Add evidence
-                        </Button>
-                      </form>
-
-                      {isAdvisor ? (
-                        <form action={deleteDeliverableAction}>
-                          <input type="hidden" name="skillId" value={skill.id} />
-                          <input type="hidden" name="deliverableId" value={deliverable.id} />
-                          <Button type="submit" variant="destructive" size="sm">
-                            Delete
-                          </Button>
-                        </form>
-                      ) : null}
-                    </div>
-                  </div>
-                  );
-                })
+                <DeliverablesTable
+                  deliverables={deliverablesForClient}
+                  skillId={skill.id}
+                  isAdvisor={isAdvisor}
+                  overdueCount={summary.overdue}
+                  stateCounts={summary.stateCounts}
+                  dueSoonThresholdDays={DUE_SOON_THRESHOLD_DAYS}
+                />
               )}
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="gates" className="space-y-6">
           {isAdvisor ? (
             <Card>

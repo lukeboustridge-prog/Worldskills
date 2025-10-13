@@ -2,6 +2,7 @@ import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 import { SKILL_CATALOG } from "../src/lib/skill-catalog";
+import { STANDARD_DELIVERABLES, buildCMonthLabel, computeDueDate } from "../src/lib/deliverables";
 
 const prisma = new PrismaClient();
 const defaultHostEmail = "luke.boustridge@gmail.com";
@@ -54,7 +55,7 @@ async function main() {
     hostUser = await prisma.user.update({
       where: { id: hostUser.id },
       data: {
-        role: Role.SA,
+        role: Role.Admin,
         name: hostDisplayName,
         ...(needsPassword ? { passwordHash: hostPasswordHash } : {})
       }
@@ -64,7 +65,7 @@ async function main() {
       data: {
         email: normalizedHostEmail,
         name: hostDisplayName,
-        role: Role.SA,
+        role: Role.Admin,
         passwordHash: hostPasswordHash
       }
     });
@@ -127,14 +128,33 @@ async function main() {
     }
   }
 
-  const skillSeeds = SKILL_CATALOG;
+  const competitionStart = new Date(process.env.SEED_COMPETITION_START ?? "2026-09-01");
+  const competitionEnd = new Date(process.env.SEED_COMPETITION_END ?? "2026-09-10");
 
+  await prisma.appSettings.upsert({
+    where: { id: 1 },
+    create: {
+      id: 1,
+      competitionName: "WorldSkills Competition 2026",
+      competitionStart,
+      competitionEnd,
+      keyDates: {}
+    },
+    update: {
+      competitionName: "WorldSkills Competition 2026",
+      competitionStart,
+      competitionEnd
+    }
+  });
+
+  const skillSeeds = SKILL_CATALOG;
 
   for (const skill of skillSeeds) {
     await prisma.skill.upsert({
       where: { id: skill.id },
       update: {
         name: skill.name,
+        sector: skill.sector,
         notes: `Skill Code ${skill.code} — ${skill.sector}`,
         saId: hostUser.id,
         scmId: scm.id
@@ -142,6 +162,7 @@ async function main() {
       create: {
         id: skill.id,
         name: skill.name,
+        sector: skill.sector,
         notes: `Skill Code ${skill.code} — ${skill.sector}`,
         saId: hostUser.id,
         scmId: scm.id
@@ -149,8 +170,42 @@ async function main() {
     });
   }
 
+  const appSettings = await prisma.appSettings.findUnique({ where: { id: 1 } });
+
+  if (!appSettings) {
+    throw new Error("App settings failed to initialize during seeding.");
+  }
+
+  const seededSkills = await prisma.skill.findMany({ select: { id: true } });
+  for (const skill of seededSkills) {
+    for (const definition of STANDARD_DELIVERABLES) {
+      await prisma.deliverable.upsert({
+        where: {
+          skillId_key: {
+            skillId: skill.id,
+            key: definition.key
+          }
+        },
+        update: {
+          label: definition.label,
+          cMonthOffset: definition.offsetMonths,
+          cMonthLabel: buildCMonthLabel(definition.offsetMonths),
+          dueDate: computeDueDate(appSettings.competitionStart, definition.offsetMonths)
+        },
+        create: {
+          skillId: skill.id,
+          key: definition.key,
+          label: definition.label,
+          cMonthOffset: definition.offsetMonths,
+          cMonthLabel: buildCMonthLabel(definition.offsetMonths),
+          dueDate: computeDueDate(appSettings.competitionStart, definition.offsetMonths)
+        }
+      });
+    }
+  }
+
   console.log(
-    `Seed data created. Host SA login: ${hostEmailEnv} (password: ${hostPassword}), SCM login: scm@example.com (password: ${scmPassword}). Seeded ${skillSeeds.length} skills for WSC 2026.`
+    `Seed data created. Host admin login: ${hostEmailEnv} (password: ${hostPassword}), SCM login: scm@example.com (password: ${scmPassword}). Seeded ${skillSeeds.length} skills for WSC 2026.`
   );
 }
 

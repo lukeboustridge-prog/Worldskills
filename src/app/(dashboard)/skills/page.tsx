@@ -19,7 +19,7 @@ export default async function SkillsPage() {
     redirect("/login");
   }
 
-  if (user.role !== Role.SA) {
+  if (user.role !== Role.SA && user.role !== Role.Admin) {
     const skill = await prisma.skill.findFirst({ where: { scmId: user.id } });
     if (skill) {
       redirect(`/skills/${skill.id}`);
@@ -107,10 +107,13 @@ export default async function SkillsPage() {
               <Card key={skill.id}>
                 <CardHeader>
                   <CardTitle>{skill.name}</CardTitle>
-                  <CardDescription>
-                    SA: {getUserDisplayName(skill.sa)} · SCM: {skill.scm
-                      ? getUserDisplayName(skill.scm)
-                      : "Unassigned"}
+                  <CardDescription className="space-y-1">
+                    <div>Sector: {skill.sector ?? "Not recorded"}</div>
+                    <div>
+                      SA: {getUserDisplayName(skill.sa)} · SCM: {skill.scm
+                        ? getUserDisplayName(skill.scm)
+                        : "Unassigned"}
+                    </div>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -119,6 +122,16 @@ export default async function SkillsPage() {
                     <div className="space-y-2">
                       <Label htmlFor={`name-${skill.id}`}>Name</Label>
                       <Input id={`name-${skill.id}`} name="name" defaultValue={skill.name} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`sector-${skill.id}`}>Sector</Label>
+                      <Input
+                        id={`sector-${skill.id}`}
+                        name="sector"
+                        defaultValue={skill.sector ?? ""}
+                        placeholder="Select a skill to populate the sector"
+                        readOnly
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`sa-${skill.id}`}>Skill Advisor</Label>

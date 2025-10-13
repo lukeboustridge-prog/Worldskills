@@ -149,6 +149,12 @@ prisma/
 - A tracked `public/` directory is available for static assets.
 - The included `vercel.json` enforces the `.next` build output so Vercel reuses the same pnpm 9.15 toolchain as local development on Node 22.
 
+## Deliverable scheduling
+
+- The Admin Settings screen manages the competition timeline. Every deliverable derives its due date from the single C1 start date using the cataloged C-Month offsets (for example, an item with a `C-6 Month` label is due exactly six calendar months before C1).
+- When C1 changes, the admin must confirm the recalculation—this re-derives every due date, clears any prior overdue notifications, and logs the change against each affected skill without touching evidence or state history.
+- A deliverable is marked overdue whenever the current date is after its due date and the state has not reached `Validated`. The UI and export include both the boolean `isOverdue` flag and the number of whole days late (`overdueByDays`) so advisors can prioritise risk.
+
 ## License
 
 This project is released under a proprietary “All rights reserved” license. See [LICENSE](./LICENSE) for details.

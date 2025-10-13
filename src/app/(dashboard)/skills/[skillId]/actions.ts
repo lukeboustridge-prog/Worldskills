@@ -1,6 +1,6 @@
 "use server";
 
-import { DeliverableState, DeliverableType, GateStatus, Role } from "@prisma/client";
+import { DeliverableState, GateStatus, Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -19,53 +19,6 @@ async function ensureSkill(skillId: string) {
 function revalidateSkill(skillId: string) {
   revalidatePath(`/skills/${skillId}`);
   revalidatePath("/dashboard");
-}
-
-const deliverableSchema = z.object({
-  skillId: z.string().min(1),
-  type: z.nativeEnum(DeliverableType),
-  evidence: z.string().url().optional().or(z.literal(""))
-});
-
-export async function createDeliverableAction(formData: FormData) {
-  const user = await requireUser();
-  assertSA(user.role as Role);
-
-  const parsed = deliverableSchema.safeParse({
-    skillId: formData.get("skillId"),
-    type: formData.get("type"),
-    evidence: formData.get("evidence") ?? undefined
-  });
-
-  if (!parsed.success) {
-    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
-  }
-
-  const skill = await ensureSkill(parsed.data.skillId);
-  if (skill.saId !== user.id) {
-    throw new Error("Only the assigned Skill Advisor can create deliverables");
-  }
-
-  const deliverable = await prisma.deliverable.create({
-    data: {
-      skillId: parsed.data.skillId,
-      type: parsed.data.type,
-      evidenceLinks: parsed.data.evidence ? [parsed.data.evidence] : undefined,
-      updatedBy: user.id
-    }
-  });
-
-  await logActivity({
-    skillId: parsed.data.skillId,
-    userId: user.id,
-    action: "DeliverableCreated",
-    payload: {
-      deliverableId: deliverable.id,
-      type: deliverable.type
-    }
-  });
-
-  revalidateSkill(parsed.data.skillId);
 }
 
 const deliverableStateSchema = z.object({
@@ -109,41 +62,6 @@ export async function updateDeliverableStateAction(formData: FormData) {
       deliverableId: updated.id,
       state: updated.state
     }
-  });
-
-  revalidateSkill(parsed.data.skillId);
-}
-
-const deleteDeliverableSchema = z.object({
-  deliverableId: z.string().min(1),
-  skillId: z.string().min(1)
-});
-
-export async function deleteDeliverableAction(formData: FormData) {
-  const user = await requireUser();
-  assertSA(user.role as Role);
-
-  const parsed = deleteDeliverableSchema.safeParse({
-    deliverableId: formData.get("deliverableId"),
-    skillId: formData.get("skillId")
-  });
-
-  if (!parsed.success) {
-    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
-  }
-
-  const skill = await ensureSkill(parsed.data.skillId);
-  if (skill.saId !== user.id) {
-    throw new Error("Only the assigned Skill Advisor can remove deliverables");
-  }
-
-  await prisma.deliverable.delete({ where: { id: parsed.data.deliverableId } });
-
-  await logActivity({
-    skillId: parsed.data.skillId,
-    userId: user.id,
-    action: "DeliverableDeleted",
-    payload: { deliverableId: parsed.data.deliverableId }
   });
 
   revalidateSkill(parsed.data.skillId);

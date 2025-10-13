@@ -8,17 +8,24 @@ datasource db {
 }
 
 enum Role {
+  Admin
   SA
   SCM
 }
 
-enum DeliverableType {
-  SAG
-  TestProject
-  MarkingScheme
-  Validation
-  MAT
-  CISUpload
+enum DeliverableKey {
+  ITPDIdentified
+  ITPDAgreementKickoff
+  WSOSAlignmentPlanning
+  TestProjectDraftV1
+  ILConfirmationCPW
+  MarkingSchemeDraftWSOS
+  PrototypeFeasibilityReview
+  ITPVQuestionnaireCompleted
+  FinalTPMSPackage
+  ValidationDocumentUploads
+  SAGFinalReadyMAT
+  PreCompetitionReadinessReview
 }
 
 enum DeliverableState {
@@ -54,6 +61,7 @@ model User {
 model Skill {
   id        String   @id @default(cuid())
   name      String
+  sector    String?
   notes     String?  @db.Text
   createdAt DateTime @default(now())
 
@@ -75,15 +83,22 @@ model Skill {
 model Deliverable {
   id            String            @id @default(cuid())
   skillId       String
-  type          DeliverableType
+  key           DeliverableKey
+  label         String
+  cMonthOffset  Int
+  dueDate       DateTime
+  cMonthLabel   String
   state         DeliverableState  @default(NotStarted)
   evidenceLinks String[]          @default([])
   updatedBy     String?
   updatedAt     DateTime          @updatedAt
+  createdAt     DateTime          @default(now())
+  overdueNotifiedAt DateTime?
 
   skill Skill @relation(fields: [skillId], references: [id])
 
   @@index([skillId])
+  @@unique([skillId, key])
 }
 
 model Gate {
@@ -127,6 +142,16 @@ model ActivityLog {
 
   @@index([skillId])
   @@index([userId])
+}
+
+model AppSettings {
+  id                Int      @id @default(1)
+  competitionName   String
+  competitionStart  DateTime
+  competitionEnd    DateTime
+  keyDates          Json     @default(JsonNull)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Account {

@@ -5,8 +5,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { logActivity } from "@/lib/activity";
-import { assertSA, requireUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ensureStandardDeliverablesForSkill } from "@/lib/deliverables";
+import { requireAppSettings } from "@/lib/settings";
 
 function normalizeOptionalId(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.length > 0 ? value : null;
@@ -18,6 +20,7 @@ function normalizeOptionalText(value: FormDataEntryValue | null) {
 
 const skillSchema = z.object({
   name: z.string().min(2, "Skill name must be at least 2 characters"),
+  sector: z.string().min(1, "Sector is required"),
   saId: z.string().min(1, "SA is required"),
   scmId: z.string().min(1).nullable().optional(),
   notes: z.string().optional()
@@ -25,12 +28,17 @@ const skillSchema = z.object({
 
 export async function createSkillAction(formData: FormData) {
   const user = await requireUser();
-  assertSA(user.role as Role);
+  if (user.role !== Role.SA && user.role !== Role.Admin) {
+    throw new Error("Only Skill Advisors or Admin can create skills");
+  }
+
+  const settings = await requireAppSettings();
 
   const saIdEntry = formData.get("saId");
 
   const parsed = skillSchema.safeParse({
     name: formData.get("name"),
+    sector: formData.get("skillSector"),
     saId: typeof saIdEntry === "string" && saIdEntry.length > 0 ? saIdEntry : user.id,
     scmId: normalizeOptionalId(formData.get("scmId")),
     notes: normalizeOptionalText(formData.get("notes"))
@@ -43,17 +51,29 @@ export async function createSkillAction(formData: FormData) {
   const skill = await prisma.skill.create({
     data: {
       name: parsed.data.name,
+      sector: parsed.data.sector,
       saId: parsed.data.saId,
       scmId: parsed.data.scmId ?? null,
       notes: parsed.data.notes ?? null
     }
   });
 
+  await ensureStandardDeliverablesForSkill({
+    skillId: skill.id,
+    settings,
+    actorId: user.id
+  });
+
   await logActivity({
     skillId: skill.id,
     userId: user.id,
     action: "SkillCreated",
-    payload: { name: skill.name, saId: skill.saId, scmId: skill.scmId ?? null }
+    payload: {
+      name: skill.name,
+      saId: skill.saId,
+      scmId: skill.scmId ?? null,
+      sector: skill.sector
+    }
   });
 
   revalidatePath("/dashboard");
@@ -63,6 +83,7 @@ export async function createSkillAction(formData: FormData) {
 const updateSkillSchema = z.object({
   skillId: z.string().min(1),
   name: z.string().min(2),
+  sector: z.string().min(1),
   saId: z.string().min(1),
   scmId: z.string().min(1).nullable(),
   notes: z.string().optional()
@@ -70,11 +91,14 @@ const updateSkillSchema = z.object({
 
 export async function updateSkillAction(formData: FormData) {
   const user = await requireUser();
-  assertSA(user.role as Role);
+  if (user.role !== Role.SA && user.role !== Role.Admin) {
+    throw new Error("Only Skill Advisors or Admin can update skills");
+  }
 
   const parsed = updateSkillSchema.safeParse({
     skillId: formData.get("skillId"),
     name: formData.get("name"),
+    sector: formData.get("sector"),
     saId: formData.get("saId"),
     scmId: normalizeOptionalId(formData.get("scmId")),
     notes: normalizeOptionalText(formData.get("notes"))
@@ -88,6 +112,7 @@ export async function updateSkillAction(formData: FormData) {
     where: { id: parsed.data.skillId },
     data: {
       name: parsed.data.name,
+      sector: parsed.data.sector,
       saId: parsed.data.saId,
       scmId: parsed.data.scmId ?? null,
       notes: parsed.data.notes ?? null
@@ -100,6 +125,7 @@ export async function updateSkillAction(formData: FormData) {
     action: "SkillUpdated",
     payload: {
       name: skill.name,
+      sector: skill.sector,
       saId: skill.saId,
       scmId: skill.scmId ?? null
     }
@@ -111,7 +137,9 @@ export async function updateSkillAction(formData: FormData) {
 
 export async function deleteSkillAction(formData: FormData) {
   const user = await requireUser();
-  assertSA(user.role as Role);
+  if (user.role !== Role.SA && user.role !== Role.Admin) {
+    throw new Error("Only Skill Advisors or Admin can delete skills");
+  }
 
   const skillId = formData.get("skillId");
   if (!skillId || typeof skillId !== "string") {
