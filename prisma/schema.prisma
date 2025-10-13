@@ -36,12 +36,13 @@ model User {
   isAdmin      Boolean  @default(false)
   createdAt    DateTime @default(now())
 
-  accounts    Account[]
-  sessions    Session[]
-  skillsAsSA  Skill[] @relation("SkillSA")
-  skillsAsSCM Skill[] @relation("SkillSCM")
-  messages    Message[]
-  activity    ActivityLog[]
+  accounts            Account[]
+  sessions            Session[]
+  skillsAsSA          Skill[]        @relation("SkillSA")
+  skillsAsSCM         Skill[]        @relation("SkillSCM")
+  messages            Message[]
+  activity            ActivityLog[]
+  invitationsCreated  Invitation[]   @relation("InvitationCreator")
 }
 
 model Skill {
@@ -170,7 +171,7 @@ model Invitation {
   createdBy   String?
   acceptedAt  DateTime?
 
-  createdByUser User? @relation(fields: [createdBy], references: [id])
+  createdByUser User? @relation("InvitationCreator", fields: [createdBy], references: [id])
 
   @@index([email])
   @@index([expiresAt])
