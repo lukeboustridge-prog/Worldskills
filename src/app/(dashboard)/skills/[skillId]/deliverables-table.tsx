@@ -193,13 +193,13 @@ export function DeliverablesTable({
                     {deliverable.isOverdue ? (
                       <Badge variant="destructive">Overdue by {deliverable.overdueByDays} days</Badge>
                     ) : isDueSoon ? (
-                      <Badge variant="secondary">Due soon</Badge>
+                      <Badge variant="default">Due soon</Badge>
                     ) : (
                       <Badge variant="outline">On track</Badge>
                     )}
                     <Badge variant="outline">{evidenceCount} evidence</Badge>
                     {!isAdvisor ? (
-                      <Badge variant="secondary">{formatDeliverableState(deliverable.state)}</Badge>
+                      <Badge variant="default">{formatDeliverableState(deliverable.state)}</Badge>
                     ) : null}
                   </div>
                 </div>
@@ -230,7 +230,7 @@ export function DeliverablesTable({
                         </Button>
                       </form>
                     ) : (
-                      <Badge variant="secondary" className="w-fit">
+                      <Badge variant="default" className="w-fit">
                         {formatDeliverableState(deliverable.state)}
                       </Badge>
                     )}
