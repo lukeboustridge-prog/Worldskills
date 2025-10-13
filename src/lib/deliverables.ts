@@ -204,8 +204,14 @@ export async function recalculateDeliverableSchedule(params: {
   const { settings, actorId } = params;
   await ensureDeliverableTemplatesSeeded();
   const deliverables = await prisma.deliverable.findMany({
-    select: { id: true, skillId: true, key: true },
-    include: { template: true }
+    select: {
+      id: true,
+      skillId: true,
+      key: true,
+      label: true,
+      cMonthOffset: true,
+      template: true
+    }
   });
   if (deliverables.length === 0) {
     return;
