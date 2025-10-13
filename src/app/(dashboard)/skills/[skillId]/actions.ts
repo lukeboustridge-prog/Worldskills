@@ -1,19 +1,25 @@
 "use server";
 
 import {
+  Prisma,
   DeliverableScheduleType,
   DeliverableState,
   GateScheduleType,
   GateStatus,
-  Role
+  type Skill
 } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { logActivity } from "@/lib/activity";
-import { assertSA, requireUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { buildCMonthLabel, computeDueDate } from "@/lib/deliverables";
+import {
+  buildCMonthLabel,
+  computeDueDate,
+  EVIDENCE_TYPE_VALUES,
+  normaliseEvidenceItems
+} from "@/lib/deliverables";
 import { requireAppSettings } from "@/lib/settings";
 
 async function ensureSkill(skillId: string) {
@@ -23,6 +29,14 @@ async function ensureSkill(skillId: string) {
   }
   return skill;
 }
+
+function canEditSkillRecord(user: { id: string; isAdmin: boolean }, skill: Skill) {
+  if (user.isAdmin) {
+    return true;
+  }
+  return skill.saId === user.id || skill.scmId === user.id;
+}
+
 
 function revalidateSkill(skillId: string) {
   revalidatePath(`/skills/${skillId}`);
@@ -37,7 +51,6 @@ const deliverableStateSchema = z.object({
 
 export async function updateDeliverableStateAction(formData: FormData) {
   const user = await requireUser();
-  assertSA(user.role as Role);
 
   const parsed = deliverableStateSchema.safeParse({
     deliverableId: formData.get("deliverableId"),
@@ -50,8 +63,8 @@ export async function updateDeliverableStateAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (skill.saId !== user.id) {
-    throw new Error("Only the assigned Skill Advisor can update deliverables");
+  if (!canEditSkillRecord(user, skill)) {
+    throw new Error("You do not have access to update this deliverable");
   }
 
   const updated = await prisma.deliverable.update({
@@ -78,7 +91,8 @@ export async function updateDeliverableStateAction(formData: FormData) {
 const evidenceSchema = z.object({
   deliverableId: z.string().min(1),
   skillId: z.string().min(1),
-  evidence: z.string().url()
+  evidence: z.string().url(),
+  type: z.enum(EVIDENCE_TYPE_VALUES)
 });
 
 export async function appendEvidenceAction(formData: FormData) {
@@ -87,7 +101,8 @@ export async function appendEvidenceAction(formData: FormData) {
   const parsed = evidenceSchema.safeParse({
     deliverableId: formData.get("deliverableId"),
     skillId: formData.get("skillId"),
-    evidence: formData.get("evidence")
+    evidence: formData.get("evidence"),
+    type: formData.get("type")
   });
 
   if (!parsed.success) {
@@ -95,18 +110,30 @@ export async function appendEvidenceAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  const permittedUserIds = [skill.saId, skill.scmId].filter(Boolean) as string[];
-
-  if (!permittedUserIds.includes(user.id)) {
+  if (!canEditSkillRecord(user, skill)) {
     throw new Error("You do not have access to update this deliverable");
   }
+
+  const deliverable = await prisma.deliverable.findUnique({
+    where: { id: parsed.data.deliverableId },
+    select: { evidenceItems: true }
+  });
+
+  if (!deliverable) {
+    throw new Error("Deliverable not found");
+  }
+
+  const evidenceItems = normaliseEvidenceItems(deliverable.evidenceItems);
+  evidenceItems.push({
+    url: parsed.data.evidence,
+    type: parsed.data.type,
+    addedAt: new Date().toISOString()
+  });
 
   await prisma.deliverable.update({
     where: { id: parsed.data.deliverableId },
     data: {
-      evidenceLinks: {
-        push: parsed.data.evidence
-      },
+      evidenceItems: evidenceItems as Prisma.JsonValue,
       updatedBy: user.id
     }
   });
@@ -117,7 +144,77 @@ export async function appendEvidenceAction(formData: FormData) {
     action: "DeliverableEvidenceAdded",
     payload: {
       deliverableId: parsed.data.deliverableId,
-      evidence: parsed.data.evidence
+      evidence: parsed.data.evidence,
+      type: parsed.data.type
+    }
+  });
+
+  revalidateSkill(parsed.data.skillId);
+}
+
+const evidenceTypeSchema = z.object({
+  deliverableId: z.string().min(1),
+  skillId: z.string().min(1),
+  evidenceIndex: z.coerce
+    .number({ invalid_type_error: "Evidence index must be a number" })
+    .int({ message: "Evidence index must be a whole number" })
+    .min(0, { message: "Evidence index is out of range" }),
+  type: z.enum(EVIDENCE_TYPE_VALUES)
+});
+
+export async function updateEvidenceTypeAction(formData: FormData) {
+  const user = await requireUser();
+
+  const parsed = evidenceTypeSchema.safeParse({
+    deliverableId: formData.get("deliverableId"),
+    skillId: formData.get("skillId"),
+    evidenceIndex: formData.get("evidenceIndex"),
+    type: formData.get("type")
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const skill = await ensureSkill(parsed.data.skillId);
+  if (!canEditSkillRecord(user, skill)) {
+    throw new Error("You do not have access to update this evidence");
+  }
+
+  const deliverable = await prisma.deliverable.findUnique({
+    where: { id: parsed.data.deliverableId },
+    select: { evidenceItems: true }
+  });
+
+  if (!deliverable) {
+    throw new Error("Deliverable not found");
+  }
+
+  const evidenceItems = normaliseEvidenceItems(deliverable.evidenceItems);
+  if (parsed.data.evidenceIndex >= evidenceItems.length) {
+    throw new Error("Evidence entry not found");
+  }
+
+  const updatedItems = evidenceItems.map((item, index) =>
+    index === parsed.data.evidenceIndex ? { ...item, type: parsed.data.type } : item
+  );
+
+  await prisma.deliverable.update({
+    where: { id: parsed.data.deliverableId },
+    data: {
+      evidenceItems: updatedItems as Prisma.JsonValue,
+      updatedBy: user.id
+    }
+  });
+
+  await logActivity({
+    skillId: parsed.data.skillId,
+    userId: user.id,
+    action: "DeliverableEvidenceTypeUpdated",
+    payload: {
+      deliverableId: parsed.data.deliverableId,
+      evidenceIndex: parsed.data.evidenceIndex,
+      type: parsed.data.type
     }
   });
 
@@ -169,9 +266,9 @@ export async function updateDeliverableScheduleAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  const canManage = user.isAdmin || skill.saId === user.id;
+  const canManage = canEditSkillRecord(user, skill);
   if (!canManage) {
-    throw new Error("Only the assigned Skill Advisor or an administrator can update deliverable schedules");
+    throw new Error("Only assigned team members or an administrator can update deliverable schedules");
   }
 
   let dueDate: Date;
@@ -238,7 +335,6 @@ const gateSchema = z.discriminatedUnion("scheduleType", [
 
 export async function createGateAction(formData: FormData) {
   const user = await requireUser();
-  assertSA(user.role as Role);
 
   const scheduleType = formData.get("scheduleType") ?? "calendar";
 
@@ -263,8 +359,8 @@ export async function createGateAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (skill.saId !== user.id) {
-    throw new Error("Only the assigned Skill Advisor can create gates");
+  if (!canEditSkillRecord(user, skill)) {
+    throw new Error("You do not have access to create gates for this skill");
   }
 
   let dueDate: Date;
@@ -317,7 +413,6 @@ const gateStatusSchema = z.object({
 
 export async function updateGateStatusAction(formData: FormData) {
   const user = await requireUser();
-  assertSA(user.role as Role);
 
   const parsed = gateStatusSchema.safeParse({
     gateId: formData.get("gateId"),
@@ -330,8 +425,8 @@ export async function updateGateStatusAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (skill.saId !== user.id) {
-    throw new Error("Only the assigned Skill Advisor can update gates");
+  if (!canEditSkillRecord(user, skill)) {
+    throw new Error("You do not have access to update gates for this skill");
   }
 
   const status = parsed.data.status;
@@ -364,7 +459,6 @@ const deleteGateSchema = z.object({
 
 export async function deleteGateAction(formData: FormData) {
   const user = await requireUser();
-  assertSA(user.role as Role);
 
   const parsed = deleteGateSchema.safeParse({
     gateId: formData.get("gateId"),
@@ -376,8 +470,8 @@ export async function deleteGateAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (skill.saId !== user.id) {
-    throw new Error("Only the assigned Skill Advisor can remove gates");
+  if (!canEditSkillRecord(user, skill)) {
+    throw new Error("You do not have access to remove gates for this skill");
   }
 
   await prisma.gate.delete({ where: { id: parsed.data.gateId } });

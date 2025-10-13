@@ -8,10 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { EVIDENCE_TYPE_OPTIONS, type DeliverableEvidenceItem } from "@/lib/deliverables";
 import { formatDeliverableState } from "@/lib/utils";
 
 import {
   appendEvidenceAction,
+  updateEvidenceTypeAction,
   updateDeliverableScheduleAction,
   updateDeliverableStateAction
 } from "./actions";
@@ -24,7 +26,7 @@ export interface DeliverableRow {
   dueDateISO: string;
   scheduleType: DeliverableScheduleType;
   state: DeliverableState;
-  evidenceLinks: string[];
+  evidence: DeliverableEvidenceItem[];
   isOverdue: boolean;
   overdueByDays: number;
 }
@@ -32,7 +34,7 @@ export interface DeliverableRow {
 interface DeliverablesTableProps {
   deliverables: DeliverableRow[];
   skillId: string;
-  isAdvisor: boolean;
+  canEdit: boolean;
   overdueCount: number;
   stateCounts: Record<DeliverableState, number>;
   dueSoonThresholdDays: number;
@@ -43,7 +45,7 @@ type FilterKey = "all" | "overdue" | "dueSoon";
 export function DeliverablesTable({
   deliverables,
   skillId,
-  isAdvisor,
+  canEdit,
   overdueCount,
   stateCounts,
   dueSoonThresholdDays
@@ -185,7 +187,7 @@ export function DeliverablesTable({
             const daysUntilDue = differenceInCalendarDays(dueDate, new Date());
             const isDueSoon =
               !deliverable.isOverdue && daysUntilDue >= 0 && daysUntilDue <= dueSoonThresholdDays;
-            const evidenceCount = deliverable.evidenceLinks.length;
+            const evidenceCount = deliverable.evidence.length;
 
             return (
               <div key={deliverable.id} className="rounded-lg border bg-card p-5 shadow-sm">
@@ -201,7 +203,7 @@ export function DeliverablesTable({
                       Due {format(dueDate, "dd MMM yyyy")}
                       {isDueSoon ? ` · ${daysUntilDue} day${daysUntilDue === 1 ? "" : "s"} remaining` : ""}
                     </p>
-                    {isAdvisor ? (
+                    {canEdit ? (
                       <button
                         type="button"
                         onClick={() =>
@@ -224,13 +226,13 @@ export function DeliverablesTable({
                       <Badge variant="outline">On track</Badge>
                     )}
                     <Badge variant="outline">{evidenceCount} evidence</Badge>
-                    {!isAdvisor ? (
+                    {!canEdit ? (
                       <Badge variant="default">{formatDeliverableState(deliverable.state)}</Badge>
                     ) : null}
                   </div>
                 </div>
 
-                {isAdvisor && editingDeliverableId === deliverable.id ? (
+                {canEdit && editingDeliverableId === deliverable.id ? (
                   <div className="mt-4 rounded-md border bg-muted/10 p-4">
                     <DeliverableScheduleEditor
                       deliverable={deliverable}
@@ -243,7 +245,7 @@ export function DeliverablesTable({
                 <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,260px)]">
                   <div className="space-y-3">
                     <p className="text-xs font-semibold uppercase text-muted-foreground">Status</p>
-                    {isAdvisor ? (
+                    {canEdit ? (
                       <form
                         action={updateDeliverableStateAction}
                         className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
@@ -274,24 +276,41 @@ export function DeliverablesTable({
 
                   <div className="space-y-3">
                     <p className="text-xs font-semibold uppercase text-muted-foreground">Evidence</p>
-                    {isAdvisor ? (
+                    {canEdit ? (
                       <form
                         action={appendEvidenceAction}
                         className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2"
                       >
                         <input type="hidden" name="skillId" value={skillId} />
                         <input type="hidden" name="deliverableId" value={deliverable.id} />
-                        <Label htmlFor={`evidence-${deliverable.id}`} className="sr-only">
-                          Evidence URL
-                        </Label>
-                        <Input
-                          id={`evidence-${deliverable.id}`}
-                          type="url"
-                          name="evidence"
-                          placeholder="Add evidence URL"
-                          className="h-10 w-full sm:w-[260px]"
-                          required
-                        />
+                        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                          <Label htmlFor={`evidence-${deliverable.id}`} className="sr-only">
+                            Evidence URL
+                          </Label>
+                          <Input
+                            id={`evidence-${deliverable.id}`}
+                            type="url"
+                            name="evidence"
+                            placeholder="Add evidence URL"
+                            className="h-10 w-full sm:w-[260px]"
+                            required
+                          />
+                          <Label htmlFor={`evidence-type-${deliverable.id}`} className="sr-only">
+                            Evidence type
+                          </Label>
+                          <select
+                            id={`evidence-type-${deliverable.id}`}
+                            name="type"
+                            defaultValue={EVIDENCE_TYPE_OPTIONS[0].value}
+                            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                          >
+                            {EVIDENCE_TYPE_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                         <Button type="submit" variant="outline" size="sm">
                           Attach
                         </Button>
@@ -299,11 +318,49 @@ export function DeliverablesTable({
                     ) : null}
                     {evidenceCount > 0 ? (
                       <ul className="space-y-1 text-left text-sm">
-                        {deliverable.evidenceLinks.map((link, index) => (
-                          <li key={index}>
-                            <a href={link} target="_blank" rel="noreferrer" className="text-primary underline">
-                              Evidence #{index + 1}
-                            </a>
+                        {deliverable.evidence.map((item, index) => (
+                          <li key={`${item.url}-${index}`} className="space-y-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-primary underline"
+                              >
+                                Evidence #{index + 1}
+                              </a>
+                              <Badge variant="outline" className="whitespace-nowrap text-xs">
+                                {item.type}
+                              </Badge>
+                            </div>
+                            {canEdit ? (
+                              <form
+                                className="flex flex-wrap items-center gap-2"
+                                action={updateEvidenceTypeAction}
+                              >
+                                <input type="hidden" name="skillId" value={skillId} />
+                                <input type="hidden" name="deliverableId" value={deliverable.id} />
+                                <input type="hidden" name="evidenceIndex" value={index} />
+                                <Label htmlFor={`evidence-type-${deliverable.id}-${index}`} className="sr-only">
+                                  Evidence type
+                                </Label>
+                                <select
+                                  id={`evidence-type-${deliverable.id}-${index}`}
+                                  name="type"
+                                  defaultValue={item.type}
+                                  className="h-9 rounded-md border border-input bg-background px-2 text-xs"
+                                >
+                                  {EVIDENCE_TYPE_OPTIONS.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </select>
+                                <Button type="submit" size="sm" variant="secondary" className="text-xs">
+                                  Update type
+                                </Button>
+                              </form>
+                            ) : null}
                           </li>
                         ))}
                       </ul>

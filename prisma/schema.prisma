@@ -103,7 +103,7 @@ model Deliverable {
   cMonthLabel       String?
   scheduleType      DeliverableScheduleType @default(CMonth)
   state             DeliverableState        @default(NotStarted)
-  evidenceLinks     String[]                @default([])
+  evidenceItems     Json                    @default("[]")
   updatedBy         String?
   updatedAt         DateTime                @updatedAt
   createdAt         DateTime                @default(now())

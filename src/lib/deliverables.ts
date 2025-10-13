@@ -1,6 +1,7 @@
 import { differenceInCalendarDays, isAfter, subMonths } from "date-fns";
 
 import {
+  Prisma,
   type AppSettings,
   DeliverableScheduleType,
   DeliverableState,
@@ -117,9 +118,56 @@ export function computeDueDate(competitionStart: Date, offsetMonths: number) {
   return subMonths(competitionStart, offsetMonths);
 }
 
-export interface DeliverableWithStatus extends Deliverable {
+export const EVIDENCE_TYPE_VALUES = ["Document", "Image", "Video", "Other"] as const;
+
+export type EvidenceType = (typeof EVIDENCE_TYPE_VALUES)[number];
+
+export const EVIDENCE_TYPE_OPTIONS = [
+  { value: EVIDENCE_TYPE_VALUES[0], label: "Document" },
+  { value: EVIDENCE_TYPE_VALUES[1], label: "Image" },
+  { value: EVIDENCE_TYPE_VALUES[2], label: "Video walkthrough" },
+  { value: EVIDENCE_TYPE_VALUES[3], label: "Other reference" }
+] as const;
+
+const EVIDENCE_TYPE_SET = new Set<EvidenceType>(EVIDENCE_TYPE_VALUES);
+
+export interface DeliverableEvidenceItem {
+  url: string;
+  type: EvidenceType;
+  addedAt: string;
+}
+
+export type DeliverableWithStatus = Omit<Deliverable, "evidenceItems"> & {
+  evidenceItems: DeliverableEvidenceItem[];
   isOverdue: boolean;
   overdueByDays: number;
+};
+
+export function normaliseEvidenceItems(value: Prisma.JsonValue | null | undefined): DeliverableEvidenceItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const record = item as Record<string, unknown>;
+      const url = typeof record.url === "string" ? record.url : null;
+      if (!url) {
+        return null;
+      }
+
+      const typeRaw = typeof record.type === "string" ? record.type : "Document";
+      const type = EVIDENCE_TYPE_SET.has(typeRaw) ? (typeRaw as EvidenceType) : "Document";
+      const addedAt =
+        typeof record.addedAt === "string" ? record.addedAt : new Date().toISOString();
+
+      return { url, type, addedAt } satisfies DeliverableEvidenceItem;
+    })
+    .filter((item): item is DeliverableEvidenceItem => item !== null);
 }
 
 const FINISHED_STATES = new Set<DeliverableState>([DeliverableState.Validated]);
@@ -135,6 +183,7 @@ export function decorateDeliverable(
 
   return {
     ...deliverable,
+    evidenceItems: normaliseEvidenceItems(deliverable.evidenceItems),
     isOverdue,
     overdueByDays
   };

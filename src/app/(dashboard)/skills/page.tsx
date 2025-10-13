@@ -56,7 +56,7 @@ export default async function SkillsPage() {
             cMonthLabel: true,
             scheduleType: true,
             state: true,
-            evidenceLinks: true,
+            evidenceItems: true,
             updatedBy: true,
             updatedAt: true,
             createdAt: true,

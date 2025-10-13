@@ -64,6 +64,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     redirect("/dashboard");
   }
 
+  const canEditSkill = user.isAdmin || user.id === skill.saId || user.id === skill.scmId;
   const isAdvisor = user.isAdmin || (user.role === Role.SA && skill.saId === user.id);
   const canPostMessage = isAdmin || user.id === skill.saId || user.id === skill.scmId;
   const advisorLabel = getUserDisplayName(skill.sa);
@@ -92,7 +93,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     dueDateISO: deliverable.dueDate.toISOString(),
     scheduleType: deliverable.scheduleType,
     state: deliverable.state,
-    evidenceLinks: deliverable.evidenceLinks,
+    evidence: deliverable.evidenceItems,
     isOverdue: deliverable.isOverdue,
     overdueByDays: deliverable.overdueByDays
   }));
@@ -152,7 +153,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                 <DeliverablesTable
                   deliverables={deliverablesForClient}
                   skillId={skill.id}
-                  isAdvisor={isAdvisor}
+                  canEdit={canEditSkill}
                   overdueCount={summary.overdue}
                   stateCounts={summary.stateCounts}
                   dueSoonThresholdDays={DUE_SOON_THRESHOLD_DAYS}
@@ -162,7 +163,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
           </Card>
         </TabsContent>
         <TabsContent value="gates" className="space-y-6">
-          {isAdvisor ? (
+          {canEditSkill ? (
             <Card>
               <CardHeader>
                 <CardTitle>Add a gate</CardTitle>
@@ -212,7 +213,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                           </Badge>
                         </TableCell>
                         <TableCell className="space-x-2 text-right">
-                          {isAdvisor ? (
+                          {canEditSkill ? (
                             <form action={updateGateStatusAction} className="inline-flex items-center gap-2">
                               <input type="hidden" name="skillId" value={skill.id} />
                               <input type="hidden" name="gateId" value={gate.id} />
@@ -232,7 +233,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                               </Button>
                             </form>
                           ) : null}
-                          {isAdvisor ? (
+                          {canEditSkill ? (
                             <form action={deleteGateAction} className="inline">
                               <input type="hidden" name="skillId" value={skill.id} />
                               <input type="hidden" name="gateId" value={gate.id} />
