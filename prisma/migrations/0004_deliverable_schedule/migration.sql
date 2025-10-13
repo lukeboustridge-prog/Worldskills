@@ -32,6 +32,45 @@ ALTER TABLE "Deliverable"
 
 UPDATE "Deliverable"
 SET
+  "key" = CASE "type"
+    WHEN 'SAG' THEN 'SAGFinalReadyMAT'
+    WHEN 'TestProject' THEN 'TestProjectDraftV1'
+    WHEN 'MarkingScheme' THEN 'MarkingSchemeDraftWSOS'
+    WHEN 'Validation' THEN 'ValidationDocumentUploads'
+    WHEN 'MAT' THEN 'FinalTPMSPackage'
+    WHEN 'CISUpload' THEN 'PreCompetitionReadinessReview'
+    ELSE 'ITPDIdentified'
+  END,
+  "label" = CASE "type"
+    WHEN 'SAG' THEN 'SAG Final Ready for MAT'
+    WHEN 'TestProject' THEN 'Test Project Draft Version 1'
+    WHEN 'MarkingScheme' THEN 'Marking Scheme Draft aligned to WSOS'
+    WHEN 'Validation' THEN 'Validation and Document Uploads'
+    WHEN 'MAT' THEN 'Final TP and MS Package'
+    WHEN 'CISUpload' THEN 'Pre-Competition Readiness Review'
+    ELSE COALESCE("label", 'Legacy deliverable')
+  END,
+  "cMonthOffset" = CASE "type"
+    WHEN 'SAG' THEN 3
+    WHEN 'TestProject' THEN 8
+    WHEN 'MarkingScheme' THEN 7
+    WHEN 'Validation' THEN 4
+    WHEN 'MAT' THEN 4
+    WHEN 'CISUpload' THEN 1
+    ELSE COALESCE("cMonthOffset", 0)
+  END,
+  "cMonthLabel" = CASE "type"
+    WHEN 'SAG' THEN 'C-3 Month'
+    WHEN 'TestProject' THEN 'C-8 Month'
+    WHEN 'MarkingScheme' THEN 'C-7 Month'
+    WHEN 'Validation' THEN 'C-4 Month'
+    WHEN 'MAT' THEN 'C-4 Month'
+    WHEN 'CISUpload' THEN 'C-1 Month'
+    ELSE COALESCE("cMonthLabel", 'C-0 Month')
+  END;
+
+UPDATE "Deliverable"
+SET
   "label" = COALESCE("label", 'Legacy deliverable'),
   "cMonthLabel" = COALESCE("cMonthLabel", 'C-0 Month'),
   "cMonthOffset" = COALESCE("cMonthOffset", 0),
@@ -43,6 +82,13 @@ ALTER TABLE "Deliverable"
   ALTER COLUMN "cMonthOffset" SET NOT NULL,
   ALTER COLUMN "dueDate" SET NOT NULL,
   ALTER COLUMN "cMonthLabel" SET NOT NULL;
+
+ALTER TABLE "Deliverable"
+  ALTER COLUMN "key" DROP DEFAULT,
+  ALTER COLUMN "label" DROP DEFAULT,
+  ALTER COLUMN "cMonthOffset" DROP DEFAULT,
+  ALTER COLUMN "dueDate" DROP DEFAULT,
+  ALTER COLUMN "cMonthLabel" DROP DEFAULT;
 
 ALTER TABLE "Deliverable" DROP COLUMN "type";
 DROP TYPE IF EXISTS "DeliverableType";
