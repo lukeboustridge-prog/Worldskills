@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
 import { Minus, Plus } from "lucide-react";
-import { Role } from "@prisma/client";
+import { DeliverableScheduleType, GateScheduleType, Role } from "@prisma/client";
 import { type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -362,15 +362,31 @@ export default async function SettingsPage({
       >
         <form
           action={createDeliverableTemplateAction}
-          className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[2fr_repeat(2,minmax(0,1fr))_auto]"
+          className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
         >
           <div className="space-y-2">
             <Label htmlFor="new-label">New deliverable label</Label>
             <Input id="new-label" name="label" placeholder="WorldSkills Orientation" required />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="new-deliverable-schedule">Schedule type</Label>
+            <select
+              id="new-deliverable-schedule"
+              name="scheduleType"
+              defaultValue="cmonth"
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="cmonth">C-month offset</option>
+              <option value="calendar">Calendar date</option>
+            </select>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="new-offset">Months before C1</Label>
-            <Input id="new-offset" name="offsetMonths" type="number" min={0} max={48} required />
+            <Input id="new-offset" name="offsetMonths" type="number" min={0} max={48} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="new-calendar-date">Calendar due date</Label>
+            <Input id="new-calendar-date" name="calendarDueDate" type="date" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="new-position">Position</Label>
@@ -390,12 +406,26 @@ export default async function SettingsPage({
             <div key={template.key} className="rounded-md border p-4">
               <form
                 action={updateDeliverableTemplateAction}
-                className="grid gap-4 md:grid-cols-[2fr_repeat(2,minmax(0,1fr))_auto]"
+                className="grid gap-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
               >
                 <input type="hidden" name="key" value={template.key} />
                 <div className="space-y-2">
                   <Label htmlFor={`label-${template.key}`}>Label</Label>
                   <Input id={`label-${template.key}`} name="label" defaultValue={template.label} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`schedule-${template.key}`}>Schedule type</Label>
+                  <select
+                    id={`schedule-${template.key}`}
+                    name="scheduleType"
+                    defaultValue={
+                      template.scheduleType === DeliverableScheduleType.Calendar ? "calendar" : "cmonth"
+                    }
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="cmonth">C-month offset</option>
+                    <option value="calendar">Calendar date</option>
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor={`offset-${template.key}`}>Months before C1</Label>
@@ -405,8 +435,16 @@ export default async function SettingsPage({
                     type="number"
                     min={0}
                     max={48}
-                    defaultValue={template.offsetMonths}
-                    required
+                    defaultValue={template.offsetMonths ?? undefined}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`calendar-${template.key}`}>Calendar due date</Label>
+                  <Input
+                    id={`calendar-${template.key}`}
+                    name="calendarDueDate"
+                    type="date"
+                    defaultValue={formatDateInput(template.calendarDueDate)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -427,7 +465,12 @@ export default async function SettingsPage({
                 </div>
               </form>
               <p className="mt-2 text-xs text-muted-foreground">
-                Key: <span className="font-mono">{template.key}</span> · {buildCMonthLabel(template.offsetMonths)}
+                Key: <span className="font-mono">{template.key}</span> ·{' '}
+                {template.scheduleType === DeliverableScheduleType.CMonth && template.offsetMonths != null
+                  ? buildCMonthLabel(template.offsetMonths)
+                  : template.calendarDueDate
+                    ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`
+                    : "Schedule pending"}
               </p>
             </div>
           ))}
@@ -443,15 +486,31 @@ export default async function SettingsPage({
           <>
             <form
               action={createGateTemplateAction}
-              className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[2fr_repeat(2,minmax(0,1fr))_auto]"
+              className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
             >
               <div className="space-y-2">
                 <Label htmlFor="gate-name">New gate name</Label>
                 <Input id="gate-name" name="name" placeholder="Validation workshop" required />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="gate-schedule">Schedule type</Label>
+                <select
+                  id="gate-schedule"
+                  name="scheduleType"
+                  defaultValue="cmonth"
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="cmonth">C-month offset</option>
+                  <option value="calendar">Calendar date</option>
+                </select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="gate-offset">Months before C1</Label>
-                <Input id="gate-offset" name="offsetMonths" type="number" min={0} max={48} required />
+                <Input id="gate-offset" name="offsetMonths" type="number" min={0} max={48} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gate-calendar">Calendar due date</Label>
+                <Input id="gate-calendar" name="calendarDueDate" type="date" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="gate-position">Position</Label>
@@ -472,35 +531,57 @@ export default async function SettingsPage({
               </div>
             </form>
 
-            <div className="space-y-4">
-              {gateTemplates.map((template) => (
-                <div key={template.key} className="rounded-md border p-4">
-                  <form
-                    action={updateGateTemplateAction}
-                    className="grid gap-4 md:grid-cols-[2fr_repeat(2,minmax(0,1fr))_auto]"
-                  >
-                    <input type="hidden" name="key" value={template.key} />
-                    <div className="space-y-2">
-                      <Label htmlFor={`gate-name-${template.key}`}>Name</Label>
-                      <Input id={`gate-name-${template.key}`} name="name" defaultValue={template.name} required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`gate-offset-${template.key}`}>Months before C1</Label>
-                      <Input
-                        id={`gate-offset-${template.key}`}
-                        name="offsetMonths"
-                        type="number"
-                        min={0}
-                        max={48}
-                        defaultValue={template.offsetMonths}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`gate-position-${template.key}`}>Position</Label>
-                      <Input
-                        id={`gate-position-${template.key}`}
-                        name="position"
+              <div className="space-y-4">
+                {gateTemplates.map((template) => (
+                  <div key={template.key} className="rounded-md border p-4">
+                    <form
+                      action={updateGateTemplateAction}
+                      className="grid gap-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
+                    >
+                      <input type="hidden" name="key" value={template.key} />
+                      <div className="space-y-2">
+                        <Label htmlFor={`gate-name-${template.key}`}>Name</Label>
+                        <Input id={`gate-name-${template.key}`} name="name" defaultValue={template.name} required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`gate-schedule-${template.key}`}>Schedule type</Label>
+                        <select
+                          id={`gate-schedule-${template.key}`}
+                          name="scheduleType"
+                          defaultValue={
+                            template.scheduleType === GateScheduleType.Calendar ? "calendar" : "cmonth"
+                          }
+                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                        >
+                          <option value="cmonth">C-month offset</option>
+                          <option value="calendar">Calendar date</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`gate-offset-${template.key}`}>Months before C1</Label>
+                        <Input
+                          id={`gate-offset-${template.key}`}
+                          name="offsetMonths"
+                          type="number"
+                          min={0}
+                          max={48}
+                          defaultValue={template.offsetMonths ?? undefined}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`gate-calendar-${template.key}`}>Calendar due date</Label>
+                        <Input
+                          id={`gate-calendar-${template.key}`}
+                          name="calendarDueDate"
+                          type="date"
+                          defaultValue={formatDateInput(template.calendarDueDate)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`gate-position-${template.key}`}>Position</Label>
+                        <Input
+                          id={`gate-position-${template.key}`}
+                          name="position"
                         type="number"
                         min={1}
                         defaultValue={template.position}
@@ -514,7 +595,12 @@ export default async function SettingsPage({
                     </div>
                   </form>
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Key: <span className="font-mono">{template.key}</span> · {buildCMonthLabel(template.offsetMonths)}
+                    Key: <span className="font-mono">{template.key}</span> ·{' '}
+                    {template.scheduleType === GateScheduleType.CMonth && template.offsetMonths != null
+                      ? buildCMonthLabel(template.offsetMonths)
+                      : template.calendarDueDate
+                        ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`
+                        : "Schedule pending"}
                   </p>
                 </div>
               ))}

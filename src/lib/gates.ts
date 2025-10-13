@@ -13,7 +13,9 @@ import { hasGateTemplateCatalogSupport } from "@/lib/schema-info";
 export interface GateTemplateDefinition {
   key: string;
   name: string;
-  offsetMonths: number;
+  scheduleType: GateScheduleType;
+  offsetMonths?: number | null;
+  calendarDueDate?: Date | null;
   position: number;
 }
 
@@ -21,18 +23,21 @@ export const DEFAULT_GATE_TEMPLATES: GateTemplateDefinition[] = [
   {
     key: "KickoffAlignment",
     name: "Kick-off alignment",
+    scheduleType: GateScheduleType.CMonth,
     offsetMonths: 10,
     position: 1
   },
   {
     key: "ValidationWorkshop",
     name: "Validation workshop",
+    scheduleType: GateScheduleType.CMonth,
     offsetMonths: 4,
     position: 2
   },
   {
     key: "FinalSignoff",
     name: "Final sign-off",
+    scheduleType: GateScheduleType.CMonth,
     offsetMonths: 1,
     position: 3
   }
@@ -58,7 +63,9 @@ export async function ensureGateTemplatesSeeded() {
     data: DEFAULT_GATE_TEMPLATES.map((template) => ({
       key: template.key,
       name: template.name,
-      offsetMonths: template.offsetMonths,
+      offsetMonths: template.offsetMonths ?? null,
+      calendarDueDate: template.calendarDueDate ?? null,
+      scheduleType: template.scheduleType,
       position: template.position
     })),
     skipDuplicates: true
@@ -77,7 +84,9 @@ export async function getGateTemplates(): Promise<GateTemplateDefinition[]> {
   return templates.map((template) => ({
     key: template.key,
     name: template.name,
+    scheduleType: template.scheduleType,
     offsetMonths: template.offsetMonths,
+    calendarDueDate: template.calendarDueDate,
     position: template.position
   }));
 }
@@ -110,22 +119,39 @@ export async function ensureStandardGatesForSkill(params: {
       return [] as Gate[];
     }
 
-    const created = await prisma.$transaction(
-      toCreate.map((template) => {
-        const dueDate = computeDueDate(settings.competitionStart, template.offsetMonths);
+    const operations = toCreate
+      .map((template) => {
+        const usingCMonth = template.scheduleType === GateScheduleType.CMonth;
+        const offset = template.offsetMonths ?? null;
+        const dueDate = usingCMonth
+          ? offset === null
+            ? null
+            : computeDueDate(settings.competitionStart, offset)
+          : template.calendarDueDate ?? null;
+
+        if (!dueDate) {
+          return null;
+        }
+
         return prisma.gate.create({
           data: {
             skillId,
             name: template.name,
             dueDate,
             templateKey: template.key,
-            scheduleType: GateScheduleType.CMonth,
-            cMonthOffset: template.offsetMonths,
-            cMonthLabel: buildCMonthLabel(template.offsetMonths)
+            scheduleType: template.scheduleType,
+            cMonthOffset: usingCMonth ? offset : null,
+            cMonthLabel: usingCMonth && offset !== null ? buildCMonthLabel(offset) : null
           }
         });
       })
-    );
+      .filter((operation): operation is ReturnType<typeof prisma.gate.create> => Boolean(operation));
+
+    if (operations.length === 0) {
+      return [] as Gate[];
+    }
+
+    const created = await prisma.$transaction(operations);
 
     await logActivity({
       skillId,
@@ -154,20 +180,38 @@ export async function ensureStandardGatesForSkill(params: {
     return [] as Gate[];
   }
 
-  const created = await prisma.$transaction(
-    toCreate.map((template) =>
-        prisma.gate.create({
-          data: {
-            skillId,
-            name: template.name,
-            dueDate: computeDueDate(settings.competitionStart, template.offsetMonths),
-            scheduleType: GateScheduleType.CMonth,
-            cMonthOffset: template.offsetMonths,
-            cMonthLabel: buildCMonthLabel(template.offsetMonths)
-          }
-        })
-      )
-  );
+  const operations = toCreate
+    .map((template) => {
+      const usingCMonth = template.scheduleType === GateScheduleType.CMonth;
+      const offset = template.offsetMonths ?? null;
+      const dueDate = usingCMonth
+        ? offset === null
+          ? null
+          : computeDueDate(settings.competitionStart, offset)
+        : template.calendarDueDate ?? null;
+
+      if (!dueDate) {
+        return null;
+      }
+
+      return prisma.gate.create({
+        data: {
+          skillId,
+          name: template.name,
+          dueDate,
+          scheduleType: template.scheduleType,
+          cMonthOffset: usingCMonth ? offset : null,
+          cMonthLabel: usingCMonth && offset !== null ? buildCMonthLabel(offset) : null
+        }
+      });
+    })
+    .filter((operation): operation is ReturnType<typeof prisma.gate.create> => Boolean(operation));
+
+  if (operations.length === 0) {
+    return [] as Gate[];
+  }
+
+  const created = await prisma.$transaction(operations);
 
   await logActivity({
     skillId,
@@ -200,7 +244,17 @@ export async function applyGateTemplateUpdate(params: {
     return;
   }
 
-  const dueDate = computeDueDate(settings.competitionStart, template.offsetMonths);
+  const usingCMonth = template.scheduleType === GateScheduleType.CMonth;
+  const offset = template.offsetMonths ?? null;
+  const dueDate = usingCMonth
+    ? offset === null
+      ? null
+      : computeDueDate(settings.competitionStart, offset)
+    : template.calendarDueDate ?? null;
+
+  if (!dueDate) {
+    return;
+  }
 
   await prisma.$transaction(
     gates.map((gate) =>
@@ -208,7 +262,10 @@ export async function applyGateTemplateUpdate(params: {
         where: { id: gate.id },
         data: {
           name: template.name,
-          dueDate
+          dueDate,
+          scheduleType: template.scheduleType,
+          cMonthOffset: usingCMonth ? offset : null,
+          cMonthLabel: usingCMonth && offset !== null ? buildCMonthLabel(offset) : null
         }
       })
     )

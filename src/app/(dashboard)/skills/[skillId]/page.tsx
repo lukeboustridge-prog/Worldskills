@@ -88,7 +88,9 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     id: deliverable.id,
     label: deliverable.label,
     cMonthLabel: deliverable.cMonthLabel,
+    cMonthOffset: deliverable.cMonthOffset,
     dueDateISO: deliverable.dueDate.toISOString(),
+    scheduleType: deliverable.scheduleType,
     state: deliverable.state,
     evidenceLinks: deliverable.evidenceLinks,
     isOverdue: deliverable.isOverdue,
@@ -139,8 +141,8 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
             <CardHeader>
               <CardTitle>Deliverables</CardTitle>
               <CardDescription>
-                Track the status of key competition artefacts and attach supporting evidence. Due dates are derived from the
-                competition start date (C1) and cannot be edited manually.
+                Track the status of key competition artefacts and attach supporting evidence. Schedule each deliverable by
+                choosing a calendar deadline or an offset from the competition start date (C1).
               </CardDescription>
             </CardHeader>
             <CardContent>

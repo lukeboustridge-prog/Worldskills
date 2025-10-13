@@ -23,6 +23,11 @@ enum DeliverableState {
   Validated
 }
 
+enum DeliverableScheduleType {
+  Calendar
+  CMonth
+}
+
 enum GateStatus {
   Open
   Complete
@@ -75,47 +80,52 @@ model Skill {
 }
 
 model DeliverableTemplate {
-  id           String   @id @default(cuid())
-  key          String   @unique
-  label        String
-  offsetMonths Int
-  position     Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String                   @id @default(cuid())
+  key            String                   @unique
+  label          String
+  offsetMonths   Int?
+  calendarDueDate DateTime?
+  scheduleType   DeliverableScheduleType @default(CMonth)
+  position       Int                      @default(0)
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
 
   deliverables Deliverable[]
 }
 
 model Deliverable {
-  id               String           @id @default(cuid())
-  skillId          String
-  key              String
-  label            String
-  cMonthOffset     Int
-  dueDate          DateTime
-  cMonthLabel      String
-  state            DeliverableState @default(NotStarted)
-  evidenceLinks    String[]         @default([])
-  updatedBy        String?
-  updatedAt        DateTime         @updatedAt
-  createdAt        DateTime         @default(now())
+  id                String                   @id @default(cuid())
+  skillId           String
+  key               String
+  label             String
+  cMonthOffset      Int?
+  dueDate           DateTime
+  cMonthLabel       String?
+  scheduleType      DeliverableScheduleType @default(CMonth)
+  state             DeliverableState        @default(NotStarted)
+  evidenceLinks     String[]                @default([])
+  updatedBy         String?
+  updatedAt         DateTime                @updatedAt
+  createdAt         DateTime                @default(now())
   overdueNotifiedAt DateTime?
 
-  skill     Skill               @relation(fields: [skillId], references: [id])
-  template  DeliverableTemplate @relation(fields: [key], references: [key])
+  skill    Skill               @relation(fields: [skillId], references: [id])
+  template DeliverableTemplate @relation(fields: [key], references: [key])
 
   @@index([skillId])
   @@unique([skillId, key])
 }
 
 model GateTemplate {
-  id           String   @id @default(cuid())
-  key          String   @unique
-  name         String
-  offsetMonths Int
-  position     Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String           @id @default(cuid())
+  key            String           @unique
+  name           String
+  offsetMonths   Int?
+  calendarDueDate DateTime?
+  scheduleType   GateScheduleType @default(CMonth)
+  position       Int              @default(0)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   gates Gate[]
 }

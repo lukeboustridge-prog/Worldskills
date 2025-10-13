@@ -1,6 +1,12 @@
 "use server";
 
-import { DeliverableState, GateScheduleType, GateStatus, Role } from "@prisma/client";
+import {
+  DeliverableScheduleType,
+  DeliverableState,
+  GateScheduleType,
+  GateStatus,
+  Role
+} from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -112,6 +118,98 @@ export async function appendEvidenceAction(formData: FormData) {
     payload: {
       deliverableId: parsed.data.deliverableId,
       evidence: parsed.data.evidence
+    }
+  });
+
+  revalidateSkill(parsed.data.skillId);
+}
+
+const deliverableScheduleSchema = z.discriminatedUnion("scheduleType", [
+  z.object({
+    scheduleType: z.literal("calendar"),
+    deliverableId: z.string().min(1),
+    skillId: z.string().min(1),
+    dueDate: z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
+      message: "Invalid date"
+    })
+  }),
+  z.object({
+    scheduleType: z.literal("cmonth"),
+    deliverableId: z.string().min(1),
+    skillId: z.string().min(1),
+    offsetMonths: z.coerce
+      .number({ invalid_type_error: "Offset must be a number" })
+      .int({ message: "Offset must be a whole number" })
+      .min(0, { message: "Offset cannot be negative" })
+  })
+]);
+
+export async function updateDeliverableScheduleAction(formData: FormData) {
+  const user = await requireUser();
+
+  const scheduleType = (formData.get("scheduleType") ?? "calendar").toString();
+  const parsed = deliverableScheduleSchema.safeParse(
+    scheduleType === "cmonth"
+      ? {
+          scheduleType: "cmonth",
+          deliverableId: formData.get("deliverableId"),
+          skillId: formData.get("skillId"),
+          offsetMonths: formData.get("offsetMonths")
+        }
+      : {
+          scheduleType: "calendar",
+          deliverableId: formData.get("deliverableId"),
+          skillId: formData.get("skillId"),
+          dueDate: formData.get("dueDate")
+        }
+  );
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const skill = await ensureSkill(parsed.data.skillId);
+  const canManage = user.isAdmin || skill.saId === user.id;
+  if (!canManage) {
+    throw new Error("Only the assigned Skill Advisor or an administrator can update deliverable schedules");
+  }
+
+  let dueDate: Date;
+  let schedule: DeliverableScheduleType = DeliverableScheduleType.Calendar;
+  let offset: number | null = null;
+  let cMonthLabel: string | null = null;
+
+  if (parsed.data.scheduleType === "cmonth") {
+    const settings = await requireAppSettings();
+    offset = parsed.data.offsetMonths;
+    dueDate = computeDueDate(settings.competitionStart, offset);
+    schedule = DeliverableScheduleType.CMonth;
+    cMonthLabel = buildCMonthLabel(offset);
+  } else {
+    dueDate = new Date(parsed.data.dueDate);
+  }
+
+  const updated = await prisma.deliverable.update({
+    where: { id: parsed.data.deliverableId },
+    data: {
+      scheduleType: schedule,
+      dueDate,
+      cMonthOffset: offset,
+      cMonthLabel,
+      updatedBy: user.id,
+      overdueNotifiedAt: null
+    }
+  });
+
+  await logActivity({
+    skillId: parsed.data.skillId,
+    userId: user.id,
+    action: "DeliverableScheduleUpdated",
+    payload: {
+      deliverableId: updated.id,
+      scheduleType: updated.scheduleType,
+      cMonthOffset: updated.cMonthOffset,
+      dueDate: updated.dueDate.toISOString()
     }
   });
 

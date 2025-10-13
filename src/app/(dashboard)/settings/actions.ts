@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 
-import { Prisma, Role } from "@prisma/client";
+import { DeliverableScheduleType, GateScheduleType, Prisma, Role } from "@prisma/client";
 import { addDays } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -163,12 +163,24 @@ export async function createMissingDeliverablesAction() {
   redirect(`/settings?${params.toString()}`);
 }
 
-const templateCreateSchema = z.object({
-  label: z.string().min(3, "Label must be at least 3 characters long"),
-  offsetMonths: z.coerce.number().int().min(0).max(48),
-  position: z.coerce.number().int().min(1).optional(),
-  key: z.string().optional()
-});
+const deliverableScheduleSchema = z.discriminatedUnion("scheduleType", [
+  z.object({
+    scheduleType: z.literal("calendar"),
+    label: z.string().min(3, "Label must be at least 3 characters long"),
+    calendarDueDate: z
+      .string()
+      .refine((value) => !!value && !Number.isNaN(Date.parse(value)), "Provide a valid calendar date"),
+    position: z.coerce.number().int().min(1).optional(),
+    key: z.string().optional()
+  }),
+  z.object({
+    scheduleType: z.literal("cmonth"),
+    label: z.string().min(3, "Label must be at least 3 characters long"),
+    offsetMonths: z.coerce.number().int().min(0).max(48),
+    position: z.coerce.number().int().min(1).optional(),
+    key: z.string().optional()
+  })
+]);
 
 function normalizeTemplateKey(label: string, explicitKey?: string) {
   const source = explicitKey && explicitKey.trim().length > 0 ? explicitKey : label;
@@ -190,12 +202,24 @@ function normalizeTemplateKey(label: string, explicitKey?: string) {
 
 export async function createDeliverableTemplateAction(formData: FormData) {
   const user = await requireAdminUser();
-  const parsed = templateCreateSchema.parse({
-    label: formData.get("label"),
-    offsetMonths: formData.get("offsetMonths"),
-    position: formData.get("position"),
-    key: formData.get("key")
-  });
+  const scheduleType = (formData.get("scheduleType") ?? "cmonth").toString();
+  const parsed = deliverableScheduleSchema.parse(
+    scheduleType === "calendar"
+      ? {
+          scheduleType: "calendar",
+          label: formData.get("label"),
+          calendarDueDate: formData.get("calendarDueDate"),
+          position: formData.get("position"),
+          key: formData.get("key")
+        }
+      : {
+          scheduleType: "cmonth",
+          label: formData.get("label"),
+          offsetMonths: formData.get("offsetMonths"),
+          position: formData.get("position"),
+          key: formData.get("key")
+        }
+  );
 
   const templates = await getDeliverableTemplates();
   const normalizedKey = normalizeTemplateKey(parsed.label, parsed.key);
@@ -209,11 +233,19 @@ export async function createDeliverableTemplateAction(formData: FormData) {
   const position = parsed.position ?? maxPosition + 1;
   const settings = await requireAppSettings();
 
+  const schedule =
+    parsed.scheduleType === "calendar"
+      ? DeliverableScheduleType.Calendar
+      : DeliverableScheduleType.CMonth;
+
   const template = await prisma.deliverableTemplate.create({
     data: {
       key: normalizedKey,
       label: parsed.label.trim(),
-      offsetMonths: parsed.offsetMonths,
+      offsetMonths: parsed.scheduleType === "cmonth" ? parsed.offsetMonths : null,
+      calendarDueDate:
+        parsed.scheduleType === "calendar" ? new Date(parsed.calendarDueDate) : null,
+      scheduleType: schedule,
       position
     }
   });
@@ -239,21 +271,45 @@ export async function createDeliverableTemplateAction(formData: FormData) {
   redirect(`/settings?${params.toString()}`);
 }
 
-const templateUpdateSchema = z.object({
-  key: z.string().min(1),
-  label: z.string().min(3, "Label must be at least 3 characters"),
-  offsetMonths: z.coerce.number().int().min(0).max(48),
-  position: z.coerce.number().int().min(1)
-});
+const deliverableUpdateSchema = z.discriminatedUnion("scheduleType", [
+  z.object({
+    scheduleType: z.literal("calendar"),
+    key: z.string().min(1),
+    label: z.string().min(3, "Label must be at least 3 characters"),
+    calendarDueDate: z
+      .string()
+      .refine((value) => !!value && !Number.isNaN(Date.parse(value)), "Provide a valid calendar date"),
+    position: z.coerce.number().int().min(1)
+  }),
+  z.object({
+    scheduleType: z.literal("cmonth"),
+    key: z.string().min(1),
+    label: z.string().min(3, "Label must be at least 3 characters"),
+    offsetMonths: z.coerce.number().int().min(0).max(48),
+    position: z.coerce.number().int().min(1)
+  })
+]);
 
 export async function updateDeliverableTemplateAction(formData: FormData) {
   const user = await requireAdminUser();
-  const parsed = templateUpdateSchema.parse({
-    key: formData.get("key"),
-    label: formData.get("label"),
-    offsetMonths: formData.get("offsetMonths"),
-    position: formData.get("position")
-  });
+  const scheduleType = (formData.get("scheduleType") ?? "cmonth").toString();
+  const parsed = deliverableUpdateSchema.parse(
+    scheduleType === "calendar"
+      ? {
+          scheduleType: "calendar",
+          key: formData.get("key"),
+          label: formData.get("label"),
+          calendarDueDate: formData.get("calendarDueDate"),
+          position: formData.get("position")
+        }
+      : {
+          scheduleType: "cmonth",
+          key: formData.get("key"),
+          label: formData.get("label"),
+          offsetMonths: formData.get("offsetMonths"),
+          position: formData.get("position")
+        }
+  );
 
   const settings = await requireAppSettings();
 
@@ -261,7 +317,13 @@ export async function updateDeliverableTemplateAction(formData: FormData) {
     where: { key: parsed.key },
     data: {
       label: parsed.label.trim(),
-      offsetMonths: parsed.offsetMonths,
+      offsetMonths: parsed.scheduleType === "cmonth" ? parsed.offsetMonths : null,
+      calendarDueDate:
+        parsed.scheduleType === "calendar" ? new Date(parsed.calendarDueDate) : null,
+      scheduleType:
+        parsed.scheduleType === "calendar"
+          ? DeliverableScheduleType.Calendar
+          : DeliverableScheduleType.CMonth,
       position: parsed.position
     }
   });
@@ -280,21 +342,45 @@ export async function updateDeliverableTemplateAction(formData: FormData) {
   redirect(`/settings?${params.toString()}`);
 }
 
-const gateTemplateCreateSchema = z.object({
-  name: z.string().min(3, "Gate name must be at least 3 characters"),
-  offsetMonths: z.coerce.number().int().min(0).max(48),
-  position: z.coerce.number().int().min(1).optional(),
-  key: z.string().optional()
-});
+const gateTemplateSchema = z.discriminatedUnion("scheduleType", [
+  z.object({
+    scheduleType: z.literal("calendar"),
+    name: z.string().min(3, "Gate name must be at least 3 characters"),
+    calendarDueDate: z
+      .string()
+      .refine((value) => !!value && !Number.isNaN(Date.parse(value)), "Provide a valid calendar date"),
+    position: z.coerce.number().int().min(1).optional(),
+    key: z.string().optional()
+  }),
+  z.object({
+    scheduleType: z.literal("cmonth"),
+    name: z.string().min(3, "Gate name must be at least 3 characters"),
+    offsetMonths: z.coerce.number().int().min(0).max(48),
+    position: z.coerce.number().int().min(1).optional(),
+    key: z.string().optional()
+  })
+]);
 
 export async function createGateTemplateAction(formData: FormData) {
   const user = await requireAdminUser();
-  const parsed = gateTemplateCreateSchema.parse({
-    name: formData.get("name"),
-    offsetMonths: formData.get("offsetMonths"),
-    position: formData.get("position"),
-    key: formData.get("key")
-  });
+  const scheduleType = (formData.get("scheduleType") ?? "cmonth").toString();
+  const parsed = gateTemplateSchema.parse(
+    scheduleType === "calendar"
+      ? {
+          scheduleType: "calendar",
+          name: formData.get("name"),
+          calendarDueDate: formData.get("calendarDueDate"),
+          position: formData.get("position"),
+          key: formData.get("key")
+        }
+      : {
+          scheduleType: "cmonth",
+          name: formData.get("name"),
+          offsetMonths: formData.get("offsetMonths"),
+          position: formData.get("position"),
+          key: formData.get("key")
+        }
+  );
 
   const supportsCatalog = await hasGateTemplateCatalogSupport();
   if (!supportsCatalog) {
@@ -313,11 +399,17 @@ export async function createGateTemplateAction(formData: FormData) {
   const position = parsed.position ?? maxPosition + 1;
   const settings = await requireAppSettings();
 
+  const schedule =
+    parsed.scheduleType === "calendar" ? GateScheduleType.Calendar : GateScheduleType.CMonth;
+
   const template = await prisma.gateTemplate.create({
     data: {
       key: normalizedKey,
       name: parsed.name.trim(),
-      offsetMonths: parsed.offsetMonths,
+      offsetMonths: parsed.scheduleType === "cmonth" ? parsed.offsetMonths : null,
+      calendarDueDate:
+        parsed.scheduleType === "calendar" ? new Date(parsed.calendarDueDate) : null,
+      scheduleType: schedule,
       position
     }
   });
@@ -343,21 +435,45 @@ export async function createGateTemplateAction(formData: FormData) {
   redirect(`/settings?${params.toString()}`);
 }
 
-const gateTemplateUpdateSchema = z.object({
-  key: z.string().min(1),
-  name: z.string().min(3, "Gate name must be at least 3 characters"),
-  offsetMonths: z.coerce.number().int().min(0).max(48),
-  position: z.coerce.number().int().min(1)
-});
+const gateTemplateUpdateSchema = z.discriminatedUnion("scheduleType", [
+  z.object({
+    scheduleType: z.literal("calendar"),
+    key: z.string().min(1),
+    name: z.string().min(3, "Gate name must be at least 3 characters"),
+    calendarDueDate: z
+      .string()
+      .refine((value) => !!value && !Number.isNaN(Date.parse(value)), "Provide a valid calendar date"),
+    position: z.coerce.number().int().min(1)
+  }),
+  z.object({
+    scheduleType: z.literal("cmonth"),
+    key: z.string().min(1),
+    name: z.string().min(3, "Gate name must be at least 3 characters"),
+    offsetMonths: z.coerce.number().int().min(0).max(48),
+    position: z.coerce.number().int().min(1)
+  })
+]);
 
 export async function updateGateTemplateAction(formData: FormData) {
   const user = await requireAdminUser();
-  const parsed = gateTemplateUpdateSchema.parse({
-    key: formData.get("key"),
-    name: formData.get("name"),
-    offsetMonths: formData.get("offsetMonths"),
-    position: formData.get("position")
-  });
+  const scheduleType = (formData.get("scheduleType") ?? "cmonth").toString();
+  const parsed = gateTemplateUpdateSchema.parse(
+    scheduleType === "calendar"
+      ? {
+          scheduleType: "calendar",
+          key: formData.get("key"),
+          name: formData.get("name"),
+          calendarDueDate: formData.get("calendarDueDate"),
+          position: formData.get("position")
+        }
+      : {
+          scheduleType: "cmonth",
+          key: formData.get("key"),
+          name: formData.get("name"),
+          offsetMonths: formData.get("offsetMonths"),
+          position: formData.get("position")
+        }
+  );
 
   const supportsCatalog = await hasGateTemplateCatalogSupport();
   if (!supportsCatalog) {
@@ -370,7 +486,11 @@ export async function updateGateTemplateAction(formData: FormData) {
     where: { key: parsed.key },
     data: {
       name: parsed.name.trim(),
-      offsetMonths: parsed.offsetMonths,
+      offsetMonths: parsed.scheduleType === "cmonth" ? parsed.offsetMonths : null,
+      calendarDueDate:
+        parsed.scheduleType === "calendar" ? new Date(parsed.calendarDueDate) : null,
+      scheduleType:
+        parsed.scheduleType === "calendar" ? GateScheduleType.Calendar : GateScheduleType.CMonth,
       position: parsed.position
     }
   });

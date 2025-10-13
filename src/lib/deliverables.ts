@@ -2,6 +2,7 @@ import { differenceInCalendarDays, isAfter, subMonths } from "date-fns";
 
 import {
   type AppSettings,
+  DeliverableScheduleType,
   DeliverableState,
   type Deliverable,
   type DeliverableTemplate
@@ -15,7 +16,9 @@ export const DUE_SOON_THRESHOLD_DAYS = 30;
 export interface DefaultDeliverableTemplate {
   key: string;
   label: string;
-  offsetMonths: number;
+  scheduleType: DeliverableScheduleType;
+  offsetMonths?: number;
+  calendarDueDate?: Date;
   position: number;
 }
 
@@ -23,72 +26,84 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "ITPDIdentified",
     label: "ITPD Identified",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 12,
     position: 1
   },
   {
     key: "ITPDAgreementKickoff",
     label: "ITPD Agreement and Kick-off",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 10,
     position: 2
   },
   {
     key: "WSOSAlignmentPlanning",
     label: "WSOS Alignment and Initial Planning",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 9,
     position: 3
   },
   {
     key: "TestProjectDraftV1",
     label: "Test Project Draft Version 1",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 8,
     position: 4
   },
   {
     key: "ILConfirmationCPW",
     label: "IL Confirmation at CPW",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 8,
     position: 5
   },
   {
     key: "MarkingSchemeDraftWSOS",
     label: "Marking Scheme Draft aligned to WSOS",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 7,
     position: 6
   },
   {
     key: "PrototypeFeasibilityReview",
     label: "Prototype and Feasibility Review",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 6,
     position: 7
   },
   {
     key: "ITPVQuestionnaireCompleted",
     label: "ITPV Questionnaire Completed",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 5,
     position: 8
   },
   {
     key: "FinalTPMSPackage",
     label: "Final TP and MS Package",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 4,
     position: 9
   },
   {
     key: "ValidationDocumentUploads",
     label: "Validation and Document Uploads",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 4,
     position: 10
   },
   {
     key: "SAGFinalReadyMAT",
     label: "SAG Final Ready for MAT",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 3,
     position: 11
   },
   {
     key: "PreCompetitionReadinessReview",
     label: "Pre-Competition Readiness Review",
+    scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 1,
     position: 12
   }
@@ -141,7 +156,9 @@ export async function ensureDeliverableTemplatesSeeded() {
     data: DEFAULT_DELIVERABLE_TEMPLATES.map((template) => ({
       key: template.key,
       label: template.label,
-      offsetMonths: template.offsetMonths,
+      offsetMonths: template.offsetMonths ?? null,
+      calendarDueDate: template.calendarDueDate ?? null,
+      scheduleType: template.scheduleType,
       position: template.position
     })),
     skipDuplicates: true
@@ -169,21 +186,40 @@ export async function ensureStandardDeliverablesForSkill(params: {
     return [] as Deliverable[];
   }
 
-  const created = await prisma.$transaction(
-    toCreate.map((definition) =>
-      prisma.deliverable.create({
+  const operations = toCreate
+    .map((definition) => {
+      const usingCMonth = definition.scheduleType === DeliverableScheduleType.CMonth;
+      const offset = definition.offsetMonths ?? null;
+      const dueDate = usingCMonth
+        ? offset === null
+          ? null
+          : computeDueDate(settings.competitionStart, offset)
+        : definition.calendarDueDate ?? null;
+
+      if (!dueDate) {
+        return null;
+      }
+
+      return prisma.deliverable.create({
         data: {
           skillId,
           key: definition.key,
           label: definition.label,
-          cMonthOffset: definition.offsetMonths,
-          cMonthLabel: buildCMonthLabel(definition.offsetMonths),
-          dueDate: computeDueDate(settings.competitionStart, definition.offsetMonths),
+          cMonthOffset: usingCMonth ? offset : null,
+          cMonthLabel: usingCMonth && offset !== null ? buildCMonthLabel(offset) : null,
+          scheduleType: definition.scheduleType,
+          dueDate,
           updatedBy: actorId
         }
-      })
-    )
-  );
+      });
+    })
+    .filter((operation): operation is ReturnType<typeof prisma.deliverable.create> => Boolean(operation));
+
+  if (operations.length === 0) {
+    return [] as Deliverable[];
+  }
+
+  const created = await prisma.$transaction(operations);
 
   await logActivity({
     skillId,
@@ -204,38 +240,61 @@ export async function recalculateDeliverableSchedule(params: {
   const { settings, actorId } = params;
   await ensureDeliverableTemplatesSeeded();
   const deliverables = await prisma.deliverable.findMany({
-    select: {
-      id: true,
-      skillId: true,
-      key: true,
-      label: true,
-      cMonthOffset: true,
-      template: true
-    }
+    include: { template: true }
   });
   if (deliverables.length === 0) {
     return;
   }
 
   const now = new Date();
-  const updates = deliverables.map((deliverable) =>
-    prisma.deliverable.update({
-      where: { id: deliverable.id },
-      data: {
-        label: deliverable.template?.label ?? deliverable.label,
-        cMonthOffset: deliverable.template?.offsetMonths ?? deliverable.cMonthOffset,
-        dueDate: computeDueDate(
-          settings.competitionStart,
-          deliverable.template?.offsetMonths ?? deliverable.cMonthOffset
-        ),
-        cMonthLabel: buildCMonthLabel(deliverable.template?.offsetMonths ?? deliverable.cMonthOffset),
-        updatedBy: actorId,
-        overdueNotifiedAt: null
-      }
-    })
-  );
+  const updates = deliverables
+    .map((deliverable) => {
+      const template = deliverable.template;
+      const scheduleType = template?.scheduleType ?? deliverable.scheduleType;
 
-  await prisma.$transaction(updates);
+      if (scheduleType === DeliverableScheduleType.Calendar) {
+        const dueDate = template?.calendarDueDate ?? deliverable.dueDate;
+        if (!dueDate) {
+          return null;
+        }
+
+        return prisma.deliverable.update({
+          where: { id: deliverable.id },
+          data: {
+            label: template?.label ?? deliverable.label,
+            scheduleType,
+            cMonthOffset: null,
+            cMonthLabel: null,
+            dueDate,
+            updatedBy: actorId,
+            overdueNotifiedAt: null
+          }
+        });
+      }
+
+      const offset = template?.offsetMonths ?? deliverable.cMonthOffset;
+      if (offset == null) {
+        return null;
+      }
+
+      return prisma.deliverable.update({
+        where: { id: deliverable.id },
+        data: {
+          label: template?.label ?? deliverable.label,
+          scheduleType: DeliverableScheduleType.CMonth,
+          cMonthOffset: offset,
+          cMonthLabel: buildCMonthLabel(offset),
+          dueDate: computeDueDate(settings.competitionStart, offset),
+          updatedBy: actorId,
+          overdueNotifiedAt: null
+        }
+      });
+    })
+    .filter((operation): operation is ReturnType<typeof prisma.deliverable.update> => Boolean(operation));
+
+  if (updates.length > 0) {
+    await prisma.$transaction(updates);
+  }
 
   const uniqueSkillIds = Array.from(new Set(deliverables.map((deliverable) => deliverable.skillId)));
   await prisma.activityLog.createMany({
@@ -266,15 +325,27 @@ export async function applyTemplateUpdateToDeliverables(params: {
     return;
   }
 
-  const dueDate = computeDueDate(settings.competitionStart, template.offsetMonths);
+  const usingCMonth = template.scheduleType === DeliverableScheduleType.CMonth;
+  const offset = template.offsetMonths ?? null;
+  const dueDate = usingCMonth
+    ? offset === null
+      ? null
+      : computeDueDate(settings.competitionStart, offset)
+    : template.calendarDueDate ?? null;
+
+  if (!dueDate) {
+    return;
+  }
+
   await prisma.$transaction(
     deliverables.map((deliverable) =>
       prisma.deliverable.update({
         where: { id: deliverable.id },
         data: {
           label: template.label,
-          cMonthOffset: template.offsetMonths,
-          cMonthLabel: buildCMonthLabel(template.offsetMonths),
+          scheduleType: template.scheduleType,
+          cMonthOffset: usingCMonth ? offset : null,
+          cMonthLabel: usingCMonth && offset !== null ? buildCMonthLabel(offset) : null,
           dueDate,
           updatedBy: actorId,
           overdueNotifiedAt: null
