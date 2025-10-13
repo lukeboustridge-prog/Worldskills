@@ -36,6 +36,10 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     redirect("/login");
   }
 
+  if (!user.isAdmin && user.role === Role.Pending) {
+    redirect("/awaiting-access");
+  }
+
   const skill = await prisma.skill.findUnique({
     where: { id: params.skillId },
     include: {

@@ -8,6 +8,7 @@ datasource db {
 }
 
 enum Role {
+  Pending
   SA
   SCM
   Secretariat
@@ -32,7 +33,7 @@ model User {
   name         String?
   email        String   @unique
   passwordHash String?
-  role         Role     @default(SCM)
+  role         Role     @default(Pending)
   isAdmin      Boolean  @default(false)
   createdAt    DateTime @default(now())
 

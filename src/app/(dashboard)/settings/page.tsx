@@ -28,6 +28,7 @@ import { prisma } from "@/lib/prisma";
 import { getUserDisplayName } from "@/lib/users";
 
 const ROLE_LABELS: Record<Role, string> = {
+  [Role.Pending]: "No current permissions",
   [Role.SA]: "Skill Advisor",
   [Role.SCM]: "Skill Competition Manager",
   [Role.Secretariat]: "Secretariat"
@@ -136,12 +137,84 @@ export default async function SettingsPage({
 
   const gateTemplatesSupported = await gateTemplateSupportPromise;
 
+  const pendingUsers = users.filter((record) => !record.isAdmin && record.role === Role.Pending);
+  const registeredUsers = users.filter((record) => record.isAdmin || record.role !== Role.Pending);
+
+  const renderUserCard = (record: (typeof users)[number]) => {
+    const isPending = !record.isAdmin && record.role === Role.Pending;
+    const statusLabel = record.isAdmin ? "Admin · Skill Advisor" : ROLE_LABELS[record.role];
+    const statusClasses = isPending
+      ? "rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+      : "rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground";
+
+    return (
+      <div
+        key={record.id}
+        className={`rounded-md border p-4 ${isPending ? "border-amber-300 border-dashed bg-amber-50/60" : ""}`}
+      >
+        <div className="mb-3">
+          <p className="font-medium">{getUserDisplayName(record)}</p>
+          <p className="text-xs text-muted-foreground">{record.email}</p>
+          {isPending ? (
+            <p className="mt-1 text-xs text-amber-700">
+              Awaiting an administrator to assign a role.
+            </p>
+          ) : null}
+        </div>
+        <form
+          action={updateUserRoleAction}
+          className="grid gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))_auto] md:items-end"
+        >
+          <input type="hidden" name="userId" value={record.id} />
+          <div className="space-y-2">
+            <Label htmlFor={`role-${record.id}`}>Role</Label>
+            <select
+              id={`role-${record.id}`}
+              name="role"
+              defaultValue={record.isAdmin ? Role.SA : record.role}
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            >
+              {Object.values(Role).map((role) => (
+                <option key={role} value={role}>
+                  {ROLE_LABELS[role]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`admin-${record.id}`}>Admin access</Label>
+            <div className="flex items-center gap-2 rounded-md border border-input px-3 py-2">
+              <input
+                id={`admin-${record.id}`}
+                name="isAdmin"
+                type="checkbox"
+                defaultChecked={record.isAdmin}
+              />
+              <span className="text-sm">Administrator</span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Current status</Label>
+            <div className={statusClasses}>{statusLabel}</div>
+          </div>
+          <div className="flex items-end">
+            <Button type="submit" variant="outline">
+              Save
+            </Button>
+          </div>
+        </form>
+      </div>
+    );
+  };
+
   const invitations = invitationsSupported
     ? await prisma.invitation.findMany({
         where: { acceptedAt: null },
         orderBy: { createdAt: "desc" }
       })
     : [];
+
+  const invitationRoleOptions = Object.values(Role).filter((role) => role !== Role.Pending);
 
   const createdTemplate = templateCreatedKey
     ? templates.find((template) => template.key === templateCreatedKey)
@@ -486,59 +559,32 @@ export default async function SettingsPage({
         {users.length === 0 ? (
           <p className="text-sm text-muted-foreground">No users match the current search.</p>
         ) : (
-          <div className="space-y-4">
-            {users.map((record) => (
-              <div key={record.id} className="rounded-md border p-4">
-                <div className="mb-3">
-                  <p className="font-medium">{getUserDisplayName(record)}</p>
-                  <p className="text-xs text-muted-foreground">{record.email}</p>
-                </div>
-                <form
-                  action={updateUserRoleAction}
-                  className="grid gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))_auto] md:items-end"
-                >
-                  <input type="hidden" name="userId" value={record.id} />
-                  <div className="space-y-2">
-                    <Label htmlFor={`role-${record.id}`}>Role</Label>
-                    <select
-                      id={`role-${record.id}`}
-                      name="role"
-                      defaultValue={record.isAdmin ? Role.SA : record.role}
-                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                    >
-                      {Object.values(Role).map((role) => (
-                        <option key={role} value={role}>
-                          {ROLE_LABELS[role]}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`admin-${record.id}`}>Admin access</Label>
-                    <div className="flex items-center gap-2 rounded-md border border-input px-3 py-2">
-                      <input
-                        id={`admin-${record.id}`}
-                        name="isAdmin"
-                        type="checkbox"
-                        defaultChecked={record.isAdmin}
-                      />
-                      <span className="text-sm">Administrator</span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Current status</Label>
-                    <div className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
-                      {record.isAdmin ? "Admin · Skill Advisor" : ROLE_LABELS[record.role]}
-                    </div>
-                  </div>
-                  <div className="flex items-end">
-                    <Button type="submit" variant="outline">
-                      Save
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            ))}
+          <div className="space-y-8">
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                No current permissions
+              </h3>
+              {pendingUsers.length === 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  All registered users currently have role assignments.
+                </p>
+              ) : (
+                <div className="mt-3 space-y-4">{pendingUsers.map((record) => renderUserCard(record))}</div>
+              )}
+            </section>
+
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Registered users
+              </h3>
+              {registeredUsers.length === 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  No users with assigned permissions match the current search.
+                </p>
+              ) : (
+                <div className="mt-3 space-y-4">{registeredUsers.map((record) => renderUserCard(record))}</div>
+              )}
+            </section>
           </div>
         )}
 
@@ -574,10 +620,10 @@ export default async function SettingsPage({
                   className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                   defaultValue={Role.SCM}
                 >
-                  {Object.values(Role).map((role) => (
-                    <option key={role} value={role}>
-                      {ROLE_LABELS[role]}
-                    </option>
+                      {invitationRoleOptions.map((role) => (
+                        <option key={role} value={role}>
+                          {ROLE_LABELS[role]}
+                        </option>
                   ))}
                 </select>
               </div>

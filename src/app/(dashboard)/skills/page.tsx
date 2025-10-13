@@ -24,6 +24,10 @@ export default async function SkillsPage() {
     redirect("/login");
   }
 
+  if (!user.isAdmin && user.role === Role.Pending) {
+    redirect("/awaiting-access");
+  }
+
   const isSecretariat = user.role === Role.Secretariat;
   const canManageSkills = user.isAdmin || user.role === Role.SA;
 

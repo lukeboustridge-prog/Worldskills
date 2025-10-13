@@ -7,6 +7,13 @@ import { NavLink } from "@/components/layout/nav-link";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserDisplayName } from "@/lib/users";
 
+const ROLE_LABELS: Record<Role, string> = {
+  [Role.Pending]: "Pending access",
+  [Role.SA]: "Skill Advisor",
+  [Role.SCM]: "Skill Competition Manager",
+  [Role.Secretariat]: "Secretariat"
+};
+
 export default async function DashboardLayout({
   children
 }: {
@@ -16,6 +23,10 @@ export default async function DashboardLayout({
 
   if (!user) {
     redirect("/login");
+  }
+
+  if (!user.isAdmin && user.role === Role.Pending) {
+    redirect("/awaiting-access");
   }
 
   const navItems: { href: string; label: string }[] = [];
@@ -40,7 +51,7 @@ export default async function DashboardLayout({
             <div className="text-right text-sm">
               <p className="font-medium text-foreground">{getUserDisplayName(user)}</p>
               <p className="uppercase text-xs text-muted-foreground">
-                {user.role}
+                {ROLE_LABELS[user.role] ?? user.role}
                 {user.isAdmin ? " · ADMIN" : ""}
               </p>
             </div>

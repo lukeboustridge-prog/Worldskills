@@ -8,8 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { cn, formatDeliverableState } from "@/lib/utils";
+import { formatDeliverableState } from "@/lib/utils";
 
 import { appendEvidenceAction, updateDeliverableStateAction } from "./actions";
 
@@ -61,6 +60,29 @@ export function DeliverablesTable({
     });
   }, [deliverables, filter, dueSoonThresholdDays]);
 
+  const dueSoonCount = useMemo(() => {
+    const now = new Date();
+    return deliverables.filter((deliverable) => {
+      const dueDate = new Date(deliverable.dueDateISO);
+      const daysUntilDue = differenceInCalendarDays(dueDate, now);
+      return !deliverable.isOverdue && daysUntilDue >= 0 && daysUntilDue <= dueSoonThresholdDays;
+    }).length;
+  }, [deliverables, dueSoonThresholdDays]);
+
+  const notStartedCount = stateCounts[DeliverableState.NotStarted] ?? 0;
+  const inProgressCount =
+    (stateCounts[DeliverableState.Draft] ?? 0) + (stateCounts[DeliverableState.InProgress] ?? 0);
+  const completedCount =
+    (stateCounts[DeliverableState.Finalised] ?? 0) +
+    (stateCounts[DeliverableState.Uploaded] ?? 0) +
+    (stateCounts[DeliverableState.Validated] ?? 0);
+
+  const filterOptions: { key: FilterKey; label: string }[] = [
+    { key: "all", label: "All deliverables" },
+    { key: "overdue", label: `Overdue (${overdueCount})` },
+    { key: "dueSoon", label: `Due soon (${dueSoonCount})` }
+  ];
+
   const handleExport = () => {
     startExport(() => {
       const header = ["Label", "State", "Due date", "C-Month", "isOverdue", "overdueByDays"].join(",");
@@ -86,88 +108,116 @@ export function DeliverablesTable({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="outline">Not started: {stateCounts[DeliverableState.NotStarted] ?? 0}</Badge>
-          <Badge variant="outline">Draft: {stateCounts[DeliverableState.Draft] ?? 0}</Badge>
-          <Badge variant="outline">In progress: {stateCounts[DeliverableState.InProgress] ?? 0}</Badge>
-          <Badge variant="outline">Finalised: {stateCounts[DeliverableState.Finalised] ?? 0}</Badge>
-          <Badge variant="outline">Uploaded: {stateCounts[DeliverableState.Uploaded] ?? 0}</Badge>
-          <Badge variant="outline">Validated: {stateCounts[DeliverableState.Validated] ?? 0}</Badge>
-          <Badge variant={overdueCount > 0 ? "destructive" : "outline"}>Overdue: {overdueCount}</Badge>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-lg border bg-muted/20 p-4">
+            <p className="text-xs uppercase text-muted-foreground">Not started</p>
+            <p className="text-2xl font-semibold text-foreground">{notStartedCount}</p>
+          </div>
+          <div className="rounded-lg border bg-muted/20 p-4">
+            <p className="text-xs uppercase text-muted-foreground">In progress</p>
+            <p className="text-2xl font-semibold text-foreground">{inProgressCount}</p>
+          </div>
+          <div className="rounded-lg border bg-muted/20 p-4">
+            <p className="text-xs uppercase text-muted-foreground">Completed</p>
+            <p className="text-2xl font-semibold text-foreground">{completedCount}</p>
+          </div>
+          <div
+            className={`rounded-lg border p-4 ${
+              overdueCount > 0 ? "border-destructive/60 bg-destructive/10" : "bg-muted/20"
+            }`}
+          >
+            <p className="text-xs uppercase text-muted-foreground">Overdue</p>
+            <p className={`text-2xl font-semibold ${overdueCount > 0 ? "text-destructive" : "text-foreground"}`}>
+              {overdueCount}
+            </p>
+          </div>
         </div>
-        <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting}>
-          {isExporting ? "Exporting..." : "Export CSV"}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExport}
+          disabled={isExporting}
+          className="w-full md:w-auto"
+        >
+          {isExporting ? "Exporting…" : "Export CSV"}
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-medium">Filter:</span>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant={filter === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("all")}
-          >
-            All deliverables
-          </Button>
-          <Button
-            type="button"
-            variant={filter === "overdue" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("overdue")}
-          >
-            Overdue
-          </Button>
-          <Button
-            type="button"
-            variant={filter === "dueSoon" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("dueSoon")}
-          >
-            Due soon
-          </Button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">Show</span>
+          <div className="flex overflow-hidden rounded-md border">
+            {filterOptions.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => setFilter(option.key)}
+                aria-pressed={filter === option.key}
+                className={`px-3 py-1.5 text-sm transition ${
+                  filter === option.key
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {filteredDeliverables.length === 0 ? (
         <p className="text-sm text-muted-foreground">No deliverables match the selected filters.</p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Deliverable</TableHead>
-              <TableHead>C-Month</TableHead>
-              <TableHead>Due date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Overdue</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredDeliverables.map((deliverable) => {
-              const dueDate = new Date(deliverable.dueDateISO);
-              return (
-                <TableRow key={deliverable.id} className={cn(deliverable.isOverdue && "bg-red-50")}
-                >
-                  <TableCell>
-                    <div className="font-medium">{deliverable.label}</div>
-                    <div className="text-xs text-muted-foreground">
-                      Evidence: {deliverable.evidenceLinks.length > 0 ? deliverable.evidenceLinks.length : "None"}
-                    </div>
-                  </TableCell>
-                  <TableCell>{deliverable.cMonthLabel}</TableCell>
-                  <TableCell>{format(dueDate, "dd MMM yyyy")}</TableCell>
-                  <TableCell>
+        <div className="space-y-4">
+          {filteredDeliverables.map((deliverable) => {
+            const dueDate = new Date(deliverable.dueDateISO);
+            const daysUntilDue = differenceInCalendarDays(dueDate, new Date());
+            const isDueSoon =
+              !deliverable.isOverdue && daysUntilDue >= 0 && daysUntilDue <= dueSoonThresholdDays;
+            const evidenceCount = deliverable.evidenceLinks.length;
+
+            return (
+              <div key={deliverable.id} className="rounded-lg border bg-card p-5 shadow-sm">
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <p className="text-xs uppercase text-muted-foreground">{deliverable.cMonthLabel}</p>
+                    <h3 className="text-lg font-semibold text-foreground">{deliverable.label}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Due {format(dueDate, "dd MMM yyyy")}
+                      {isDueSoon ? ` · ${daysUntilDue} day${daysUntilDue === 1 ? "" : "s"} remaining` : ""}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {deliverable.isOverdue ? (
+                      <Badge variant="destructive">Overdue by {deliverable.overdueByDays} days</Badge>
+                    ) : isDueSoon ? (
+                      <Badge variant="secondary">Due soon</Badge>
+                    ) : (
+                      <Badge variant="outline">On track</Badge>
+                    )}
+                    <Badge variant="outline">{evidenceCount} evidence</Badge>
+                    {!isAdvisor ? (
+                      <Badge variant="secondary">{formatDeliverableState(deliverable.state)}</Badge>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,260px)]">
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold uppercase text-muted-foreground">Status</p>
                     {isAdvisor ? (
-                      <form action={updateDeliverableStateAction} className="flex items-center gap-2 text-xs">
+                      <form
+                        action={updateDeliverableStateAction}
+                        className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
+                      >
                         <input type="hidden" name="skillId" value={skillId} />
                         <input type="hidden" name="deliverableId" value={deliverable.id} />
                         <select
                           name="state"
                           defaultValue={deliverable.state}
-                          className="h-8 w-[180px] rounded-md border border-input bg-background px-2 text-xs"
+                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-[220px]"
                         >
                           {Object.values(DeliverableState).map((state) => (
                             <option key={state} value={state}>
@@ -175,60 +225,61 @@ export function DeliverablesTable({
                             </option>
                           ))}
                         </select>
-                        <Button type="submit" size="sm" variant="secondary">
+                        <Button type="submit" variant="secondary" size="sm">
                           Update
                         </Button>
                       </form>
                     ) : (
-                      <Badge variant="outline">{formatDeliverableState(deliverable.state)}</Badge>
+                      <Badge variant="secondary" className="w-fit">
+                        {formatDeliverableState(deliverable.state)}
+                      </Badge>
                     )}
-                  </TableCell>
-                  <TableCell>
-                    {deliverable.isOverdue ? (
-                      <Badge variant="destructive">Overdue by {deliverable.overdueByDays} days</Badge>
-                    ) : (
-                      <Badge variant="outline">On track</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="space-y-2 text-right text-xs">
-                    <form action={appendEvidenceAction} className="flex flex-col items-end gap-1 text-right">
-                      <input type="hidden" name="skillId" value={skillId} />
-                      <input type="hidden" name="deliverableId" value={deliverable.id} />
-                      <Label htmlFor={`evidence-${deliverable.id}`} className="sr-only">
-                        Evidence URL
-                      </Label>
-                      <Input
-                        id={`evidence-${deliverable.id}`}
-                        type="url"
-                        name="evidence"
-                        placeholder="Add evidence URL"
-                        className="h-8 w-full min-w-[220px]"
-                        required
-                      />
-                      <Button type="submit" variant="outline" size="sm">
-                        Attach evidence
-                      </Button>
-                    </form>
-                    {deliverable.evidenceLinks.length > 0 ? (
-                      <div className="text-left">
-                        <p className="text-xs font-medium">Existing evidence</p>
-                        <ul className="mt-1 space-y-1 text-xs">
-                          {deliverable.evidenceLinks.map((link, index) => (
-                            <li key={index}>
-                              <a href={link} target="_blank" rel="noreferrer" className="underline">
-                                Evidence #{index + 1}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold uppercase text-muted-foreground">Evidence</p>
+                    {isAdvisor ? (
+                      <form
+                        action={appendEvidenceAction}
+                        className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2"
+                      >
+                        <input type="hidden" name="skillId" value={skillId} />
+                        <input type="hidden" name="deliverableId" value={deliverable.id} />
+                        <Label htmlFor={`evidence-${deliverable.id}`} className="sr-only">
+                          Evidence URL
+                        </Label>
+                        <Input
+                          id={`evidence-${deliverable.id}`}
+                          type="url"
+                          name="evidence"
+                          placeholder="Add evidence URL"
+                          className="h-10 w-full sm:w-[260px]"
+                          required
+                        />
+                        <Button type="submit" variant="outline" size="sm">
+                          Attach
+                        </Button>
+                      </form>
                     ) : null}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                    {evidenceCount > 0 ? (
+                      <ul className="space-y-1 text-left text-sm">
+                        {deliverable.evidenceLinks.map((link, index) => (
+                          <li key={index}>
+                            <a href={link} target="_blank" rel="noreferrer" className="text-primary underline">
+                              Evidence #{index + 1}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No evidence attached yet.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );

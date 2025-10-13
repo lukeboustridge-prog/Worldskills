@@ -76,7 +76,7 @@ export async function POST(request: Request) {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    let role: Role = normalizedEmail === normalizedHostEmail ? Role.SA : Role.SCM;
+    let role: Role = normalizedEmail === normalizedHostEmail ? Role.SA : Role.Pending;
     let isAdmin = normalizedEmail === normalizedHostEmail;
     let invitation: Awaited<ReturnType<typeof prisma.invitation.findUnique>> | null = null;
 

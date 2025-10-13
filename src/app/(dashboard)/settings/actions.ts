@@ -425,7 +425,9 @@ export async function updateUserRoleAction(formData: FormData) {
 const invitationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Enter a valid email address"),
-  role: z.nativeEnum(Role),
+  role: z
+    .nativeEnum(Role)
+    .refine((role) => role !== Role.Pending, "Select a role with active permissions."),
   isAdmin: z.string().optional()
 });
 
