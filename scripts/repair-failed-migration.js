@@ -7,7 +7,7 @@ async function main() {
   }
 
   const prisma = new PrismaClient();
-  const migrationName = '0004_deliverable_schedule';
+  const migrationsToRepair = ['0004_deliverable_schedule', '0005_admin_flag_and_templates'];
 
   try {
     const tableCheck = await prisma.$queryRaw(
@@ -21,27 +21,30 @@ async function main() {
       return;
     }
 
-    const pending = await prisma.$queryRaw(
-      Prisma.sql`SELECT COUNT(*)::int AS count FROM "_prisma_migrations" WHERE "migration_name" = ${migrationName} AND "finished_at" IS NULL`
-    );
+    for (const migrationName of migrationsToRepair) {
+      const pending = await prisma.$queryRaw(
+        Prisma.sql`SELECT COUNT(*)::int AS count FROM "_prisma_migrations" WHERE "migration_name" = ${migrationName} AND "finished_at" IS NULL`
+      );
 
-    const failedCount = Number(Array.isArray(pending) && pending[0] ? pending[0].count : 0);
+      const failedCount = Number(Array.isArray(pending) && pending[0] ? pending[0].count : 0);
 
-    if (!failedCount) {
-      console.log('[repair-failed-migration] No failed migrations detected.');
-      return;
+      if (!failedCount) {
+        continue;
+      }
+
+      await prisma.$executeRaw(
+        Prisma.sql`UPDATE "_prisma_migrations"
+          SET "rolled_back_at" = COALESCE("rolled_back_at", NOW()),
+              "finished_at" = NOW(),
+              "applied_steps_count" = 0,
+              "logs" = COALESCE("logs", '') || '\nMarked as rolled back automatically by repair script.'
+          WHERE "migration_name" = ${migrationName} AND "finished_at" IS NULL`
+      );
+
+      console.log(`[repair-failed-migration] Marked ${failedCount} failed migration instance(s) for ${migrationName} as rolled back.`);
     }
 
-    await prisma.$executeRaw(
-      Prisma.sql`UPDATE "_prisma_migrations"
-        SET "rolled_back_at" = COALESCE("rolled_back_at", NOW()),
-            "finished_at" = NOW(),
-            "applied_steps_count" = 0,
-            "logs" = COALESCE("logs", '') || '\nMarked as rolled back automatically by repair script.'
-        WHERE "migration_name" = ${migrationName} AND "finished_at" IS NULL`
-    );
-
-    console.log(`[repair-failed-migration] Marked ${failedCount} failed migration instance(s) as rolled back.`);
+    console.log('[repair-failed-migration] Repair step completed.');
   } catch (error) {
     console.error('[repair-failed-migration] Failed to repair migrations:', error);
     process.exitCode = 1;

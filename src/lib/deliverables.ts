@@ -2,9 +2,9 @@ import { differenceInCalendarDays, isAfter, subMonths } from "date-fns";
 
 import {
   type AppSettings,
-  DeliverableKey,
   DeliverableState,
-  type Deliverable
+  type Deliverable,
+  type DeliverableTemplate
 } from "@prisma/client";
 
 import { logActivity } from "@/lib/activity";
@@ -12,72 +12,85 @@ import { prisma } from "@/lib/prisma";
 
 export const DUE_SOON_THRESHOLD_DAYS = 30;
 
-export interface StandardDeliverableDefinition {
-  key: DeliverableKey;
+export interface DefaultDeliverableTemplate {
+  key: string;
   label: string;
   offsetMonths: number;
+  position: number;
 }
 
-export const STANDARD_DELIVERABLES: StandardDeliverableDefinition[] = [
+export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
-    key: DeliverableKey.ITPDIdentified,
+    key: "ITPDIdentified",
     label: "ITPD Identified",
-    offsetMonths: 12
+    offsetMonths: 12,
+    position: 1
   },
   {
-    key: DeliverableKey.ITPDAgreementKickoff,
+    key: "ITPDAgreementKickoff",
     label: "ITPD Agreement and Kick-off",
-    offsetMonths: 10
+    offsetMonths: 10,
+    position: 2
   },
   {
-    key: DeliverableKey.WSOSAlignmentPlanning,
+    key: "WSOSAlignmentPlanning",
     label: "WSOS Alignment and Initial Planning",
-    offsetMonths: 9
+    offsetMonths: 9,
+    position: 3
   },
   {
-    key: DeliverableKey.TestProjectDraftV1,
+    key: "TestProjectDraftV1",
     label: "Test Project Draft Version 1",
-    offsetMonths: 8
+    offsetMonths: 8,
+    position: 4
   },
   {
-    key: DeliverableKey.ILConfirmationCPW,
+    key: "ILConfirmationCPW",
     label: "IL Confirmation at CPW",
-    offsetMonths: 8
+    offsetMonths: 8,
+    position: 5
   },
   {
-    key: DeliverableKey.MarkingSchemeDraftWSOS,
+    key: "MarkingSchemeDraftWSOS",
     label: "Marking Scheme Draft aligned to WSOS",
-    offsetMonths: 7
+    offsetMonths: 7,
+    position: 6
   },
   {
-    key: DeliverableKey.PrototypeFeasibilityReview,
+    key: "PrototypeFeasibilityReview",
     label: "Prototype and Feasibility Review",
-    offsetMonths: 6
+    offsetMonths: 6,
+    position: 7
   },
   {
-    key: DeliverableKey.ITPVQuestionnaireCompleted,
+    key: "ITPVQuestionnaireCompleted",
     label: "ITPV Questionnaire Completed",
-    offsetMonths: 5
+    offsetMonths: 5,
+    position: 8
   },
   {
-    key: DeliverableKey.FinalTPMSPackage,
+    key: "FinalTPMSPackage",
     label: "Final TP and MS Package",
-    offsetMonths: 4
+    offsetMonths: 4,
+    position: 9
   },
   {
-    key: DeliverableKey.ValidationDocumentUploads,
+    key: "ValidationDocumentUploads",
     label: "Validation and Document Uploads",
-    offsetMonths: 4
+    offsetMonths: 4,
+    position: 10
   },
   {
-    key: DeliverableKey.SAGFinalReadyMAT,
+    key: "SAGFinalReadyMAT",
     label: "SAG Final Ready for MAT",
-    offsetMonths: 3
+    offsetMonths: 3,
+    position: 11
   },
   {
-    key: DeliverableKey.PreCompetitionReadinessReview,
+    key: "PreCompetitionReadinessReview",
     label: "Pre-Competition Readiness Review",
-    offsetMonths: 1
+    offsetMonths: 1,
+    position: 12
   }
 ];
 
@@ -112,20 +125,46 @@ export function decorateDeliverable(
   };
 }
 
-export function getStandardDefinition(key: DeliverableKey) {
-  return STANDARD_DELIVERABLES.find((item) => item.key === key) ?? null;
+async function getOrderedTemplates() {
+  return prisma.deliverableTemplate.findMany({
+    orderBy: [{ position: "asc" }, { key: "asc" }]
+  });
+}
+
+export async function ensureDeliverableTemplatesSeeded() {
+  const templateCount = await prisma.deliverableTemplate.count();
+  if (templateCount > 0) {
+    return;
+  }
+
+  await prisma.deliverableTemplate.createMany({
+    data: DEFAULT_DELIVERABLE_TEMPLATES.map((template) => ({
+      key: template.key,
+      label: template.label,
+      offsetMonths: template.offsetMonths,
+      position: template.position
+    })),
+    skipDuplicates: true
+  });
+}
+
+export async function getDeliverableTemplates() {
+  await ensureDeliverableTemplatesSeeded();
+  return getOrderedTemplates();
 }
 
 export async function ensureStandardDeliverablesForSkill(params: {
   skillId: string;
   settings: AppSettings;
   actorId: string;
+  templates?: DeliverableTemplate[];
 }) {
   const { skillId, settings, actorId } = params;
+  const templates = params.templates ?? (await getDeliverableTemplates());
   const existing = await prisma.deliverable.findMany({ where: { skillId } });
   const existingKeys = new Set(existing.map((deliverable) => deliverable.key));
 
-  const toCreate = STANDARD_DELIVERABLES.filter((definition) => !existingKeys.has(definition.key));
+  const toCreate = templates.filter((definition) => !existingKeys.has(definition.key));
   if (toCreate.length === 0) {
     return [] as Deliverable[];
   }
@@ -163,7 +202,11 @@ export async function recalculateDeliverableSchedule(params: {
   actorId: string;
 }) {
   const { settings, actorId } = params;
-  const deliverables = await prisma.deliverable.findMany({ select: { id: true, skillId: true, cMonthOffset: true } });
+  await ensureDeliverableTemplatesSeeded();
+  const deliverables = await prisma.deliverable.findMany({
+    select: { id: true, skillId: true, key: true },
+    include: { template: true }
+  });
   if (deliverables.length === 0) {
     return;
   }
@@ -173,8 +216,13 @@ export async function recalculateDeliverableSchedule(params: {
     prisma.deliverable.update({
       where: { id: deliverable.id },
       data: {
-        dueDate: computeDueDate(settings.competitionStart, deliverable.cMonthOffset),
-        cMonthLabel: buildCMonthLabel(deliverable.cMonthOffset),
+        label: deliverable.template?.label ?? deliverable.label,
+        cMonthOffset: deliverable.template?.offsetMonths ?? deliverable.cMonthOffset,
+        dueDate: computeDueDate(
+          settings.competitionStart,
+          deliverable.template?.offsetMonths ?? deliverable.cMonthOffset
+        ),
+        cMonthLabel: buildCMonthLabel(deliverable.template?.offsetMonths ?? deliverable.cMonthOffset),
         updatedBy: actorId,
         overdueNotifiedAt: null
       }
@@ -191,6 +239,55 @@ export async function recalculateDeliverableSchedule(params: {
       action: "DeliverableDueDatesRecalculated",
       payload: {
         recalculatedAt: now.toISOString()
+      }
+    }))
+  });
+}
+
+export async function applyTemplateUpdateToDeliverables(params: {
+  template: DeliverableTemplate;
+  settings: AppSettings;
+  actorId: string;
+}) {
+  const { template, settings, actorId } = params;
+
+  const deliverables = await prisma.deliverable.findMany({
+    where: { key: template.key },
+    select: { id: true, skillId: true }
+  });
+
+  if (deliverables.length === 0) {
+    return;
+  }
+
+  const dueDate = computeDueDate(settings.competitionStart, template.offsetMonths);
+  await prisma.$transaction(
+    deliverables.map((deliverable) =>
+      prisma.deliverable.update({
+        where: { id: deliverable.id },
+        data: {
+          label: template.label,
+          cMonthOffset: template.offsetMonths,
+          cMonthLabel: buildCMonthLabel(template.offsetMonths),
+          dueDate,
+          updatedBy: actorId,
+          overdueNotifiedAt: null
+        }
+      })
+    )
+  );
+
+  const uniqueSkillIds = Array.from(new Set(deliverables.map((deliverable) => deliverable.skillId)));
+  const now = new Date();
+  await prisma.activityLog.createMany({
+    data: uniqueSkillIds.map((skillId) => ({
+      skillId,
+      userId: actorId,
+      action: "DeliverableTemplateUpdated",
+      payload: {
+        templateKey: template.key,
+        templateLabel: template.label,
+        updatedAt: now.toISOString()
       }
     }))
   });

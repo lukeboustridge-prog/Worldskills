@@ -80,7 +80,8 @@ export async function POST(request: Request) {
         name,
         email: normalizedEmail,
         passwordHash,
-        role: normalizedEmail === normalizedHostEmail ? Role.SA : Role.SCM
+        role: normalizedEmail === normalizedHostEmail ? Role.SA : Role.SCM,
+        isAdmin: normalizedEmail === normalizedHostEmail
       }
     });
 

@@ -59,22 +59,24 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
   }
 
   const permittedUserIds = new Set([skill.saId, skill.scmId].filter(Boolean) as string[]);
-  const isAdmin = user.role === Role.Admin;
+  const isAdmin = user.isAdmin;
 
   if (!isAdmin && !permittedUserIds.has(user.id)) {
     redirect("/dashboard");
   }
 
-  const isAdvisor = user.role === Role.SA && skill.saId === user.id;
+  const isAdvisor = user.isAdmin || (user.role === Role.SA && skill.saId === user.id);
   const advisorLabel = getUserDisplayName(skill.sa);
   const managerLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
 
   const decoratedDeliverables = skill.deliverables.map((deliverable) => decorateDeliverable(deliverable));
-  await ensureOverdueNotifications({
-    skillId: skill.id,
-    deliverables: decoratedDeliverables,
-    saId: skill.saId
-  });
+  if (user.role === Role.SA || user.isAdmin) {
+    await ensureOverdueNotifications({
+      skillId: skill.id,
+      deliverables: decoratedDeliverables,
+      saId: skill.saId
+    });
+  }
 
   const summary = classifyDeliverables(decoratedDeliverables);
   const completedDeliverablesCount =

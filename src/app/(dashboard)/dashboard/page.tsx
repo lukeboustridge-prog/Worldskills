@@ -17,8 +17,10 @@ export default async function DashboardPage() {
     return null;
   }
 
+  const isAdvisor = user.role === Role.SA || user.isAdmin;
+  const isManager = user.role === Role.SCM && !user.isAdmin;
   const skills = await prisma.skill.findMany({
-    where: user.role === Role.SA ? { saId: user.id } : { scmId: user.id },
+    where: isAdvisor ? (user.isAdmin ? {} : { saId: user.id }) : { scmId: user.id },
     include: {
       deliverables: true,
       gates: true,
@@ -33,7 +35,7 @@ export default async function DashboardPage() {
     deliverables: skill.deliverables.map((deliverable) => decorateDeliverable(deliverable))
   }));
 
-  if (user.role === Role.SA) {
+  if (isAdvisor) {
     await Promise.all(
       decoratedSkills.map((skill) =>
         ensureOverdueNotifications({
@@ -45,11 +47,11 @@ export default async function DashboardPage() {
     );
   }
 
-  if (user.role === Role.SA) {
+  if (isAdvisor) {
     sortSkillsByRisk(decoratedSkills);
   }
 
-  const firstSkill = user.role === Role.SCM ? decoratedSkills[0] : null;
+  const firstSkill = isManager ? decoratedSkills[0] : null;
 
   return (
     <div className="space-y-8">
@@ -57,12 +59,12 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
           <p className="mt-2 text-muted-foreground">
-            {user.role === Role.SA
+            {isAdvisor
               ? "Overview of all skills and deliverables you manage."
               : "Latest progress for your WorldSkills skill."}
           </p>
         </div>
-        {user.role === Role.SA ? (
+        {isAdvisor ? (
           <Button asChild>
             <Link href="/skills">Manage skills</Link>
           </Button>
@@ -129,7 +131,7 @@ export default async function DashboardPage() {
         })}
       </div>
 
-      {user.role === Role.SCM && firstSkill ? (
+      {isManager && firstSkill ? (
         <Card>
           <CardHeader>
             <CardTitle>Next actions</CardTitle>

@@ -1,16 +1,25 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
+import { Role } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getCurrentUser } from "@/lib/auth";
-import { STANDARD_DELIVERABLES, buildCMonthLabel } from "@/lib/deliverables";
+import { getDeliverableTemplates, buildCMonthLabel } from "@/lib/deliverables";
 import { getAppSettings } from "@/lib/settings";
-import { createMissingDeliverablesAction, saveCompetitionSettingsAction } from "./actions";
+import {
+  createDeliverableTemplateAction,
+  createMissingDeliverablesAction,
+  saveCompetitionSettingsAction,
+  updateDeliverableTemplateAction,
+  updateUserRoleAction
+} from "./actions";
+import { prisma } from "@/lib/prisma";
+import { getUserDisplayName } from "@/lib/users";
 
 function formatDateInput(value: Date | null | undefined) {
   if (!value) return "";
@@ -26,7 +35,7 @@ export default async function SettingsPage({
   if (!user) {
     redirect("/login");
   }
-  if (user.role !== "Admin") {
+  if (!user.isAdmin) {
     redirect("/dashboard");
   }
 
@@ -36,6 +45,33 @@ export default async function SettingsPage({
   const recalculated = typeof searchParams?.recalculated === "string";
   const backfilled = typeof searchParams?.backfilled === "string";
   const createdCount = typeof searchParams?.created === "string" ? Number(searchParams.created) : 0;
+  const templateCreatedKey = typeof searchParams?.templateCreated === "string" ? searchParams.templateCreated : null;
+  const templateUpdatedKey = typeof searchParams?.templateUpdated === "string" ? searchParams.templateUpdated : null;
+  const addedCount = typeof searchParams?.added === "string" ? Number(searchParams.added) : 0;
+  const userUpdated = typeof searchParams?.userUpdated === "string";
+  const userQuery = typeof searchParams?.userQuery === "string" ? searchParams.userQuery.trim() : "";
+
+  const [templates, users] = await Promise.all([
+    getDeliverableTemplates(),
+    prisma.user.findMany({
+      where: userQuery
+        ? {
+            OR: [
+              { name: { contains: userQuery, mode: "insensitive" } },
+              { email: { contains: userQuery.toLowerCase(), mode: "insensitive" } }
+            ]
+          }
+        : undefined,
+      orderBy: [{ name: "asc" }, { email: "asc" }]
+    })
+  ]);
+
+  const createdTemplate = templateCreatedKey
+    ? templates.find((template) => template.key === templateCreatedKey)
+    : null;
+  const updatedTemplate = templateUpdatedKey
+    ? templates.find((template) => template.key === templateUpdatedKey)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -54,6 +90,22 @@ export default async function SettingsPage({
         {backfilled ? (
           <div className="rounded-md border border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
             Missing deliverables have been created for all skills. {createdCount} new deliverables were added.
+          </div>
+        ) : null}
+        {templateCreatedKey ? (
+          <div className="rounded-md border border-amber-400 bg-amber-50 p-4 text-sm text-amber-900">
+            {createdTemplate ? `Added ${createdTemplate.label}` : `Added ${templateCreatedKey}`} to the catalog.
+            {addedCount > 0 ? ` Created ${addedCount} deliverables across existing skills.` : ""}
+          </div>
+        ) : null}
+        {templateUpdatedKey ? (
+          <div className="rounded-md border border-purple-400 bg-purple-50 p-4 text-sm text-purple-900">
+            {updatedTemplate ? `${updatedTemplate.label}` : templateUpdatedKey} updated. Due dates and labels were refreshed for all skills.
+          </div>
+        ) : null}
+        {userUpdated ? (
+          <div className="rounded-md border border-slate-400 bg-slate-50 p-4 text-sm text-slate-900">
+            User permissions updated successfully.
           </div>
         ) : null}
       </div>
@@ -132,29 +184,176 @@ export default async function SettingsPage({
         <CardHeader>
           <CardTitle>Standard deliverable catalog</CardTitle>
           <CardDescription>
-            Each skill automatically receives every deliverable below. Due dates are scheduled relative to C1 using the
-            C-Month offset.
+            Every skill is seeded with these deliverables. Adjust labels, offsets, and ordering to match the latest guidance.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Label</TableHead>
-                <TableHead>C-Month</TableHead>
-                <TableHead>Months before C1</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {STANDARD_DELIVERABLES.map((deliverable) => (
-                <TableRow key={deliverable.key}>
-                  <TableCell>{deliverable.label}</TableCell>
-                  <TableCell>{buildCMonthLabel(deliverable.offsetMonths)}</TableCell>
-                  <TableCell>{deliverable.offsetMonths}</TableCell>
-                </TableRow>
+        <CardContent className="space-y-6">
+          <form
+            action={createDeliverableTemplateAction}
+            className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[2fr_repeat(2,minmax(0,1fr))_auto]"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="new-label">New deliverable label</Label>
+              <Input id="new-label" name="label" placeholder="WorldSkills Orientation" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-offset">Months before C1</Label>
+              <Input id="new-offset" name="offsetMonths" type="number" min={0} max={48} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-position">Position</Label>
+              <Input id="new-position" name="position" type="number" min={1} placeholder={`${templates.length + 1}`} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-key">Key (optional)</Label>
+              <Input id="new-key" name="key" placeholder="OrientationWorkshop" />
+            </div>
+            <div className="flex items-end">
+              <Button type="submit">Add deliverable</Button>
+            </div>
+          </form>
+
+          <div className="space-y-4">
+            {templates.map((template) => (
+              <div key={template.key} className="rounded-md border p-4">
+                <form
+                  action={updateDeliverableTemplateAction}
+                  className="grid gap-4 md:grid-cols-[2fr_repeat(2,minmax(0,1fr))_auto]"
+                >
+                  <input type="hidden" name="key" value={template.key} />
+                  <div className="space-y-2">
+                    <Label htmlFor={`label-${template.key}`}>Label</Label>
+                    <Input id={`label-${template.key}`} name="label" defaultValue={template.label} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`offset-${template.key}`}>Months before C1</Label>
+                    <Input
+                      id={`offset-${template.key}`}
+                      name="offsetMonths"
+                      type="number"
+                      min={0}
+                      max={48}
+                      defaultValue={template.offsetMonths}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`position-${template.key}`}>Position</Label>
+                    <Input
+                      id={`position-${template.key}`}
+                      name="position"
+                      type="number"
+                      min={1}
+                      defaultValue={template.position}
+                      required
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <Button type="submit" variant="outline">
+                      Save
+                    </Button>
+                  </div>
+                </form>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Key: <span className="font-mono">{template.key}</span> · {buildCMonthLabel(template.offsetMonths)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>User management</CardTitle>
+          <CardDescription>Adjust base roles and admin access. Admins automatically appear in Skill Advisor lists.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <details className="rounded-md border p-4" open={userQuery.length > 0}>
+            <summary className="cursor-pointer font-medium">Search &amp; filters</summary>
+            <form method="get" className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+              <div className="space-y-2">
+                <Label htmlFor="userQuery">Search users</Label>
+                <Input
+                  id="userQuery"
+                  name="userQuery"
+                  defaultValue={userQuery}
+                  placeholder="Search by name or email"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button type="submit">Search</Button>
+                {userQuery ? (
+                  <Button type="button" variant="outline" asChild>
+                    <Link href="/settings">Clear</Link>
+                  </Button>
+                ) : null}
+              </div>
+            </form>
+          </details>
+
+          {users.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No users match the current search.</p>
+          ) : (
+            <div className="space-y-4">
+              {users.map((record) => (
+                <div key={record.id} className="rounded-md border p-4">
+                  <div className="mb-3">
+                    <p className="font-medium">{getUserDisplayName(record)}</p>
+                    <p className="text-xs text-muted-foreground">{record.email}</p>
+                  </div>
+                  <form
+                    action={updateUserRoleAction}
+                    className="grid gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))_auto] md:items-end"
+                  >
+                    <input type="hidden" name="userId" value={record.id} />
+                    <div className="space-y-2">
+                      <Label htmlFor={`role-${record.id}`}>Role</Label>
+                      <select
+                        id={`role-${record.id}`}
+                        name="role"
+                        defaultValue={record.isAdmin ? Role.SA : record.role}
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                      >
+                        {Object.values(Role).map((role) => (
+                          <option key={role} value={role}>
+                            {role === Role.SA ? "Skill Advisor" : "Skill Competition Manager"}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`admin-${record.id}`}>Admin access</Label>
+                      <div className="flex items-center gap-2 rounded-md border border-input px-3 py-2">
+                        <input
+                          id={`admin-${record.id}`}
+                          name="isAdmin"
+                          type="checkbox"
+                          defaultChecked={record.isAdmin}
+                        />
+                        <span className="text-sm">Administrator</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Current status</Label>
+                      <div className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
+                        {record.isAdmin ? "Admin · Skill Advisor" : record.role === Role.SA ? "Skill Advisor" : "Skill Competition Manager"}
+                      </div>
+                    </div>
+                    <div className="flex items-end">
+                      <Button type="submit" variant="outline">
+                        Save
+                      </Button>
+                    </div>
+                  </form>
+                </div>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            Admins can edit competition settings and deliverable schedules and remain selectable as Skill Advisors.
+          </p>
         </CardContent>
       </Card>
 

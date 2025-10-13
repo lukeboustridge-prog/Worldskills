@@ -47,7 +47,8 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role
+          role: user.role,
+          isAdmin: user.isAdmin
         };
       }
     })
@@ -58,6 +59,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = (user as { role?: Role }).role ?? Role.SCM;
         token.email = user.email;
+        token.isAdmin = (user as { isAdmin?: boolean }).isAdmin ?? false;
         return token;
       }
 
@@ -70,6 +72,7 @@ export const authOptions: NextAuthOptions = {
           token.role = dbUser.role;
           token.id = dbUser.id;
           token.email = dbUser.email;
+          token.isAdmin = dbUser.isAdmin;
         }
       }
 
@@ -79,6 +82,7 @@ export const authOptions: NextAuthOptions = {
         token.role === undefined
       ) {
         token.role = Role.SA;
+        token.isAdmin = true;
       }
 
       return token;
@@ -90,6 +94,7 @@ export const authOptions: NextAuthOptions = {
         if (typeof token.email === "string") {
           session.user.email = token.email;
         }
+        session.user.isAdmin = Boolean(token.isAdmin);
       }
       return session;
     }
@@ -119,8 +124,16 @@ export function assertSA(role: Role) {
   }
 }
 
-export function assertAdmin(role: Role) {
-  if (role !== Role.Admin) {
+export function assertAdmin(isAdmin: boolean) {
+  if (!isAdmin) {
     throw new Error("Action restricted to Administrators");
   }
+}
+
+export async function requireAdminUser() {
+  const user = await requireUser();
+  if (!user.isAdmin) {
+    throw new Error("Action restricted to Administrators");
+  }
+  return user;
 }

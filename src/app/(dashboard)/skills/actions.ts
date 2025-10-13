@@ -28,7 +28,7 @@ const skillSchema = z.object({
 
 export async function createSkillAction(formData: FormData) {
   const user = await requireUser();
-  if (user.role !== Role.SA && user.role !== Role.Admin) {
+  if (user.role !== Role.SA && !user.isAdmin) {
     throw new Error("Only Skill Advisors or Admin can create skills");
   }
 
@@ -91,7 +91,7 @@ const updateSkillSchema = z.object({
 
 export async function updateSkillAction(formData: FormData) {
   const user = await requireUser();
-  if (user.role !== Role.SA && user.role !== Role.Admin) {
+  if (user.role !== Role.SA && !user.isAdmin) {
     throw new Error("Only Skill Advisors or Admin can update skills");
   }
 
@@ -137,7 +137,7 @@ export async function updateSkillAction(formData: FormData) {
 
 export async function deleteSkillAction(formData: FormData) {
   const user = await requireUser();
-  if (user.role !== Role.SA && user.role !== Role.Admin) {
+  if (user.role !== Role.SA && !user.isAdmin) {
     throw new Error("Only Skill Advisors or Admin can delete skills");
   }
 

@@ -5,8 +5,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { requireUser, assertAdmin } from "@/lib/auth";
-import { ensureStandardDeliverablesForSkill, recalculateDeliverableSchedule } from "@/lib/deliverables";
+import { requireAdminUser } from "@/lib/auth";
+import {
+  applyTemplateUpdateToDeliverables,
+  ensureStandardDeliverablesForSkill,
+  getDeliverableTemplates,
+  recalculateDeliverableSchedule
+} from "@/lib/deliverables";
 import { prisma } from "@/lib/prisma";
 import { getAppSettings, requireAppSettings, upsertAppSettings } from "@/lib/settings";
 
@@ -23,8 +28,7 @@ const settingsSchema = z.object({
 });
 
 export async function saveCompetitionSettingsAction(formData: FormData) {
-  const user = await requireUser();
-  assertAdmin(user.role as Role);
+  const user = await requireAdminUser();
 
   const existing = await getAppSettings();
 
@@ -110,18 +114,19 @@ function isInputJsonValue(value: unknown): value is Prisma.InputJsonValue {
 }
 
 export async function createMissingDeliverablesAction() {
-  const user = await requireUser();
-  assertAdmin(user.role as Role);
+  const user = await requireAdminUser();
 
   const settings = await requireAppSettings();
   const skills = await prisma.skill.findMany({ select: { id: true } });
+  const templates = await getDeliverableTemplates();
 
   let totalCreated = 0;
   for (const skill of skills) {
     const created = await ensureStandardDeliverablesForSkill({
       skillId: skill.id,
       settings,
-      actorId: user.id
+      actorId: user.id,
+      templates
     });
     totalCreated += created.length;
   }
@@ -131,5 +136,155 @@ export async function createMissingDeliverablesAction() {
   revalidatePath("/skills");
 
   const params = new URLSearchParams({ backfilled: "1", created: String(totalCreated) });
+  redirect(`/settings?${params.toString()}`);
+}
+
+const templateCreateSchema = z.object({
+  label: z.string().min(3, "Label must be at least 3 characters long"),
+  offsetMonths: z.coerce.number().int().min(0).max(48),
+  position: z.coerce.number().int().min(1).optional(),
+  key: z.string().optional()
+});
+
+function normalizeTemplateKey(label: string, explicitKey?: string) {
+  const source = explicitKey && explicitKey.trim().length > 0 ? explicitKey : label;
+  const words = source
+    .trim()
+    .replace(/[^a-zA-Z0-9\s]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length === 0) {
+    throw new Error("Provide a deliverable label or key to generate a template identifier.");
+  }
+  const [first, ...rest] = words;
+  const normalized =
+    first.charAt(0).toUpperCase() +
+    first.slice(1).toLowerCase() +
+    rest.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join("");
+  return normalized.replace(/[^a-zA-Z0-9]/g, "");
+}
+
+export async function createDeliverableTemplateAction(formData: FormData) {
+  const user = await requireAdminUser();
+  const parsed = templateCreateSchema.parse({
+    label: formData.get("label"),
+    offsetMonths: formData.get("offsetMonths"),
+    position: formData.get("position"),
+    key: formData.get("key")
+  });
+
+  const templates = await getDeliverableTemplates();
+  const normalizedKey = normalizeTemplateKey(parsed.label, parsed.key);
+
+  const existingTemplate = templates.find((template) => template.key === normalizedKey);
+  if (existingTemplate) {
+    throw new Error("A deliverable with that key already exists.");
+  }
+
+  const maxPosition = templates.reduce((max, template) => Math.max(max, template.position), 0);
+  const position = parsed.position ?? maxPosition + 1;
+  const settings = await requireAppSettings();
+
+  const template = await prisma.deliverableTemplate.create({
+    data: {
+      key: normalizedKey,
+      label: parsed.label.trim(),
+      offsetMonths: parsed.offsetMonths,
+      position
+    }
+  });
+
+  const skills = await prisma.skill.findMany({ select: { id: true } });
+  let createdCount = 0;
+  const refreshedTemplates = await getDeliverableTemplates();
+  for (const skill of skills) {
+    const created = await ensureStandardDeliverablesForSkill({
+      skillId: skill.id,
+      settings,
+      actorId: user.id,
+      templates: refreshedTemplates
+    });
+    createdCount += created.filter((deliverable) => deliverable.key === template.key).length;
+  }
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  revalidatePath("/skills");
+
+  const params = new URLSearchParams({ templateCreated: template.key, added: String(createdCount) });
+  redirect(`/settings?${params.toString()}`);
+}
+
+const templateUpdateSchema = z.object({
+  key: z.string().min(1),
+  label: z.string().min(3, "Label must be at least 3 characters"),
+  offsetMonths: z.coerce.number().int().min(0).max(48),
+  position: z.coerce.number().int().min(1)
+});
+
+export async function updateDeliverableTemplateAction(formData: FormData) {
+  const user = await requireAdminUser();
+  const parsed = templateUpdateSchema.parse({
+    key: formData.get("key"),
+    label: formData.get("label"),
+    offsetMonths: formData.get("offsetMonths"),
+    position: formData.get("position")
+  });
+
+  const settings = await requireAppSettings();
+
+  const template = await prisma.deliverableTemplate.update({
+    where: { key: parsed.key },
+    data: {
+      label: parsed.label.trim(),
+      offsetMonths: parsed.offsetMonths,
+      position: parsed.position
+    }
+  });
+
+  await applyTemplateUpdateToDeliverables({
+    template,
+    settings,
+    actorId: user.id
+  });
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  revalidatePath("/skills");
+
+  const params = new URLSearchParams({ templateUpdated: template.key });
+  redirect(`/settings?${params.toString()}`);
+}
+
+const userUpdateSchema = z.object({
+  userId: z.string().min(1),
+  role: z.nativeEnum(Role),
+  isAdmin: z.string().optional()
+});
+
+export async function updateUserRoleAction(formData: FormData) {
+  await requireAdminUser();
+  const parsed = userUpdateSchema.parse({
+    userId: formData.get("userId"),
+    role: formData.get("role"),
+    isAdmin: formData.get("isAdmin")
+  });
+
+  const isAdmin = parsed.isAdmin === "on";
+  const role = isAdmin ? Role.SA : parsed.role;
+
+  await prisma.user.update({
+    where: { id: parsed.userId },
+    data: {
+      role,
+      isAdmin
+    }
+  });
+
+  revalidatePath("/settings");
+  revalidatePath("/skills");
+  revalidatePath("/dashboard");
+
+  const params = new URLSearchParams({ userUpdated: "1" });
   redirect(`/settings?${params.toString()}`);
 }

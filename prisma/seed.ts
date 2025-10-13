@@ -2,7 +2,7 @@ import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 import { SKILL_CATALOG } from "../src/lib/skill-catalog";
-import { STANDARD_DELIVERABLES, buildCMonthLabel, computeDueDate } from "../src/lib/deliverables";
+import { DEFAULT_DELIVERABLE_TEMPLATES, buildCMonthLabel, computeDueDate } from "../src/lib/deliverables";
 
 const prisma = new PrismaClient();
 const defaultHostEmail = "luke.boustridge@gmail.com";
@@ -55,7 +55,8 @@ async function main() {
     hostUser = await prisma.user.update({
       where: { id: hostUser.id },
       data: {
-        role: Role.Admin,
+        role: Role.SA,
+        isAdmin: true,
         name: hostDisplayName,
         ...(needsPassword ? { passwordHash: hostPasswordHash } : {})
       }
@@ -65,7 +66,8 @@ async function main() {
       data: {
         email: normalizedHostEmail,
         name: hostDisplayName,
-        role: Role.Admin,
+        role: Role.SA,
+        isAdmin: true,
         passwordHash: hostPasswordHash
       }
     });
@@ -176,9 +178,28 @@ async function main() {
     throw new Error("App settings failed to initialize during seeding.");
   }
 
+  await Promise.all(
+    DEFAULT_DELIVERABLE_TEMPLATES.map((template) =>
+      prisma.deliverableTemplate.upsert({
+        where: { key: template.key },
+        update: {
+          label: template.label,
+          offsetMonths: template.offsetMonths,
+          position: template.position
+        },
+        create: {
+          key: template.key,
+          label: template.label,
+          offsetMonths: template.offsetMonths,
+          position: template.position
+        }
+      })
+    )
+  );
+
   const seededSkills = await prisma.skill.findMany({ select: { id: true } });
   for (const skill of seededSkills) {
-    for (const definition of STANDARD_DELIVERABLES) {
+    for (const definition of DEFAULT_DELIVERABLE_TEMPLATES) {
       await prisma.deliverable.upsert({
         where: {
           skillId_key: {

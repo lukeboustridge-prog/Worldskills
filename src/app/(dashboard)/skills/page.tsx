@@ -20,7 +20,7 @@ export default async function SkillsPage() {
     redirect("/login");
   }
 
-  if (user.role !== Role.SA && user.role !== Role.Admin) {
+  if (user.role !== Role.SA && !user.isAdmin) {
     const skill = await prisma.skill.findFirst({ where: { scmId: user.id } });
     if (skill) {
       redirect(`/skills/${skill.id}`);
@@ -37,7 +37,12 @@ export default async function SkillsPage() {
       },
       orderBy: { createdAt: "desc" }
     }),
-    prisma.user.findMany({ where: { role: Role.SA }, orderBy: { name: "asc" } }),
+    prisma.user.findMany({
+      where: {
+        OR: [{ role: Role.SA }, { isAdmin: true }]
+      },
+      orderBy: { name: "asc" }
+    }),
     prisma.user.findMany({ where: { role: Role.SCM }, orderBy: { name: "asc" } })
   ]);
 
@@ -103,7 +108,7 @@ export default async function SkillsPage() {
                 Competition settings are not configured yet. An admin must set the competition start date before new skills can
                 be created and scheduled.
               </p>
-              {user.role === Role.Admin ? (
+              {user.isAdmin ? (
                 <Button asChild variant="outline">
                   <Link href="/settings">Open competition settings</Link>
                 </Button>
