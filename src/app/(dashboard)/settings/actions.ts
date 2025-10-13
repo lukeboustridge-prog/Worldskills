@@ -1,6 +1,6 @@
 "use server";
 
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -43,10 +43,14 @@ export async function saveCompetitionSettingsAction(formData: FormData) {
     throw new Error("Competition end date must be after the start date.");
   }
 
-  let keyDatesJson: unknown = {};
+  let keyDatesJson: Prisma.JsonValue = {};
   if (parsed.keyDates && parsed.keyDates.trim().length > 0) {
     try {
-      keyDatesJson = JSON.parse(parsed.keyDates);
+      const parsedJson = JSON.parse(parsed.keyDates);
+      if (!isJsonValue(parsedJson)) {
+        throw new Error();
+      }
+      keyDatesJson = parsedJson;
     } catch (error) {
       throw new Error("Key dates must be valid JSON.");
     }
@@ -80,6 +84,27 @@ export async function saveCompetitionSettingsAction(formData: FormData) {
     params.set("recalculated", "1");
   }
   redirect(`/settings?${params.toString()}`);
+}
+
+function isJsonValue(value: unknown): value is Prisma.JsonValue {
+  if (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return true;
+  }
+
+  if (Array.isArray(value)) {
+    return value.every((item) => isJsonValue(item));
+  }
+
+  if (typeof value === "object") {
+    return Object.values(value as Record<string, unknown>).every((item) => isJsonValue(item));
+  }
+
+  return false;
 }
 
 export async function createMissingDeliverablesAction() {
