@@ -13,6 +13,9 @@ BEGIN
     CREATE TYPE "Role_new" AS ENUM ('SA', 'SCM');
 
     ALTER TABLE "User"
+      ALTER COLUMN "role" DROP DEFAULT;
+
+    ALTER TABLE "User"
       ALTER COLUMN "role" TYPE "Role_new"
       USING CASE
         WHEN "role"::text = 'Admin' THEN 'SA'::"Role_new"
@@ -21,8 +24,10 @@ BEGIN
 
     DROP TYPE "Role";
     ALTER TYPE "Role_new" RENAME TO "Role";
+    ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'SCM'::"Role";
   ELSE
     CREATE TYPE "Role" AS ENUM ('SA', 'SCM');
+    ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'SCM'::"Role";
   END IF;
 END
 $$;
