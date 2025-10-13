@@ -1,6 +1,6 @@
 "use server";
 
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -9,6 +9,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ensureStandardDeliverablesForSkill } from "@/lib/deliverables";
 import { requireAppSettings } from "@/lib/settings";
+import { SKILL_CATALOG } from "@/lib/skill-catalog";
 
 function normalizeOptionalId(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.length > 0 ? value : null;
@@ -19,8 +20,7 @@ function normalizeOptionalText(value: FormDataEntryValue | null) {
 }
 
 const skillSchema = z.object({
-  name: z.string().min(2, "Skill name must be at least 2 characters"),
-  sector: z.string().min(1, "Sector is required"),
+  catalogId: z.string().min(1, "Skill selection is required"),
   saId: z.string().min(1, "SA is required"),
   scmId: z.string().min(1).nullable().optional(),
   notes: z.string().optional()
@@ -34,11 +34,11 @@ export async function createSkillAction(formData: FormData) {
 
   const settings = await requireAppSettings();
 
+  const catalogIdEntry = formData.get("skillCatalogId");
   const saIdEntry = formData.get("saId");
 
   const parsed = skillSchema.safeParse({
-    name: formData.get("name"),
-    sector: formData.get("skillSector"),
+    catalogId: typeof catalogIdEntry === "string" ? catalogIdEntry : "",
     saId: typeof saIdEntry === "string" && saIdEntry.length > 0 ? saIdEntry : user.id,
     scmId: normalizeOptionalId(formData.get("scmId")),
     notes: normalizeOptionalText(formData.get("notes"))
@@ -48,15 +48,33 @@ export async function createSkillAction(formData: FormData) {
     throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
   }
 
-  const skill = await prisma.skill.create({
-    data: {
-      name: parsed.data.name,
-      sector: parsed.data.sector,
-      saId: parsed.data.saId,
-      scmId: parsed.data.scmId ?? null,
-      notes: parsed.data.notes ?? null
+  const catalogEntry = SKILL_CATALOG.find((entry) => entry.id === parsed.data.catalogId);
+  if (!catalogEntry) {
+    throw new Error("Selected skill is no longer available in the catalog");
+  }
+
+  const existingSkill = await prisma.skill.findFirst({ where: { name: catalogEntry.name } });
+  if (existingSkill) {
+    throw new Error("This skill has already been created");
+  }
+
+  let skill;
+  try {
+    skill = await prisma.skill.create({
+      data: {
+        name: catalogEntry.name,
+        sector: catalogEntry.sector,
+        saId: parsed.data.saId,
+        scmId: parsed.data.scmId ?? null,
+        notes: parsed.data.notes ?? null
+      }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new Error("This skill has already been created");
     }
-  });
+    throw error;
+  }
 
   await ensureStandardDeliverablesForSkill({
     skillId: skill.id,
@@ -82,11 +100,9 @@ export async function createSkillAction(formData: FormData) {
 
 const updateSkillSchema = z.object({
   skillId: z.string().min(1),
-  name: z.string().min(2),
-  sector: z.string().min(1),
-  saId: z.string().min(1),
-  scmId: z.string().min(1).nullable(),
-  notes: z.string().optional()
+  saId: z.string().min(1).optional(),
+  scmId: z.string().min(1).nullable().optional(),
+  notes: z.string().nullable().optional()
 });
 
 export async function updateSkillAction(formData: FormData) {
@@ -95,28 +111,47 @@ export async function updateSkillAction(formData: FormData) {
     throw new Error("Only Skill Advisors or Admin can update skills");
   }
 
+  const saEntry = formData.get("saId");
+  const scmEntry = formData.get("scmId");
+  const notesEntry = formData.get("notes");
+
   const parsed = updateSkillSchema.safeParse({
     skillId: formData.get("skillId"),
-    name: formData.get("name"),
-    sector: formData.get("sector"),
-    saId: formData.get("saId"),
-    scmId: normalizeOptionalId(formData.get("scmId")),
-    notes: normalizeOptionalText(formData.get("notes"))
+    saId: typeof saEntry === "string" && saEntry.length > 0 ? saEntry : undefined,
+    scmId: scmEntry === null ? undefined : normalizeOptionalId(scmEntry),
+    notes:
+      notesEntry === null
+        ? undefined
+        : typeof notesEntry === "string" && notesEntry.length > 0
+          ? notesEntry
+          : null
   });
 
   if (!parsed.success) {
     throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
   }
 
+  const updates: Record<string, unknown> = {};
+
+  if (parsed.data.saId) {
+    updates.saId = parsed.data.saId;
+  }
+
+  if (parsed.data.scmId !== undefined) {
+    updates.scmId = parsed.data.scmId ?? null;
+  }
+
+  if (parsed.data.notes !== undefined) {
+    updates.notes = parsed.data.notes ?? null;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return;
+  }
+
   const skill = await prisma.skill.update({
     where: { id: parsed.data.skillId },
-    data: {
-      name: parsed.data.name,
-      sector: parsed.data.sector,
-      saId: parsed.data.saId,
-      scmId: parsed.data.scmId ?? null,
-      notes: parsed.data.notes ?? null
-    }
+    data: updates
   });
 
   await logActivity({
@@ -124,8 +159,6 @@ export async function updateSkillAction(formData: FormData) {
     userId: user.id,
     action: "SkillUpdated",
     payload: {
-      name: skill.name,
-      sector: skill.sector,
       saId: skill.saId,
       scmId: skill.scmId ?? null
     }

@@ -63,6 +63,7 @@ model Skill {
 
   @@index([scmId])
   @@index([saId])
+  @@unique([name])
 }
 
 model DeliverableTemplate {
