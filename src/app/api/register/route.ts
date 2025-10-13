@@ -81,7 +81,21 @@ export async function POST(request: Request) {
     let invitation: Awaited<ReturnType<typeof prisma.invitation.findUnique>> | null = null;
 
     if (token) {
-      invitation = await prisma.invitation.findUnique({ where: { token } });
+      try {
+        invitation = await prisma.invitation.findUnique({ where: { token } });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2021") {
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Invitations are temporarily unavailable while the system updates. Please try again later."
+            },
+            { status: 503 }
+          );
+        }
+
+        throw error;
+      }
       if (!invitation) {
         return NextResponse.json(
           {
@@ -137,10 +151,19 @@ export async function POST(request: Request) {
     });
 
     if (invitation) {
-      await prisma.invitation.update({
-        where: { id: invitation.id },
-        data: { acceptedAt: new Date() }
-      });
+      try {
+        await prisma.invitation.update({
+          where: { id: invitation.id },
+          data: { acceptedAt: new Date() }
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2021") {
+          // Invitation table disappeared mid-request; continue without failing user registration.
+          console.warn("Invitation table missing during registration update", error);
+        } else {
+          throw error;
+        }
+      }
     }
 
     return NextResponse.json(

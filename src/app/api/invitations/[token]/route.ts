@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
@@ -14,7 +14,20 @@ export async function GET(
     return NextResponse.json({ success: false, error: "Invitation not found." }, { status: 404 });
   }
 
-  const invitation = await prisma.invitation.findUnique({ where: { token } });
+  let invitation;
+  try {
+    invitation = await prisma.invitation.findUnique({ where: { token } });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2021") {
+      return NextResponse.json({ success: false, error: "Invitation not found." }, { status: 404 });
+    }
+
+    console.error("GET /api/invitations/[token] failed", error);
+    return NextResponse.json(
+      { success: false, error: "We couldn't validate your invitation link right now." },
+      { status: 500 }
+    );
+  }
   if (!invitation) {
     return NextResponse.json({ success: false, error: "Invitation not found." }, { status: 404 });
   }

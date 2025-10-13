@@ -13,6 +13,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { buildCMonthLabel, getDeliverableTemplates } from "@/lib/deliverables";
 import { getGateTemplates } from "@/lib/gates";
 import { getAppSettings } from "@/lib/settings";
+import { hasGateTemplateCatalogSupport, hasInvitationTable } from "@/lib/schema-info";
 import {
   createDeliverableTemplateAction,
   createGateTemplateAction,
@@ -113,7 +114,10 @@ export default async function SettingsPage({
   const inviteEmail = typeof searchParams?.inviteEmail === "string" ? searchParams.inviteEmail : null;
   const inviteLink = inviteToken ? `/register?token=${inviteToken}` : null;
 
-  const [templates, gateTemplates, users, invitations] = await Promise.all([
+  const gateTemplateSupportPromise = hasGateTemplateCatalogSupport();
+  const invitationSupportPromise = hasInvitationTable();
+
+  const [templates, gateTemplates, users, invitationsSupported] = await Promise.all([
     getDeliverableTemplates(),
     getGateTemplates(),
     prisma.user.findMany({
@@ -127,11 +131,17 @@ export default async function SettingsPage({
         : undefined,
       orderBy: [{ name: "asc" }, { email: "asc" }]
     }),
-    prisma.invitation.findMany({
-      where: { acceptedAt: null },
-      orderBy: { createdAt: "desc" }
-    })
+    invitationSupportPromise
   ]);
+
+  const gateTemplatesSupported = await gateTemplateSupportPromise;
+
+  const invitations = invitationsSupported
+    ? await prisma.invitation.findMany({
+        where: { acceptedAt: null },
+        orderBy: { createdAt: "desc" }
+      })
+    : [];
 
   const createdTemplate = templateCreatedKey
     ? templates.find((template) => template.key === templateCreatedKey)
@@ -179,20 +189,20 @@ export default async function SettingsPage({
             {updatedTemplate ? `${updatedTemplate.label}` : templateUpdatedKey} updated. Due dates and labels were refreshed for all skills.
           </div>
         ) : null}
-        {gateTemplateCreatedKey ? (
+        {gateTemplatesSupported && gateTemplateCreatedKey ? (
           <div className="rounded-md border border-orange-400 bg-orange-50 p-4 text-sm text-orange-900">
             {createdGateTemplate ? `Added ${createdGateTemplate.name}` : `Added ${gateTemplateCreatedKey}`} to the gate
             catalog.{" "}
             {gatesAddedCount > 0 ? `Created ${gatesAddedCount} gates across existing skills.` : ""}
           </div>
         ) : null}
-        {gateTemplateUpdatedKey ? (
+        {gateTemplatesSupported && gateTemplateUpdatedKey ? (
           <div className="rounded-md border border-rose-400 bg-rose-50 p-4 text-sm text-rose-900">
             Gate template {updatedGateTemplate ? updatedGateTemplate.name : gateTemplateUpdatedKey} updated. Existing gates now
             reflect the new schedule.
           </div>
         ) : null}
-        {inviteCreated && inviteLink ? (
+        {invitationsSupported && inviteCreated && inviteLink ? (
           <div className="rounded-md border border-emerald-400 bg-emerald-50 p-4 text-sm text-emerald-900">
             Invitation ready for {inviteEmail ?? "the recipient"}. Share {" "}
             <code className="rounded bg-emerald-100 px-1 py-0.5 font-mono text-xs">{inviteLink}</code>
@@ -354,80 +364,95 @@ export default async function SettingsPage({
       <CollapsibleSection
         title="Gate templates"
         description="Define the standard gates that are created for every skill."
-        defaultOpen={Boolean(gateTemplateCreatedKey || gateTemplateUpdatedKey)}
+        defaultOpen={Boolean(gateTemplateCreatedKey || gateTemplateUpdatedKey) || !gateTemplatesSupported}
       >
-        <form
-          action={createGateTemplateAction}
-          className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[2fr_repeat(2,minmax(0,1fr))_auto]"
-        >
-          <div className="space-y-2">
-            <Label htmlFor="gate-name">New gate name</Label>
-            <Input id="gate-name" name="name" placeholder="Validation workshop" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="gate-offset">Months before C1</Label>
-            <Input id="gate-offset" name="offsetMonths" type="number" min={0} max={48} required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="gate-position">Position</Label>
-            <Input id="gate-position" name="position" type="number" min={1} placeholder={`${gateTemplates.length + 1}`} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="gate-key">Key (optional)</Label>
-            <Input id="gate-key" name="key" placeholder="ValidationGate" />
-          </div>
-          <div className="flex items-end">
-            <Button type="submit">Add gate</Button>
-          </div>
-        </form>
+        {gateTemplatesSupported ? (
+          <>
+            <form
+              action={createGateTemplateAction}
+              className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[2fr_repeat(2,minmax(0,1fr))_auto]"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="gate-name">New gate name</Label>
+                <Input id="gate-name" name="name" placeholder="Validation workshop" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gate-offset">Months before C1</Label>
+                <Input id="gate-offset" name="offsetMonths" type="number" min={0} max={48} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gate-position">Position</Label>
+                <Input
+                  id="gate-position"
+                  name="position"
+                  type="number"
+                  min={1}
+                  placeholder={`${gateTemplates.length + 1}`}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gate-key">Key (optional)</Label>
+                <Input id="gate-key" name="key" placeholder="ValidationGate" />
+              </div>
+              <div className="flex items-end">
+                <Button type="submit">Add gate</Button>
+              </div>
+            </form>
 
-        <div className="space-y-4">
-          {gateTemplates.map((template) => (
-            <div key={template.key} className="rounded-md border p-4">
-              <form
-                action={updateGateTemplateAction}
-                className="grid gap-4 md:grid-cols-[2fr_repeat(2,minmax(0,1fr))_auto]"
-              >
-                <input type="hidden" name="key" value={template.key} />
-                <div className="space-y-2">
-                  <Label htmlFor={`gate-name-${template.key}`}>Name</Label>
-                  <Input id={`gate-name-${template.key}`} name="name" defaultValue={template.name} required />
+            <div className="space-y-4">
+              {gateTemplates.map((template) => (
+                <div key={template.key} className="rounded-md border p-4">
+                  <form
+                    action={updateGateTemplateAction}
+                    className="grid gap-4 md:grid-cols-[2fr_repeat(2,minmax(0,1fr))_auto]"
+                  >
+                    <input type="hidden" name="key" value={template.key} />
+                    <div className="space-y-2">
+                      <Label htmlFor={`gate-name-${template.key}`}>Name</Label>
+                      <Input id={`gate-name-${template.key}`} name="name" defaultValue={template.name} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`gate-offset-${template.key}`}>Months before C1</Label>
+                      <Input
+                        id={`gate-offset-${template.key}`}
+                        name="offsetMonths"
+                        type="number"
+                        min={0}
+                        max={48}
+                        defaultValue={template.offsetMonths}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`gate-position-${template.key}`}>Position</Label>
+                      <Input
+                        id={`gate-position-${template.key}`}
+                        name="position"
+                        type="number"
+                        min={1}
+                        defaultValue={template.position}
+                        required
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <Button type="submit" variant="outline">
+                        Save
+                      </Button>
+                    </div>
+                  </form>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Key: <span className="font-mono">{template.key}</span> · {buildCMonthLabel(template.offsetMonths)}
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`gate-offset-${template.key}`}>Months before C1</Label>
-                  <Input
-                    id={`gate-offset-${template.key}`}
-                    name="offsetMonths"
-                    type="number"
-                    min={0}
-                    max={48}
-                    defaultValue={template.offsetMonths}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`gate-position-${template.key}`}>Position</Label>
-                  <Input
-                    id={`gate-position-${template.key}`}
-                    name="position"
-                    type="number"
-                    min={1}
-                    defaultValue={template.position}
-                    required
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button type="submit" variant="outline">
-                    Save
-                  </Button>
-                </div>
-              </form>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Key: <span className="font-mono">{template.key}</span> · {buildCMonthLabel(template.offsetMonths)}
-              </p>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Gate templates will be available once the latest database migration has completed. Existing gates continue to use
+            the default schedule in the meantime.
+          </p>
+        )}
       </CollapsibleSection>
 
       <CollapsibleSection
@@ -525,83 +550,91 @@ export default async function SettingsPage({
       <CollapsibleSection
         title="User invitations"
         description="Invite new teammates with the correct role and permissions pre-configured."
-        defaultOpen={inviteCreated}
+        defaultOpen={inviteCreated || !invitationsSupported}
       >
-        <form
-          action={createInvitationAction}
-          className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[repeat(3,minmax(0,1fr))_auto] md:items-end"
-        >
-          <div className="space-y-2">
-            <Label htmlFor="invite-name">Name</Label>
-            <Input id="invite-name" name="name" placeholder="Alex Advisor" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="invite-email">Email</Label>
-            <Input id="invite-email" name="email" type="email" placeholder="alex@example.com" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="invite-role">Role</Label>
-            <select
-              id="invite-role"
-              name="role"
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-              defaultValue={Role.SCM}
+        {invitationsSupported ? (
+          <>
+            <form
+              action={createInvitationAction}
+              className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[repeat(3,minmax(0,1fr))_auto] md:items-end"
             >
-              {Object.values(Role).map((role) => (
-                <option key={role} value={role}>
-                  {ROLE_LABELS[role]}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="invite-admin">Permissions</Label>
-            <div className="flex items-center gap-2 rounded-md border border-input px-3 py-2">
-              <input id="invite-admin" name="isAdmin" type="checkbox" />
-              <span className="text-sm">Administrator access</span>
-            </div>
-          </div>
-          <div className="flex items-end">
-            <Button type="submit">Create invitation</Button>
-          </div>
-        </form>
-
-        {invitations.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No pending invitations yet.</p>
-        ) : (
-          <div className="space-y-4">
-            {invitations.map((invitation) => {
-              const expires = new Date(invitation.expiresAt);
-              const isExpired = expires.getTime() < Date.now();
-              const invitePath = `/register?token=${invitation.token}`;
-              return (
-                <div key={invitation.id} className="rounded-md border p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{invitation.name}</p>
-                      <p className="text-xs text-muted-foreground">{invitation.email}</p>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Expires {format(expires, "dd MMM yyyy")}
-                      {isExpired ? <span className="ml-1 text-destructive">(Expired)</span> : null}
-                    </div>
-                  </div>
-                  <div className="mt-3 grid gap-3 md:grid-cols-[repeat(3,minmax(0,1fr))]">
-                    <div className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
-                      Role: {ROLE_LABELS[invitation.role]}
-                    </div>
-                    <div className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
-                      Permissions: {invitation.isAdmin ? "Administrator" : "Standard"}
-                    </div>
-                    <div className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
-                      Link:
-                      <code className="ml-2 inline-block rounded bg-muted px-2 py-0.5 text-xs">{invitePath}</code>
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="invite-name">Name</Label>
+                <Input id="invite-name" name="name" placeholder="Alex Advisor" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="invite-email">Email</Label>
+                <Input id="invite-email" name="email" type="email" placeholder="alex@example.com" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="invite-role">Role</Label>
+                <select
+                  id="invite-role"
+                  name="role"
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  defaultValue={Role.SCM}
+                >
+                  {Object.values(Role).map((role) => (
+                    <option key={role} value={role}>
+                      {ROLE_LABELS[role]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="invite-admin">Permissions</Label>
+                <div className="flex items-center gap-2 rounded-md border border-input px-3 py-2">
+                  <input id="invite-admin" name="isAdmin" type="checkbox" />
+                  <span className="text-sm">Administrator access</span>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+              <div className="flex items-end">
+                <Button type="submit">Create invitation</Button>
+              </div>
+            </form>
+
+            {invitations.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No pending invitations yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {invitations.map((invitation) => {
+                  const expires = new Date(invitation.expiresAt);
+                  const isExpired = expires.getTime() < Date.now();
+                  const invitePath = `/register?token=${invitation.token}`;
+                  return (
+                    <div key={invitation.id} className="rounded-md border p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="font-medium">{invitation.name}</p>
+                          <p className="text-xs text-muted-foreground">{invitation.email}</p>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Expires {format(expires, "dd MMM yyyy")}
+                          {isExpired ? <span className="ml-1 text-destructive">(Expired)</span> : null}
+                        </div>
+                      </div>
+                      <div className="mt-3 grid gap-3 md:grid-cols-[repeat(3,minmax(0,1fr))]">
+                        <div className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
+                          Role: {ROLE_LABELS[invitation.role]}
+                        </div>
+                        <div className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
+                          Permissions: {invitation.isAdmin ? "Administrator" : "Standard"}
+                        </div>
+                        <div className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
+                          Link:
+                          <code className="ml-2 inline-block rounded bg-muted px-2 py-0.5 text-xs">{invitePath}</code>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Invitations will be available once the database migration that adds the invitation table has completed.
+          </p>
         )}
       </CollapsibleSection>
 

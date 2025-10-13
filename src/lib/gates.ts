@@ -3,15 +3,16 @@ import { type AppSettings, type Gate, type GateTemplate } from "@prisma/client";
 import { logActivity } from "@/lib/activity";
 import { prisma } from "@/lib/prisma";
 import { computeDueDate } from "@/lib/deliverables";
+import { hasGateTemplateCatalogSupport } from "@/lib/schema-info";
 
-export interface DefaultGateTemplate {
+export interface GateTemplateDefinition {
   key: string;
   name: string;
   offsetMonths: number;
   position: number;
 }
 
-export const DEFAULT_GATE_TEMPLATES: DefaultGateTemplate[] = [
+export const DEFAULT_GATE_TEMPLATES: GateTemplateDefinition[] = [
   {
     key: "KickoffAlignment",
     name: "Kick-off alignment",
@@ -39,6 +40,10 @@ async function getOrderedTemplates() {
 }
 
 export async function ensureGateTemplatesSeeded() {
+  if (!(await hasGateTemplateCatalogSupport())) {
+    return;
+  }
+
   const templateCount = await prisma.gateTemplate.count();
   if (templateCount > 0) {
     return;
@@ -55,16 +60,28 @@ export async function ensureGateTemplatesSeeded() {
   });
 }
 
-export async function getGateTemplates() {
+export async function getGateTemplates(): Promise<GateTemplateDefinition[]> {
+  const supportsCatalog = await hasGateTemplateCatalogSupport();
+  if (!supportsCatalog) {
+    return DEFAULT_GATE_TEMPLATES;
+  }
+
   await ensureGateTemplatesSeeded();
-  return getOrderedTemplates();
+  const templates = await getOrderedTemplates();
+
+  return templates.map((template) => ({
+    key: template.key,
+    name: template.name,
+    offsetMonths: template.offsetMonths,
+    position: template.position
+  }));
 }
 
 export async function ensureStandardGatesForSkill(params: {
   skillId: string;
   settings: AppSettings;
   actorId: string;
-  templates?: GateTemplate[];
+  templates?: GateTemplateDefinition[];
 }) {
   const { skillId, settings, actorId } = params;
   const templates = params.templates ?? (await getGateTemplates());
@@ -72,14 +89,57 @@ export async function ensureStandardGatesForSkill(params: {
     return [] as Gate[];
   }
 
+  const supportsCatalog = await hasGateTemplateCatalogSupport();
+
+  if (supportsCatalog) {
+    const existing = await prisma.gate.findMany({
+      where: { skillId },
+      select: { id: true, templateKey: true }
+    });
+    const existingKeys = new Set(
+      existing.map((gate) => gate.templateKey).filter((key): key is string => Boolean(key))
+    );
+    const toCreate = templates.filter((template) => !existingKeys.has(template.key));
+
+    if (toCreate.length === 0) {
+      return [] as Gate[];
+    }
+
+    const created = await prisma.$transaction(
+      toCreate.map((template) =>
+        prisma.gate.create({
+          data: {
+            skillId,
+            name: template.name,
+            dueDate: computeDueDate(settings.competitionStart, template.offsetMonths),
+            templateKey: template.key
+          }
+        })
+      )
+    );
+
+    await logActivity({
+      skillId,
+      userId: actorId,
+      action: "GatesSeeded",
+      payload: {
+        created: created.map((gate) => ({
+          id: gate.id,
+          name: gate.name,
+          templateKey: gate.templateKey ?? null
+        }))
+      }
+    });
+
+    return created;
+  }
+
   const existing = await prisma.gate.findMany({
     where: { skillId },
-    select: { id: true, templateKey: true }
+    select: { id: true, name: true }
   });
-  const existingKeys = new Set(
-    existing.map((gate) => gate.templateKey).filter((key): key is string => Boolean(key))
-  );
-  const toCreate = templates.filter((template) => !existingKeys.has(template.key));
+  const existingNames = new Set(existing.map((gate) => gate.name.toLowerCase()));
+  const toCreate = templates.filter((template) => !existingNames.has(template.name.toLowerCase()));
 
   if (toCreate.length === 0) {
     return [] as Gate[];
@@ -91,8 +151,7 @@ export async function ensureStandardGatesForSkill(params: {
         data: {
           skillId,
           name: template.name,
-          dueDate: computeDueDate(settings.competitionStart, template.offsetMonths),
-          templateKey: template.key
+          dueDate: computeDueDate(settings.competitionStart, template.offsetMonths)
         }
       })
     )
@@ -103,7 +162,11 @@ export async function ensureStandardGatesForSkill(params: {
     userId: actorId,
     action: "GatesSeeded",
     payload: {
-      created: created.map((gate) => ({ id: gate.id, name: gate.name, templateKey: gate.templateKey }))
+      created: created.map((gate, index) => ({
+        id: gate.id,
+        name: gate.name,
+        templateKey: toCreate[index]?.key ?? null
+      }))
     }
   });
 

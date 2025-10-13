@@ -21,6 +21,7 @@ import {
   getGateTemplates
 } from "@/lib/gates";
 import { prisma } from "@/lib/prisma";
+import { hasGateTemplateCatalogSupport, hasInvitationTable } from "@/lib/schema-info";
 import { getAppSettings, requireAppSettings, upsertAppSettings } from "@/lib/settings";
 
 const settingsSchema = z.object({
@@ -295,6 +296,11 @@ export async function createGateTemplateAction(formData: FormData) {
     key: formData.get("key")
   });
 
+  const supportsCatalog = await hasGateTemplateCatalogSupport();
+  if (!supportsCatalog) {
+    throw new Error("Gate templates will be available once the database migration has completed.");
+  }
+
   const templates = await getGateTemplates();
   const normalizedKey = normalizeTemplateKey(parsed.name, parsed.key);
 
@@ -352,6 +358,11 @@ export async function updateGateTemplateAction(formData: FormData) {
     offsetMonths: formData.get("offsetMonths"),
     position: formData.get("position")
   });
+
+  const supportsCatalog = await hasGateTemplateCatalogSupport();
+  if (!supportsCatalog) {
+    throw new Error("Gate templates will be available once the database migration has completed.");
+  }
 
   const settings = await requireAppSettings();
 
@@ -426,6 +437,11 @@ export async function createInvitationAction(formData: FormData) {
     role: formData.get("role"),
     isAdmin: formData.get("isAdmin")
   });
+
+  const invitationsSupported = await hasInvitationTable();
+  if (!invitationsSupported) {
+    throw new Error("Invitations will be available once the database migration has completed.");
+  }
 
   const normalizedEmail = parsed.email.toLowerCase();
   const isAdmin = parsed.isAdmin === "on";
