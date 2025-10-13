@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAppSettings } from "@/lib/settings";
@@ -118,63 +119,176 @@ export default async function SkillsPage() {
           </CardHeader>
         </Card>
       ) : (
-        <div className="space-y-10">
+        <div className="space-y-6">
           {groupedByAdvisor.map((group) => {
-            const advisorName = getUserDisplayName(group.advisor!);
+            const advisor = group.advisor!;
+            const advisorName = getUserDisplayName(advisor);
             const plural = group.skills.length === 1 ? "skill" : "skills";
 
             return (
-              <section key={group.advisor!.id} className="space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-2xl font-semibold">{advisorName}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {group.skills.length} {plural}
-                    </p>
+              <details key={advisor.id} className="group rounded-lg border bg-card">
+                <summary className="flex cursor-pointer items-center justify-between gap-3 px-6 py-4 text-left font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <div className="space-y-1">
+                    <p className="text-lg font-semibold">{advisorName}</p>
+                    <p className="text-sm text-muted-foreground">{group.skills.length} {plural}</p>
                   </div>
-                  <Badge variant="outline">{group.skills.length} {plural}</Badge>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline">{group.skills.length} {plural}</Badge>
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+                  </div>
+                </summary>
+                <div className="border-t">
+                  <div className="grid gap-4 p-6 lg:grid-cols-2">
+                    {group.skills
+                      .slice()
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((skill) => {
+                        const catalogEntry = catalogByName.get(skill.name);
+                        const scmLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
+
+                        return (
+                          <Card key={skill.id} className="h-full overflow-hidden">
+                            <details className="group">
+                              <summary className="flex cursor-pointer items-start justify-between gap-3 px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                                <div className="space-y-1">
+                                  <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                    {catalogEntry ? (
+                                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                                        Skill {catalogEntry.code}
+                                      </span>
+                                    ) : null}
+                                    <span className="font-medium text-foreground">Sector: {skill.sector ?? "Not recorded"}</span>
+                                  </div>
+                                  <p className="text-lg font-semibold text-foreground">{skill.name}</p>
+                                  <p className="text-xs text-muted-foreground">SCM: {scmLabel}</p>
+                                </div>
+                                <ChevronRight className="mt-1 h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-90" aria-hidden="true" />
+                              </summary>
+                              <CardContent className="space-y-4 border-t p-6 pt-6">
+                                <form action={updateSkillAction} className="space-y-4">
+                                  <input type="hidden" name="skillId" value={skill.id} />
+                                  <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-1">
+                                      <Label htmlFor={`sa-${skill.id}`}>Skill Advisor</Label>
+                                      <select
+                                        id={`sa-${skill.id}`}
+                                        name="saId"
+                                        defaultValue={skill.saId}
+                                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                                        required
+                                      >
+                                        {advisorOptions.map((advisorOption) => (
+                                          <option key={advisorOption.id} value={advisorOption.id}>
+                                            {advisorOption.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                      <Label htmlFor={`scm-${skill.id}`}>Skill Competition Manager</Label>
+                                      <select
+                                        id={`scm-${skill.id}`}
+                                        name="scmId"
+                                        defaultValue={skill.scmId ?? ""}
+                                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                                      >
+                                        <option value="">Unassigned</option>
+                                        {managerOptions.map((manager) => (
+                                          <option key={manager.id} value={manager.id}>
+                                            {manager.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label htmlFor={`notes-${skill.id}`}>Notes</Label>
+                                    <Textarea
+                                      id={`notes-${skill.id}`}
+                                      name="notes"
+                                      defaultValue={skill.notes ?? ""}
+                                      rows={3}
+                                      placeholder="Key competition preparation notes"
+                                    />
+                                  </div>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <Button type="submit" size="sm">
+                                      Save changes
+                                    </Button>
+                                    <Button asChild size="sm" variant="outline">
+                                      <Link href={`/skills/${skill.id}`}>Open workspace</Link>
+                                    </Button>
+                                  </div>
+                                </form>
+                                <form action={deleteSkillAction} className="flex justify-end">
+                                  <input type="hidden" name="skillId" value={skill.id} />
+                                  <Button type="submit" size="sm" variant="destructive">
+                                    Delete skill
+                                  </Button>
+                                </form>
+                              </CardContent>
+                            </details>
+                          </Card>
+                        );
+                      })}
+                  </div>
                 </div>
-                <div className="grid gap-4 lg:grid-cols-2">
-                  {group.skills
+              </details>
+            );
+          })}
+
+          {unassignedSkills.length > 0 ? (
+            <details className="group rounded-lg border bg-card">
+              <summary className="flex cursor-pointer items-center justify-between gap-3 px-6 py-4 text-left font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold">Unassigned</p>
+                  <p className="text-sm text-muted-foreground">
+                    {unassignedSkills.length} {unassignedSkills.length === 1 ? "skill" : "skills"}
+                  </p>
+                </div>
+                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+              </summary>
+              <div className="border-t">
+                <div className="grid gap-4 p-6 lg:grid-cols-2">
+                  {unassignedSkills
                     .slice()
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map((skill) => {
                       const catalogEntry = catalogByName.get(skill.name);
-                      const scmLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
 
                       return (
-                        <Card key={skill.id} className="h-full">
-                          <CardHeader>
-                            <div className="flex items-start justify-between gap-3">
+                        <Card key={skill.id} className="h-full overflow-hidden">
+                          <details className="group">
+                            <summary className="flex cursor-pointer items-start justify-between gap-3 px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                               <div className="space-y-1">
-                                <CardTitle className="flex flex-wrap items-center gap-2 text-lg">
+                                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                                   {catalogEntry ? (
                                     <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                                       Skill {catalogEntry.code}
                                     </span>
                                   ) : null}
-                                  <span>{skill.name}</span>
-                                </CardTitle>
-                                <CardDescription>
-                                  Sector: {skill.sector ?? "Not recorded"}
-                                </CardDescription>
+                                  <span className="font-medium text-foreground">Sector: {skill.sector ?? "Not recorded"}</span>
+                                </div>
+                                <p className="text-lg font-semibold text-foreground">{skill.name}</p>
+                                <p className="text-xs text-muted-foreground">Assign a Skill Advisor to manage deliverables.</p>
                               </div>
-                              <Badge variant="outline">SCM: {scmLabel}</Badge>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <form action={updateSkillAction} className="space-y-4">
-                              <input type="hidden" name="skillId" value={skill.id} />
-                              <div className="grid gap-4 sm:grid-cols-2">
+                              <ChevronRight className="mt-1 h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-90" aria-hidden="true" />
+                            </summary>
+                            <CardContent className="space-y-4 border-t p-6 pt-6">
+                              <form action={updateSkillAction} className="space-y-4">
+                                <input type="hidden" name="skillId" value={skill.id} />
                                 <div className="space-y-1">
-                                  <Label htmlFor={`sa-${skill.id}`}>Skill Advisor</Label>
+                                  <Label htmlFor={`unassigned-sa-${skill.id}`}>Skill Advisor</Label>
                                   <select
-                                    id={`sa-${skill.id}`}
+                                    id={`unassigned-sa-${skill.id}`}
                                     name="saId"
-                                    defaultValue={skill.saId}
+                                    defaultValue=""
                                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                                     required
                                   >
+                                    <option value="" disabled>
+                                      Select Skill Advisor
+                                    </option>
                                     {advisorOptions.map((advisor) => (
                                       <option key={advisor.id} value={advisor.id}>
                                         {advisor.label}
@@ -183,9 +297,9 @@ export default async function SkillsPage() {
                                   </select>
                                 </div>
                                 <div className="space-y-1">
-                                  <Label htmlFor={`scm-${skill.id}`}>Skill Competition Manager</Label>
+                                  <Label htmlFor={`unassigned-scm-${skill.id}`}>Skill Competition Manager</Label>
                                   <select
-                                    id={`scm-${skill.id}`}
+                                    id={`unassigned-scm-${skill.id}`}
                                     name="scmId"
                                     defaultValue={skill.scmId ?? ""}
                                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -198,143 +312,39 @@ export default async function SkillsPage() {
                                     ))}
                                   </select>
                                 </div>
-                              </div>
-                              <div className="space-y-1">
-                                <Label htmlFor={`notes-${skill.id}`}>Notes</Label>
-                                <Textarea
-                                  id={`notes-${skill.id}`}
-                                  name="notes"
-                                  defaultValue={skill.notes ?? ""}
-                                  rows={3}
-                                  placeholder="Key competition preparation notes"
-                                />
-                              </div>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Button type="submit" size="sm">
-                                  Save changes
+                                <div className="space-y-1">
+                                  <Label htmlFor={`unassigned-notes-${skill.id}`}>Notes</Label>
+                                  <Textarea
+                                    id={`unassigned-notes-${skill.id}`}
+                                    name="notes"
+                                    defaultValue={skill.notes ?? ""}
+                                    rows={3}
+                                    placeholder="Key competition preparation notes"
+                                  />
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Button type="submit" size="sm">
+                                    Save changes
+                                  </Button>
+                                  <Button asChild size="sm" variant="outline">
+                                    <Link href={`/skills/${skill.id}`}>Open workspace</Link>
+                                  </Button>
+                                </div>
+                              </form>
+                              <form action={deleteSkillAction} className="flex justify-end">
+                                <input type="hidden" name="skillId" value={skill.id} />
+                                <Button type="submit" size="sm" variant="destructive">
+                                  Delete skill
                                 </Button>
-                                <Button asChild size="sm" variant="outline">
-                                  <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                                </Button>
-                              </div>
-                            </form>
-                            <form action={deleteSkillAction} className="flex justify-end">
-                              <input type="hidden" name="skillId" value={skill.id} />
-                              <Button type="submit" size="sm" variant="destructive">
-                                Delete skill
-                              </Button>
-                            </form>
-                          </CardContent>
+                              </form>
+                            </CardContent>
+                          </details>
                         </Card>
                       );
                     })}
                 </div>
-              </section>
-            );
-          })}
-
-          {unassignedSkills.length > 0 ? (
-            <section className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-2xl font-semibold">Unassigned</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {unassignedSkills.length} {unassignedSkills.length === 1 ? "skill" : "skills"}
-                  </p>
-                </div>
               </div>
-              <div className="grid gap-4 lg:grid-cols-2">
-                {unassignedSkills
-                  .slice()
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map((skill) => {
-                    const catalogEntry = catalogByName.get(skill.name);
-
-                    return (
-                      <Card key={skill.id} className="h-full">
-                        <CardHeader>
-                          <div className="space-y-1">
-                            <CardTitle className="flex flex-wrap items-center gap-2 text-lg">
-                              {catalogEntry ? (
-                                <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                                  Skill {catalogEntry.code}
-                                </span>
-                              ) : null}
-                              <span>{skill.name}</span>
-                            </CardTitle>
-                            <CardDescription>Sector: {skill.sector ?? "Not recorded"}</CardDescription>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <p className="text-sm text-muted-foreground">Assign a Skill Advisor to manage deliverables.</p>
-                          <form action={updateSkillAction} className="space-y-4">
-                            <input type="hidden" name="skillId" value={skill.id} />
-                            <div className="space-y-1">
-                              <Label htmlFor={`unassigned-sa-${skill.id}`}>Skill Advisor</Label>
-                              <select
-                                id={`unassigned-sa-${skill.id}`}
-                                name="saId"
-                                defaultValue=""
-                                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                required
-                              >
-                                <option value="" disabled>
-                                  Select Skill Advisor
-                                </option>
-                                {advisorOptions.map((advisor) => (
-                                  <option key={advisor.id} value={advisor.id}>
-                                    {advisor.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div className="space-y-1">
-                              <Label htmlFor={`unassigned-scm-${skill.id}`}>Skill Competition Manager</Label>
-                              <select
-                                id={`unassigned-scm-${skill.id}`}
-                                name="scmId"
-                                defaultValue={skill.scmId ?? ""}
-                                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                              >
-                                <option value="">Unassigned</option>
-                                {managerOptions.map((manager) => (
-                                  <option key={manager.id} value={manager.id}>
-                                    {manager.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div className="space-y-1">
-                              <Label htmlFor={`unassigned-notes-${skill.id}`}>Notes</Label>
-                              <Textarea
-                                id={`unassigned-notes-${skill.id}`}
-                                name="notes"
-                                defaultValue={skill.notes ?? ""}
-                                rows={3}
-                                placeholder="Key competition preparation notes"
-                              />
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Button type="submit" size="sm">
-                                Save changes
-                              </Button>
-                              <Button asChild size="sm" variant="outline">
-                                <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                              </Button>
-                            </div>
-                          </form>
-                          <form action={deleteSkillAction} className="flex justify-end">
-                            <input type="hidden" name="skillId" value={skill.id} />
-                            <Button type="submit" size="sm" variant="destructive">
-                              Delete skill
-                            </Button>
-                          </form>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-              </div>
-            </section>
+            </details>
           ) : null}
         </div>
       )}

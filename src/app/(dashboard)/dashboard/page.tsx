@@ -1,6 +1,6 @@
 import { Role } from "@prisma/client";
 import Link from "next/link";
-import { differenceInCalendarDays, format } from "date-fns";
+import { differenceInCalendarDays, differenceInMinutes, format } from "date-fns";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,51 @@ import {
   ensureOverdueNotifications,
   sortSkillsByRisk
 } from "@/lib/deliverables";
-import { formatDeliverableState } from "@/lib/utils";
 import { getUserDisplayName } from "@/lib/users";
 
-const DELIVERABLE_STATES = ["NotStarted", "Draft", "InProgress", "Finalised", "Uploaded", "Validated"] as const;
+const HOURS_PER_MILLISECOND = 1000 * 60 * 60;
+
+function formatHours(value: number | null) {
+  if (value === null || !Number.isFinite(value)) {
+    return "—";
+  }
+
+  if (value >= 48) {
+    return `${(value / 24).toFixed(1)}d`;
+  }
+
+  if (value >= 1) {
+    return `${value.toFixed(1)}h`;
+  }
+
+  const minutes = Math.round(value * 60);
+  return `${minutes}m`;
+}
+
+function formatDurationFromMinutes(minutes: number) {
+  if (minutes <= 0) {
+    return "less than 1m";
+  }
+
+  const days = Math.floor(minutes / (60 * 24));
+  const hours = Math.floor((minutes % (60 * 24)) / 60);
+  const remainingMinutes = Math.round(minutes % 60);
+
+  const parts: string[] = [];
+  if (days > 0) {
+    parts.push(`${days}d`);
+  }
+  if (hours > 0) {
+    parts.push(`${hours}h`);
+  }
+  if (parts.length === 0 || (parts.length === 1 && remainingMinutes > 0 && days === 0)) {
+    if (remainingMinutes > 0) {
+      parts.push(`${remainingMinutes}m`);
+    }
+  }
+
+  return parts.slice(0, 2).join(" ");
+}
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -56,15 +97,6 @@ export default async function DashboardPage() {
   const allDeliverables = decoratedSkills.flatMap((skill) =>
     skill.deliverables.map((deliverable) => ({ deliverable, skill }))
   );
-
-  const deliverableStateCounts = new Map<string, number>();
-  DELIVERABLE_STATES.forEach((state) => deliverableStateCounts.set(state, 0));
-  allDeliverables.forEach(({ deliverable }) => {
-    deliverableStateCounts.set(
-      deliverable.state,
-      (deliverableStateCounts.get(deliverable.state) ?? 0) + 1
-    );
-  });
 
   const now = new Date();
 
@@ -145,9 +177,132 @@ export default async function DashboardPage() {
     .filter((entry) => entry.overdue.length > 0 || entry.dueSoon.length > 0)
     .slice(0, 6);
 
-  const totalDeliverables = allDeliverables.length;
-  const validatedDeliverables = deliverableStateCounts.get("Validated") ?? 0;
   const nextDueSoon = dueSoonDeliverables[0];
+
+  const skillIds = decoratedSkills.map((skill) => skill.id);
+  const messages = skillIds.length
+    ? await prisma.message.findMany({
+        where: { skillId: { in: skillIds } },
+        orderBy: { createdAt: "asc" }
+      })
+    : [];
+
+  const messagesBySkill = new Map<string, typeof messages>();
+  for (const message of messages) {
+    const list = messagesBySkill.get(message.skillId) ?? [];
+    list.push(message);
+    messagesBySkill.set(message.skillId, list);
+  }
+
+  let totalResponseMs = 0;
+  let totalResponseCount = 0;
+  let awaitingResponseCount = 0;
+  const awaitingResponses: {
+    skill: (typeof decoratedSkills)[number];
+    pendingMessage: (typeof messages)[number];
+    ageMinutes: number;
+  }[] = [];
+
+  const scmResponseStatsMap = new Map<
+    string,
+    { id: string; name: string; responses: number; totalMs: number; awaiting: number }
+  >();
+
+  const ensureScmStat = (skill: (typeof decoratedSkills)[number]) => {
+    if (!skill.scmId || !skill.scm) {
+      return null;
+    }
+
+    let stat = scmResponseStatsMap.get(skill.scmId);
+    if (!stat) {
+      stat = {
+        id: skill.scmId,
+        name: getUserDisplayName(skill.scm),
+        responses: 0,
+        totalMs: 0,
+        awaiting: 0
+      };
+      scmResponseStatsMap.set(skill.scmId, stat);
+    }
+
+    return stat;
+  };
+
+  for (const skill of decoratedSkills) {
+    const conversation = messagesBySkill.get(skill.id) ?? [];
+    let pendingSaMessage: (typeof conversation)[number] | null = null;
+
+    for (const message of conversation) {
+      const isFromSa = message.authorId === skill.saId;
+      const isFromScm = Boolean(skill.scmId && message.authorId === skill.scmId);
+
+      if (isFromSa) {
+        pendingSaMessage = message;
+        continue;
+      }
+
+      if (isFromScm) {
+        if (pendingSaMessage) {
+          const responseMs = Math.max(
+            0,
+            message.createdAt.getTime() - pendingSaMessage.createdAt.getTime()
+          );
+          totalResponseMs += responseMs;
+          totalResponseCount += 1;
+
+          const stat = ensureScmStat(skill);
+          if (stat) {
+            stat.responses += 1;
+            stat.totalMs += responseMs;
+          }
+        }
+
+        pendingSaMessage = null;
+        continue;
+      }
+    }
+
+    if (pendingSaMessage && skill.scmId) {
+      awaitingResponseCount += 1;
+      const ageMinutes = Math.max(0, differenceInMinutes(now, pendingSaMessage.createdAt));
+      awaitingResponses.push({ skill, pendingMessage: pendingSaMessage, ageMinutes });
+
+      const stat = ensureScmStat(skill);
+      if (stat) {
+        stat.awaiting += 1;
+      }
+    }
+  }
+
+  const averageScmResponseHours =
+    totalResponseCount > 0 ? totalResponseMs / totalResponseCount / HOURS_PER_MILLISECOND : null;
+
+  const awaitingResponsesList = awaitingResponses
+    .slice()
+    .sort((a, b) => b.ageMinutes - a.ageMinutes)
+    .slice(0, 6);
+
+  const scmResponseStats = Array.from(scmResponseStatsMap.values())
+    .map((stat) => ({
+      ...stat,
+      averageHours: stat.responses > 0 ? stat.totalMs / stat.responses / HOURS_PER_MILLISECOND : null
+    }))
+    .sort((a, b) => {
+      if (a.awaiting !== b.awaiting) {
+        return b.awaiting - a.awaiting;
+      }
+
+      const aAvg = a.averageHours ?? -1;
+      const bAvg = b.averageHours ?? -1;
+      return bAvg - aAvg;
+    });
+
+  const maxAverageHours = scmResponseStats.reduce((max, stat) => {
+    if (stat.averageHours && stat.averageHours > max) {
+      return stat.averageHours;
+    }
+    return max;
+  }, 0);
 
   return (
     <div className="space-y-8">
@@ -166,25 +321,6 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Skills in scope</CardTitle>
-            <CardDescription>Active skills you can access</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{decoratedSkills.length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Deliverables tracked</CardTitle>
-            <CardDescription>Total scheduled items</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{totalDeliverables}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{validatedDeliverables} validated</p>
-          </CardContent>
-        </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle>Overdue deliverables</CardTitle>
@@ -215,38 +351,74 @@ export default async function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle>Deliverable status distribution</CardTitle>
-            <CardDescription>Progress across every deliverable state</CardDescription>
+          <CardHeader className="pb-2">
+            <CardTitle>Average SCM response</CardTitle>
+            <CardDescription>Time to respond to Skill Advisor messages</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {DELIVERABLE_STATES.map((state) => {
-              const count = deliverableStateCounts.get(state) ?? 0;
-              const percentage = totalDeliverables > 0 ? Math.round((count / totalDeliverables) * 100) : 0;
-              const label = formatDeliverableState(state as (typeof DELIVERABLE_STATES)[number]);
-
-              return (
-                <div key={state} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm font-medium">
-                    <span>{label}</span>
-                    <span>{count}</span>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-muted">
-                    <div
-                      className={`h-2 rounded-full ${state === "Validated" ? "bg-emerald-500" : "bg-primary"}`}
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+          <CardContent>
+            <p className="text-3xl font-bold">{formatHours(averageScmResponseHours)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {totalResponseCount > 0
+                ? `${totalResponseCount} responses analysed`
+                : "No SCM responses recorded yet"}
+            </p>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Awaiting SCM replies</CardTitle>
+            <CardDescription>Conversations needing action</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{awaitingResponseCount}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {awaitingResponsesList[0]
+                ? `Oldest wait: ${formatDurationFromMinutes(awaitingResponsesList[0].ageMinutes)}`
+                : "All SA messages have been answered"}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Skills at risk</CardTitle>
+          <CardDescription>Highest risk skills ordered by overdue work</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {skillsAtRisk.length === 0 ? (
+            <p className="text-sm text-muted-foreground">All skills are currently on track.</p>
+          ) : (
+            <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {skillsAtRisk.map(({ skill, overdue, dueSoon, completionRate }) => (
+                <li key={skill.id} className="rounded-md border p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="font-medium leading-tight">{skill.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        SA {getUserDisplayName(skill.sa)} · SCM {skill.scm ? getUserDisplayName(skill.scm) : "Unassigned"}
+                      </p>
+                    </div>
+                    <Badge variant={overdue.length > 0 ? "destructive" : "outline"}>{completionRate}% complete</Badge>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-4 text-xs">
+                    <span className={overdue.length > 0 ? "text-destructive" : "text-muted-foreground"}>
+                      {overdue.length} overdue
+                    </span>
+                    <span className="text-muted-foreground">{dueSoon.length} due soon</span>
+                  </div>
+                  <Button asChild size="sm" variant="outline" className="mt-3">
+                    <Link href={`/skills/${skill.id}`}>Open skill workspace</Link>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Advisor performance</CardTitle>
@@ -282,38 +454,67 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>SCM response performance</CardTitle>
+            <CardDescription>Average replies and outstanding follow-ups by manager</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {scmResponseStats.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No Skill Competition Manager conversations yet.</p>
+            ) : (
+              scmResponseStats.map((stat) => {
+                const widthPercent = stat.averageHours && maxAverageHours > 0
+                  ? Math.min(100, Math.round((stat.averageHours / maxAverageHours) * 100))
+                  : 0;
+
+                return (
+                  <div key={stat.id} className="space-y-2">
+                    <div className="flex items-center justify-between text-sm font-medium">
+                      <span>{stat.name}</span>
+                      <span>{formatHours(stat.averageHours)}</span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-muted">
+                      <div className="h-2 rounded-full bg-primary" style={{ width: `${widthPercent}%` }} />
+                    </div>
+                    <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                      <span>{stat.responses} responses</span>
+                      <span className={stat.awaiting > 0 ? "text-destructive" : undefined}>
+                        {stat.awaiting} awaiting reply
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Skills at risk</CardTitle>
-            <CardDescription>Highest risk skills ordered by overdue work</CardDescription>
+            <CardTitle>Awaiting SCM replies</CardTitle>
+            <CardDescription>Most urgent conversations awaiting manager responses</CardDescription>
           </CardHeader>
           <CardContent>
-            {skillsAtRisk.length === 0 ? (
-              <p className="text-sm text-muted-foreground">All skills are currently on track.</p>
+            {awaitingResponsesList.length === 0 ? (
+              <p className="text-sm text-muted-foreground">All Skill Advisor messages have received responses.</p>
             ) : (
-              <ul className="space-y-4">
-                {skillsAtRisk.map(({ skill, overdue, dueSoon, completionRate }) => (
-                  <li key={skill.id} className="rounded-md border p-4">
+              <ul className="space-y-3">
+                {awaitingResponsesList.map(({ skill, pendingMessage, ageMinutes }) => (
+                  <li key={pendingMessage.id} className="rounded-md border p-3 text-sm">
                     <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <p className="font-medium leading-tight">{skill.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          SA {getUserDisplayName(skill.sa)} · SCM {skill.scm ? getUserDisplayName(skill.scm) : "Unassigned"}
-                        </p>
-                      </div>
-                      <Badge variant={overdue.length > 0 ? "destructive" : "outline"}>{completionRate}% complete</Badge>
+                      <p className="font-medium leading-tight">{skill.name}</p>
+                      <Badge variant="outline">Waiting {formatDurationFromMinutes(ageMinutes)}</Badge>
                     </div>
-                    <div className="mt-2 flex flex-wrap gap-4 text-xs">
-                      <span className={overdue.length > 0 ? "text-destructive" : "text-muted-foreground"}>
-                        {overdue.length} overdue
-                      </span>
-                      <span className="text-muted-foreground">{dueSoon.length} due soon</span>
-                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      SA {getUserDisplayName(skill.sa)} · SCM {skill.scm ? getUserDisplayName(skill.scm) : "Unassigned"}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">“{pendingMessage.body.slice(0, 140)}{pendingMessage.body.length > 140 ? "…" : ""}”</p>
                     <Button asChild size="sm" variant="outline" className="mt-3">
-                      <Link href={`/skills/${skill.id}`}>Open skill workspace</Link>
+                      <Link href={`/skills/${skill.id}`}>Open conversation</Link>
                     </Button>
                   </li>
                 ))}
