@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getUserDisplayName } from "@/lib/users";
 import { createSkillAction, deleteSkillAction, updateSkillAction } from "./actions";
+import { SkillCatalogField } from "./skill-catalog-field";
 
 export default async function SkillsPage() {
   const user = await getCurrentUser();
@@ -17,7 +19,7 @@ export default async function SkillsPage() {
     redirect("/login");
   }
 
-  if (user.role !== Role.SA) {
+  if (user.role !== Role.SA && user.role !== Role.Admin) {
     const skill = await prisma.skill.findFirst({ where: { scmId: user.id } });
     if (skill) {
       redirect(`/skills/${skill.id}`);
@@ -46,21 +48,22 @@ export default async function SkillsPage() {
         </CardHeader>
         <CardContent>
           <form action={createSkillAction} className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="name">Skill name</Label>
-              <Input id="name" name="name" placeholder="Skill 34 - Cloud Computing" required />
-            </div>
+            <SkillCatalogField />
             <div className="space-y-2">
               <Label htmlFor="saId">Skill Advisor</Label>
               <select
                 id="saId"
                 name="saId"
-                defaultValue={user.id}
+                defaultValue=""
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                required
               >
+                <option value="" disabled>
+                  Select Skill Advisor
+                </option>
                 {advisors.map((advisor) => (
                   <option key={advisor.id} value={advisor.id}>
-                    {advisor.name ?? advisor.email}
+                    {getUserDisplayName(advisor)}
                   </option>
                 ))}
               </select>
@@ -71,15 +74,14 @@ export default async function SkillsPage() {
                 id="scmId"
                 name="scmId"
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                required
                 defaultValue=""
               >
-                <option value="" disabled>
-                  Select SCM
+                <option value="">
+                  Unassigned
                 </option>
                 {managers.map((manager) => (
                   <option key={manager.id} value={manager.id}>
-                    {manager.name ?? manager.email}
+                    {getUserDisplayName(manager)}
                   </option>
                 ))}
               </select>
@@ -105,8 +107,13 @@ export default async function SkillsPage() {
               <Card key={skill.id}>
                 <CardHeader>
                   <CardTitle>{skill.name}</CardTitle>
-                  <CardDescription>
-                    SA: {skill.sa.name ?? skill.sa.email} · SCM: {skill.scm.name ?? skill.scm.email}
+                  <CardDescription className="space-y-1">
+                    <div>Sector: {skill.sector ?? "Not recorded"}</div>
+                    <div>
+                      SA: {getUserDisplayName(skill.sa)} · SCM: {skill.scm
+                        ? getUserDisplayName(skill.scm)
+                        : "Unassigned"}
+                    </div>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -115,6 +122,16 @@ export default async function SkillsPage() {
                     <div className="space-y-2">
                       <Label htmlFor={`name-${skill.id}`}>Name</Label>
                       <Input id={`name-${skill.id}`} name="name" defaultValue={skill.name} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`sector-${skill.id}`}>Sector</Label>
+                      <Input
+                        id={`sector-${skill.id}`}
+                        name="sector"
+                        defaultValue={skill.sector ?? ""}
+                        placeholder="Select a skill to populate the sector"
+                        readOnly
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`sa-${skill.id}`}>Skill Advisor</Label>
@@ -126,7 +143,7 @@ export default async function SkillsPage() {
                       >
                         {advisors.map((advisor) => (
                           <option key={advisor.id} value={advisor.id}>
-                            {advisor.name ?? advisor.email}
+                            {getUserDisplayName(advisor)}
                           </option>
                         ))}
                       </select>
@@ -137,11 +154,12 @@ export default async function SkillsPage() {
                         id={`scm-${skill.id}`}
                         name="scmId"
                         className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                        defaultValue={skill.scmId}
+                        defaultValue={skill.scmId ?? ""}
                       >
+                        <option value="">Unassigned</option>
                         {managers.map((manager) => (
                           <option key={manager.id} value={manager.id}>
-                            {manager.name ?? manager.email}
+                            {getUserDisplayName(manager)}
                           </option>
                         ))}
                       </select>

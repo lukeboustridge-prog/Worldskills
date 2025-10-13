@@ -73,7 +73,11 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      if (token.email && (token.email as string).toLowerCase() === normalizedHostEmail) {
+      if (
+        token.email &&
+        (token.email as string).toLowerCase() === normalizedHostEmail &&
+        token.role === undefined
+      ) {
         token.role = Role.SA;
       }
 
@@ -112,5 +116,11 @@ export async function requireUser() {
 export function assertSA(role: Role) {
   if (role !== Role.SA) {
     throw new Error("Action restricted to Skill Advisors");
+  }
+}
+
+export function assertAdmin(role: Role) {
+  if (role !== Role.Admin) {
+    throw new Error("Action restricted to Administrators");
   }
 }
