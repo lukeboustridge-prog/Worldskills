@@ -23,7 +23,7 @@ export default async function DashboardLayout({
   }
 
   const navItems = [...NAV_ITEMS];
-  if (user.role === "Admin") {
+  if (user.isAdmin) {
     navItems.push({ href: "/settings", label: "Settings" });
   }
 
@@ -37,7 +37,10 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-4">
             <div className="text-right text-sm">
               <p className="font-medium text-foreground">{getUserDisplayName(user)}</p>
-              <p className="uppercase text-xs text-muted-foreground">{user.role}</p>
+              <p className="uppercase text-xs text-muted-foreground">
+                {user.role}
+                {user.isAdmin ? " · ADMIN" : ""}
+              </p>
             </div>
             <SignOutButton />
           </div>
