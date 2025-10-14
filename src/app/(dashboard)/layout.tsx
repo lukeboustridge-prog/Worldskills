@@ -34,6 +34,7 @@ export default async function DashboardLayout({
     navItems.push({ href: "/dashboard", label: "Dashboard" });
   }
 
+  navItems.push({ href: "/instructions", label: "User guide" });
   navItems.push({ href: "/skills", label: "Skills" });
 
   if (user.isAdmin) {
