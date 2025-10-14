@@ -215,35 +215,35 @@ export default async function SkillsPage() {
                                   ) : null}
                                 </div>
                               </div>
-                              <div className="flex items-start gap-3">
-                                <div className="flex flex-col items-end gap-2 text-right">
-                                  <div className="flex flex-wrap justify-end gap-2">
-                                    {overdueCount > 0 ? (
-                                      <Badge variant="destructive" className="whitespace-nowrap">
-                                        {overdueCount} overdue
-                                      </Badge>
-                                    ) : (
-                                      <Badge
-                                        variant="outline"
-                                        className="whitespace-nowrap border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10"
-                                      >
-                                        On track
-                                      </Badge>
-                                    )}
-                                    {skill.hiddenCount > 0 ? (
-                                      <Badge variant="outline" className="whitespace-nowrap border-dashed text-muted-foreground">
-                                        {skill.hiddenCount} hidden
-                                      </Badge>
-                                    ) : null}
-                                  </div>
-                                  <Badge variant="outline" className="whitespace-nowrap text-xs text-muted-foreground">
-                                    SA {getUserDisplayName(skill.sa)}
+                            <div className="flex flex-col items-end gap-4 text-right">
+                              <div className="flex flex-wrap justify-end gap-2">
+                                {overdueCount > 0 ? (
+                                  <Badge variant="destructive" className="whitespace-nowrap">
+                                    {overdueCount} overdue
                                   </Badge>
-                                </div>
+                                ) : (
+                                  <Badge
+                                    variant="outline"
+                                    className="whitespace-nowrap border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10"
+                                  >
+                                    On track
+                                  </Badge>
+                                )}
+                                {skill.hiddenCount > 0 ? (
+                                  <Badge variant="outline" className="whitespace-nowrap border-dashed text-muted-foreground">
+                                    {skill.hiddenCount} hidden
+                                  </Badge>
+                                ) : null}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="whitespace-nowrap text-xs text-muted-foreground">
+                                  SA {getUserDisplayName(skill.sa)}
+                                </Badge>
                                 <div className="flex h-8 w-8 items-center justify-center rounded-full border border-input bg-background">
                                   <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
                                 </div>
                               </div>
+                            </div>
                             </summary>
                               <CardContent className="border-t bg-muted/10 px-6 py-6">
                                 <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
@@ -358,30 +358,30 @@ export default async function SkillsPage() {
                                 <p className="text-sm text-muted-foreground">Assign a Skill Advisor to manage deliverables.</p>
                               </div>
                             </div>
-                            <div className="flex items-start gap-3">
-                              <div className="flex flex-col items-end gap-2 text-right">
-                                <div className="flex flex-wrap justify-end gap-2">
-                                  {overdueCount > 0 ? (
-                                    <Badge variant="destructive" className="whitespace-nowrap">
-                                      {overdueCount} overdue
-                                    </Badge>
-                                  ) : (
-                                    <Badge variant="outline" className="whitespace-nowrap text-muted-foreground">
-                                      No overdue
-                                    </Badge>
-                                  )}
-                                  {skill.hiddenCount > 0 ? (
-                                    <Badge variant="outline" className="whitespace-nowrap border-dashed text-muted-foreground">
-                                      {skill.hiddenCount} hidden
-                                    </Badge>
-                                  ) : null}
-                                </div>
+                            <div className="flex flex-col items-end gap-4 text-right">
+                              <div className="flex flex-wrap justify-end gap-2">
+                                {overdueCount > 0 ? (
+                                  <Badge variant="destructive" className="whitespace-nowrap">
+                                    {overdueCount} overdue
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="whitespace-nowrap text-muted-foreground">
+                                    No overdue
+                                  </Badge>
+                                )}
+                                {skill.hiddenCount > 0 ? (
+                                  <Badge variant="outline" className="whitespace-nowrap border-dashed text-muted-foreground">
+                                    {skill.hiddenCount} hidden
+                                  </Badge>
+                                ) : null}
+                              </div>
+                              <div className="flex items-center gap-2">
                                 <Badge variant="outline" className="whitespace-nowrap text-xs text-muted-foreground">
                                   {skill.deliverables.length - skill.hiddenCount} active deliverables
                                 </Badge>
-                              </div>
-                              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-input bg-background">
-                                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-input bg-background">
+                                  <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+                                </div>
                               </div>
                             </div>
                           </summary>
