@@ -531,7 +531,7 @@ export async function updateUserRoleAction(formData: FormData) {
 
   const parsed = parsedResult.data;
   const isAdmin = parsed.isAdmin === "on";
-  const role = isAdmin ? Role.SA : parsed.role;
+  const role = parsed.role;
 
   try {
     await prisma.user.update({
@@ -605,7 +605,7 @@ export async function createInvitationAction(formData: FormData) {
       data: {
         name: parsed.name.trim(),
         email: normalizedEmail,
-        role: isAdmin ? Role.SA : parsed.role,
+        role: parsed.role,
         isAdmin,
         token,
         expiresAt,

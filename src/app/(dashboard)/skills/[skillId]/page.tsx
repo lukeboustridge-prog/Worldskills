@@ -65,7 +65,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
   }
 
   const canEditSkill = user.isAdmin || user.id === skill.saId || user.id === skill.scmId;
-  const canValidateDeliverables = user.id === skill.saId;
+  const canValidateDeliverables = user.isAdmin || user.id === skill.saId;
   const canPostMessage = isAdmin || user.id === skill.saId || user.id === skill.scmId;
   const advisorLabel = getUserDisplayName(skill.sa);
   const managerLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";

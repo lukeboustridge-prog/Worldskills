@@ -147,8 +147,10 @@ export default async function SettingsPage({
   const registeredUsers = users.filter((record) => record.isAdmin || record.role !== Role.Pending);
 
   const renderUserCard = (record: (typeof users)[number]) => {
-    const isPending = !record.isAdmin && record.role === Role.Pending;
-    const statusLabel = record.isAdmin ? "Admin · Skill Advisor" : ROLE_LABELS[record.role];
+    const isPending = record.role === Role.Pending;
+    const statusLabel = record.isAdmin
+      ? `Administrator · ${ROLE_LABELS[record.role]}`
+      : ROLE_LABELS[record.role];
     const statusClasses = isPending
       ? "rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
       : "rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground";
@@ -177,7 +179,7 @@ export default async function SettingsPage({
             <select
               id={`role-${record.id}`}
               name="role"
-              defaultValue={record.isAdmin ? Role.SA : record.role}
+              defaultValue={record.role}
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
               {Object.values(Role).map((role) => (

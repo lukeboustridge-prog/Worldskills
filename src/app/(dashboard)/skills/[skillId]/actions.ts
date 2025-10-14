@@ -63,8 +63,9 @@ export async function updateDeliverableStateAction(formData: FormData) {
   }
 
   const isSkillAdvisor = user.id === skill.saId;
-  if (parsed.data.state === DeliverableState.Validated && !isSkillAdvisor) {
-    throw new Error("Only the assigned Skill Advisor can set a deliverable to Validated");
+  const canValidate = isSkillAdvisor || user.isAdmin;
+  if (parsed.data.state === DeliverableState.Validated && !canValidate) {
+    throw new Error("Only the assigned Skill Advisor or an administrator can set a deliverable to Validated");
   }
 
   const updated = await prisma.deliverable.update({
