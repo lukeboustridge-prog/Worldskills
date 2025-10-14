@@ -29,9 +29,11 @@ export default async function SkillsPage() {
   }
 
   const isSecretariat = user.role === Role.Secretariat;
-  const canManageSkills = user.isAdmin || user.role === Role.SA;
+  const isSkillAdvisor = user.role === Role.SA;
+  const isAdmin = user.isAdmin;
+  const canViewSkills = isAdmin || isSkillAdvisor;
 
-  if (!canManageSkills && !isSecretariat) {
+  if (!canViewSkills && !isSecretariat) {
     const skill = await prisma.skill.findFirst({ where: { scmId: user.id } });
     if (skill) {
       redirect(`/skills/${skill.id}`);
@@ -91,10 +93,10 @@ export default async function SkillsPage() {
     };
   });
 
-  const canCreateSkill = Boolean(settings) && canManageSkills;
+  const canCreateSkill = Boolean(settings) && isAdmin;
   const disableReason = !settings
     ? "Competition settings must be configured before new skills can be created."
-    : !canManageSkills
+    : !isAdmin
       ? "You do not have permission to create new skills."
       : undefined;
 
@@ -132,7 +134,7 @@ export default async function SkillsPage() {
 
   const unassignedSkills = skills.filter((skill) => !skill.saId || !skill.sa);
 
-  const defaultAdvisorId = user.isAdmin ? "" : user.id;
+  const defaultAdvisorId = isAdmin ? "" : user.id;
 
   return (
     <div className="space-y-10">
@@ -143,14 +145,14 @@ export default async function SkillsPage() {
             Manage WorldSkills assignments by advisor and keep roles aligned across the competition.
           </p>
         </div>
-        {canManageSkills ? (
+        {isAdmin ? (
           <CreateSkillDialog
             advisors={advisorOptions}
             managers={managerOptions}
             canCreate={canCreateSkill}
             disableReason={disableReason}
             defaultAdvisorId={defaultAdvisorId}
-            isAdmin={user.isAdmin}
+            isAdmin={isAdmin}
             usedSkillIds={usedSkillIds}
           />
         ) : null}
@@ -247,7 +249,7 @@ export default async function SkillsPage() {
                             </summary>
                             <CardContent className="space-y-4 border-t bg-muted/10 px-6 py-6">
                               <div className="rounded-lg border bg-background p-4 shadow-sm">
-                                {canManageSkills ? (
+                                {isAdmin || (isSkillAdvisor && skill.saId === user.id) ? (
                                   <SkillAssignmentForm
                                     skillId={skill.id}
                                     defaultSaId={skill.saId ?? null}
@@ -290,7 +292,7 @@ export default async function SkillsPage() {
                                   )}
                                 </div>
                               </div>
-                              {canManageSkills ? (
+                              {isAdmin ? (
                                 <form action={deleteSkillAction} className="flex justify-end">
                                   <input type="hidden" name="skillId" value={skill.id} />
                                   <Button type="submit" size="sm" variant="destructive">
@@ -384,7 +386,7 @@ export default async function SkillsPage() {
                           </summary>
                           <CardContent className="space-y-4 border-t bg-muted/10 px-6 py-6">
                             <div className="rounded-lg border bg-background p-4 shadow-sm">
-                              {canManageSkills ? (
+                              {isAdmin ? (
                                 <SkillAssignmentForm
                                   skillId={skill.id}
                                   defaultSaId={skill.saId ?? null}
@@ -429,7 +431,7 @@ export default async function SkillsPage() {
                               </div>
                             </div>
 
-                            {canManageSkills ? (
+                            {isAdmin ? (
                               <form action={deleteSkillAction} className="flex justify-end">
                                 <input type="hidden" name="skillId" value={skill.id} />
                                 <Button type="submit" size="sm" variant="destructive">

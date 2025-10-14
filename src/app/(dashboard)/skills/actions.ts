@@ -138,6 +138,21 @@ export async function updateSkillAction(formData: FormData) {
     throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
   }
 
+  const existingSkill = await prisma.skill.findUnique({
+    where: { id: parsed.data.skillId },
+    select: { saId: true }
+  });
+
+  if (!existingSkill) {
+    throw new Error("Skill not found");
+  }
+
+  if (!user.isAdmin) {
+    if (user.role !== Role.SA || existingSkill.saId !== user.id) {
+      throw new Error("You do not have permission to update this skill");
+    }
+  }
+
   const updates: Record<string, unknown> = {};
 
   if (parsed.data.saId) {
@@ -177,8 +192,8 @@ export async function updateSkillAction(formData: FormData) {
 
 export async function deleteSkillAction(formData: FormData) {
   const user = await requireUser();
-  if (user.role !== Role.SA && !user.isAdmin) {
-    throw new Error("Only Skill Advisors or Admin can delete skills");
+  if (!user.isAdmin) {
+    throw new Error("Only administrators can delete skills");
   }
 
   const skillId = formData.get("skillId");
