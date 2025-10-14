@@ -517,10 +517,12 @@ const userUpdateSchema = z.object({
 
 export async function updateUserRoleAction(formData: FormData) {
   await requireAdminUser();
+
+  const rawIsAdmin = formData.get("isAdmin");
   const parsedResult = userUpdateSchema.safeParse({
     userId: formData.get("userId"),
     role: formData.get("role"),
-    isAdmin: formData.get("isAdmin")
+    isAdmin: rawIsAdmin === null ? undefined : rawIsAdmin
   });
 
   if (!parsedResult.success) {
@@ -566,11 +568,13 @@ const invitationSchema = z.object({
 
 export async function createInvitationAction(formData: FormData) {
   const user = await requireAdminUser();
+
+  const rawIsAdmin = formData.get("isAdmin");
   const parsedResult = invitationSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     role: formData.get("role"),
-    isAdmin: formData.get("isAdmin")
+    isAdmin: rawIsAdmin === null ? undefined : rawIsAdmin
   });
 
   if (!parsedResult.success) {
