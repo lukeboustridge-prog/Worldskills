@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState, useTransition } from "react";
+import { useCallback } from "react";
 import { DeliverableScheduleType, DeliverableState } from "@prisma/client";
 import { differenceInCalendarDays, format } from "date-fns";
 
@@ -8,7 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { EVIDENCE_TYPE_OPTIONS, type DeliverableEvidenceItem } from "@/lib/deliverables";
+import {
+  EVIDENCE_TYPE_OPTIONS,
+  type DeliverableEvidenceDocument,
+  type DeliverableEvidenceItem,
+  type EvidenceType,
+  isDocumentEvidence
+} from "@/lib/deliverables";
 import { formatDeliverableState } from "@/lib/utils";
 
 import {
@@ -17,6 +24,7 @@ import {
   updateDeliverableScheduleAction,
   updateDeliverableStateAction
 } from "./actions";
+import { DocumentEvidenceManager } from "./document-evidence-manager";
 
 export interface DeliverableRow {
   id: string;
@@ -53,6 +61,11 @@ export function DeliverablesTable({
   const [filter, setFilter] = useState<FilterKey>("all");
   const [isExporting, startExport] = useTransition();
   const [editingDeliverableId, setEditingDeliverableId] = useState<string | null>(null);
+  const [typeSelections, setTypeSelections] = useState<Record<string, EvidenceType>>({});
+
+  const handleTypeSelection = useCallback((deliverableId: string, type: EvidenceType) => {
+    setTypeSelections((current) => ({ ...current, [deliverableId]: type }));
+  }, []);
 
   const filteredDeliverables = useMemo(() => {
     const now = new Date();
@@ -188,6 +201,20 @@ export function DeliverablesTable({
             const isDueSoon =
               !deliverable.isOverdue && daysUntilDue >= 0 && daysUntilDue <= dueSoonThresholdDays;
             const evidenceCount = deliverable.evidence.length;
+            const documentEvidence = deliverable.evidence.find((item) =>
+              isDocumentEvidence(item)
+            ) as DeliverableEvidenceDocument | undefined;
+            const evidenceEntries = deliverable.evidence.map((item, index) => ({ item, index }));
+            const linkEvidence = evidenceEntries.filter(
+              (
+                entry
+              ): entry is {
+                item: Exclude<DeliverableEvidenceItem, DeliverableEvidenceDocument>;
+                index: number;
+              } => !isDocumentEvidence(entry.item)
+            );
+            const selectedEvidenceType =
+              typeSelections[deliverable.id] ?? EVIDENCE_TYPE_OPTIONS[0].value;
 
             return (
               <div key={deliverable.id} className="rounded-lg border bg-card p-5 shadow-sm">
@@ -242,7 +269,7 @@ export function DeliverablesTable({
                   </div>
                 ) : null}
 
-                <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,260px)]">
+                <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
                   <div className="space-y-3">
                     <p className="text-xs font-semibold uppercase text-muted-foreground">Status</p>
                     {canEdit ? (
@@ -274,68 +301,92 @@ export function DeliverablesTable({
                     )}
                   </div>
 
-                  <div className="space-y-3">
-                    <p className="text-xs font-semibold uppercase text-muted-foreground">Evidence</p>
-                    {canEdit ? (
-                      <form
-                        action={appendEvidenceAction}
-                        className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2"
-                      >
-                        <input type="hidden" name="skillId" value={skillId} />
-                        <input type="hidden" name="deliverableId" value={deliverable.id} />
-                        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                          <Label htmlFor={`evidence-${deliverable.id}`} className="sr-only">
-                            Evidence URL
-                          </Label>
-                          <Input
-                            id={`evidence-${deliverable.id}`}
-                            type="url"
-                            name="evidence"
-                            placeholder="Add evidence URL"
-                            className="h-10 w-full sm:w-[260px]"
-                            required
-                          />
-                          <Label htmlFor={`evidence-type-${deliverable.id}`} className="sr-only">
-                            Evidence type
-                          </Label>
-                          <select
-                            id={`evidence-type-${deliverable.id}`}
-                            name="type"
-                            defaultValue={EVIDENCE_TYPE_OPTIONS[0].value}
-                            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                          >
-                            {EVIDENCE_TYPE_OPTIONS.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">Evidence</p>
+                      {canEdit ? (
+                        <div className="space-y-2">
+                          <div className="space-y-1">
+                            <Label htmlFor={`new-evidence-type-${deliverable.id}`}>Evidence type</Label>
+                            <select
+                              id={`new-evidence-type-${deliverable.id}`}
+                              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                              value={selectedEvidenceType}
+                              onChange={(event) =>
+                                handleTypeSelection(
+                                  deliverable.id,
+                                  event.target.value as EvidenceType
+                                )
+                              }
+                            >
+                              {EVIDENCE_TYPE_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          {selectedEvidenceType !== "Document" ? (
+                            <form
+                              action={appendEvidenceAction}
+                              className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3"
+                            >
+                              <input type="hidden" name="skillId" value={skillId} />
+                              <input type="hidden" name="deliverableId" value={deliverable.id} />
+                              <input type="hidden" name="type" value={selectedEvidenceType} />
+                              <div className="flex w-full flex-col gap-2 md:flex-1">
+                                <Label htmlFor={`evidence-${deliverable.id}`} className="sr-only">
+                                  Evidence URL
+                                </Label>
+                                <Input
+                                  id={`evidence-${deliverable.id}`}
+                                  type="url"
+                                  name="evidence"
+                                  placeholder="Paste a link to evidence"
+                                  className="h-10 w-full"
+                                  required
+                                />
+                              </div>
+                              <Button type="submit" variant="outline" size="sm" className="md:self-start">
+                                Attach link
+                              </Button>
+                            </form>
+                          ) : null}
                         </div>
-                        <Button type="submit" variant="outline" size="sm">
-                          Attach
-                        </Button>
-                      </form>
-                    ) : null}
-                    {evidenceCount > 0 ? (
-                      <ul className="space-y-1 text-left text-sm">
-                        {deliverable.evidence.map((item, index) => (
-                          <li key={`${item.url}-${index}`} className="space-y-1">
-                            <div className="flex items-center justify-between gap-2">
+                      ) : null}
+                    </div>
+
+                    <DocumentEvidenceManager
+                      deliverableId={deliverable.id}
+                      skillId={skillId}
+                      evidence={documentEvidence ?? null}
+                      canEdit={canEdit}
+                      showUploader={canEdit && selectedEvidenceType === "Document"}
+                    />
+
+                    {linkEvidence.length > 0 ? (
+                      <div className="space-y-2">
+                        {linkEvidence.map(({ item, index }) => (
+                          <div
+                            key={`${deliverable.id}-${index}`}
+                            className="rounded-md border border-muted bg-background p-3"
+                          >
+                            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                               <a
                                 href={item.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-primary underline"
+                                className="text-sm font-medium text-primary underline"
                               >
-                                Evidence #{index + 1}
+                                Evidence link
                               </a>
-                              <Badge variant="outline" className="whitespace-nowrap text-xs">
+                              <Badge variant="outline" className="w-fit text-xs">
                                 {item.type}
                               </Badge>
                             </div>
                             {canEdit ? (
                               <form
-                                className="flex flex-wrap items-center gap-2"
+                                className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center"
                                 action={updateEvidenceTypeAction}
                               >
                                 <input type="hidden" name="skillId" value={skillId} />
@@ -350,7 +401,9 @@ export function DeliverablesTable({
                                   defaultValue={item.type}
                                   className="h-9 rounded-md border border-input bg-background px-2 text-xs"
                                 >
-                                  {EVIDENCE_TYPE_OPTIONS.map((option) => (
+                                  {EVIDENCE_TYPE_OPTIONS.filter(
+                                    (option) => option.value !== "Document"
+                                  ).map((option) => (
                                     <option key={option.value} value={option.value}>
                                       {option.label}
                                     </option>
@@ -361,11 +414,11 @@ export function DeliverablesTable({
                                 </Button>
                               </form>
                             ) : null}
-                          </li>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No evidence attached yet.</p>
+                      <p className="text-sm text-muted-foreground">No additional evidence attached.</p>
                     )}
                   </div>
                 </div>

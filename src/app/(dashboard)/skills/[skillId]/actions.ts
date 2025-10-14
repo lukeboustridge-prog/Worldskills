@@ -16,11 +16,14 @@ import { prisma } from "@/lib/prisma";
 import {
   buildCMonthLabel,
   computeDueDate,
+  createLinkEvidenceRecord,
   EVIDENCE_TYPE_VALUES,
+  isDocumentEvidence,
   normaliseEvidenceItems,
   serialiseEvidenceItems
 } from "@/lib/deliverables";
 import { requireAppSettings } from "@/lib/settings";
+import { canManageSkill } from "@/lib/permissions";
 
 async function ensureSkill(skillId: string) {
   const skill = await prisma.skill.findUnique({ where: { id: skillId } });
@@ -29,14 +32,6 @@ async function ensureSkill(skillId: string) {
   }
   return skill;
 }
-
-function canEditSkillRecord(user: { id: string; isAdmin: boolean }, skill: Skill) {
-  if (user.isAdmin) {
-    return true;
-  }
-  return skill.saId === user.id || skill.scmId === user.id;
-}
-
 
 function revalidateSkill(skillId: string) {
   revalidatePath(`/skills/${skillId}`);
@@ -63,7 +58,7 @@ export async function updateDeliverableStateAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canEditSkillRecord(user, skill)) {
+  if (!canManageSkill(user, skill)) {
     throw new Error("You do not have access to update this deliverable");
   }
 
@@ -110,7 +105,7 @@ export async function appendEvidenceAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canEditSkillRecord(user, skill)) {
+  if (!canManageSkill(user, skill)) {
     throw new Error("You do not have access to update this deliverable");
   }
 
@@ -123,12 +118,17 @@ export async function appendEvidenceAction(formData: FormData) {
     throw new Error("Deliverable not found");
   }
 
+  if (parsed.data.type === "Document") {
+    throw new Error("Upload documents using the document uploader.");
+  }
+
   const evidenceItems = normaliseEvidenceItems(deliverable.evidenceItems);
-  evidenceItems.push({
-    url: parsed.data.evidence,
-    type: parsed.data.type,
-    addedAt: new Date().toISOString()
-  });
+  evidenceItems.push(
+    createLinkEvidenceRecord({
+      url: parsed.data.evidence,
+      type: parsed.data.type
+    })
+  );
 
   const evidencePayload = serialiseEvidenceItems(evidenceItems);
 
@@ -179,7 +179,7 @@ export async function updateEvidenceTypeAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canEditSkillRecord(user, skill)) {
+  if (!canManageSkill(user, skill)) {
     throw new Error("You do not have access to update this evidence");
   }
 
@@ -197,9 +197,17 @@ export async function updateEvidenceTypeAction(formData: FormData) {
     throw new Error("Evidence entry not found");
   }
 
-  const updatedItems = evidenceItems.map((item, index) =>
-    index === parsed.data.evidenceIndex ? { ...item, type: parsed.data.type } : item
-  );
+  const updatedItems = evidenceItems.map((item, index) => {
+    if (index !== parsed.data.evidenceIndex) {
+      return item;
+    }
+
+    if (isDocumentEvidence(item)) {
+      throw new Error("Document evidence type can't be changed.");
+    }
+
+    return { ...item, type: parsed.data.type };
+  });
 
   const updatedPayload = serialiseEvidenceItems(updatedItems);
 
@@ -270,7 +278,7 @@ export async function updateDeliverableScheduleAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  const canManage = canEditSkillRecord(user, skill);
+  const canManage = canManageSkill(user, skill);
   if (!canManage) {
     throw new Error("Only assigned team members or an administrator can update deliverable schedules");
   }
@@ -363,7 +371,7 @@ export async function createGateAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canEditSkillRecord(user, skill)) {
+  if (!canManageSkill(user, skill)) {
     throw new Error("You do not have access to create gates for this skill");
   }
 
@@ -429,7 +437,7 @@ export async function updateGateStatusAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canEditSkillRecord(user, skill)) {
+  if (!canManageSkill(user, skill)) {
     throw new Error("You do not have access to update gates for this skill");
   }
 
@@ -474,7 +482,7 @@ export async function deleteGateAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canEditSkillRecord(user, skill)) {
+  if (!canManageSkill(user, skill)) {
     throw new Error("You do not have access to remove gates for this skill");
   }
 

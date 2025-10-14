@@ -11,3 +11,27 @@ export function formatDeliverableState(state: string) {
     .replace(/\bCIS\b/, "CIS");
 }
 
+export function normaliseFileName(fileName: string) {
+  const trimmed = fileName.trim();
+  if (!trimmed) {
+    return "document";
+  }
+
+  const lastDot = trimmed.lastIndexOf(".");
+  const base = lastDot > 0 ? trimmed.slice(0, lastDot) : trimmed;
+  const extension = lastDot > 0 ? trimmed.slice(lastDot + 1) : "";
+
+  const safeBase = base
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  const safeExtension = extension
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "")
+    .replace(/^-+|-+$/g, "");
+
+  const fallbackBase = safeBase.length > 0 ? safeBase : "document";
+  return safeExtension ? `${fallbackBase}.${safeExtension}` : fallbackBase;
+}
+
