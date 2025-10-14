@@ -190,22 +190,25 @@ export default async function DashboardPage({
   });
 
   const sectorStats = Array.from(
-    decoratedSkills.reduce((acc, skill) => {
-      if (skill.deliverables.length === 0) {
+    decoratedSkills.reduce(
+      (acc, skill) => {
+        if (skill.deliverables.length === 0) {
+          return acc;
+        }
+        const sectorRaw = typeof skill.sector === "string" ? skill.sector.trim() : "";
+        const sectorName = sectorRaw.length > 0 ? sectorRaw : "Unassigned sector";
+        const entry =
+          acc.get(sectorName) ?? { sector: sectorName, total: 0, validated: 0, overdue: 0 };
+
+        entry.total += skill.deliverables.length;
+        entry.validated += skill.deliverables.filter((deliverable) => deliverable.state === "Validated").length;
+        entry.overdue += skill.deliverables.filter((deliverable) => deliverable.isOverdue).length;
+
+        acc.set(sectorName, entry);
         return acc;
-      }
-      const sectorRaw = typeof skill.sector === "string" ? skill.sector.trim() : "";
-      const sectorName = sectorRaw.length > 0 ? sectorRaw : "Unassigned sector";
-      const entry =
-        acc.get(sectorName) ?? { sector: sectorName, total: 0, validated: 0, overdue: 0 };
-
-      entry.total += skill.deliverables.length;
-      entry.validated += skill.deliverables.filter((deliverable) => deliverable.state === "Validated").length;
-      entry.overdue += skill.deliverables.filter((deliverable) => deliverable.isOverdue).length;
-
-      acc.set(sectorName, entry);
-      return acc;
-    }, new Map<string, { sector: string; total: number; validated: number; overdue: number }>())
+      },
+      new Map<string, { sector: string; total: number; validated: number; overdue: number }>()
+    ).values()
   )
     .map((stat) => ({
       ...stat,
