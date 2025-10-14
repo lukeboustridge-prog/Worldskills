@@ -50,6 +50,7 @@ export default async function SkillsPage() {
             id: true,
             skillId: true,
             key: true,
+            templateKey: true,
             label: true,
             cMonthOffset: true,
             dueDate: true,
@@ -60,7 +61,8 @@ export default async function SkillsPage() {
             updatedBy: true,
             updatedAt: true,
             createdAt: true,
-            overdueNotifiedAt: true
+            overdueNotifiedAt: true,
+            isHidden: true
           }
         }
       },
