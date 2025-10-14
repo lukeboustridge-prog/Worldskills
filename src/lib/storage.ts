@@ -7,43 +7,78 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const storageBucket = process.env.FILE_STORAGE_BUCKET;
-const storageRegion = process.env.FILE_STORAGE_REGION;
-const storageAccessKeyId = process.env.FILE_STORAGE_ACCESS_KEY_ID;
-const storageSecretAccessKey = process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
-const storageEndpoint = process.env.FILE_STORAGE_ENDPOINT;
-const storageForcePathStyle = process.env.FILE_STORAGE_FORCE_PATH_STYLE === "true";
+type StorageConfig = {
+  bucket: string;
+  region: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  endpoint?: string;
+  forcePathStyle: boolean;
+};
 
-if (!storageBucket) {
-  throw new Error("FILE_STORAGE_BUCKET must be configured for document evidence uploads.");
-}
-
-if (!storageRegion) {
-  throw new Error("FILE_STORAGE_REGION must be configured for document evidence uploads.");
-}
-
-if (!storageAccessKeyId || !storageSecretAccessKey) {
-  throw new Error("Storage credentials are required. Set FILE_STORAGE_ACCESS_KEY_ID and FILE_STORAGE_SECRET_ACCESS_KEY.");
-}
-
-const STORAGE_BUCKET: string = storageBucket;
-const STORAGE_REGION: string = storageRegion;
-const STORAGE_ACCESS_KEY_ID: string = storageAccessKeyId;
-const STORAGE_SECRET_ACCESS_KEY: string = storageSecretAccessKey;
-const STORAGE_ENDPOINT: string | undefined = storageEndpoint;
-const STORAGE_FORCE_PATH_STYLE: boolean = storageForcePathStyle;
-
+let resolvedConfig: StorageConfig | null = null;
 let client: S3Client | null = null;
 
+class StorageConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "StorageConfigurationError";
+  }
+}
+
+function getConfig(): StorageConfig {
+  if (resolvedConfig) {
+    return resolvedConfig;
+  }
+
+  const bucket = process.env.FILE_STORAGE_BUCKET;
+  const region = process.env.FILE_STORAGE_REGION;
+  const accessKeyId = process.env.FILE_STORAGE_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
+  const endpoint = process.env.FILE_STORAGE_ENDPOINT;
+  const forcePathStyle = process.env.FILE_STORAGE_FORCE_PATH_STYLE === "true";
+
+  if (!bucket) {
+    throw new StorageConfigurationError(
+      "FILE_STORAGE_BUCKET must be configured for document evidence uploads."
+    );
+  }
+
+  if (!region) {
+    throw new StorageConfigurationError(
+      "FILE_STORAGE_REGION must be configured for document evidence uploads."
+    );
+  }
+
+  if (!accessKeyId || !secretAccessKey) {
+    throw new StorageConfigurationError(
+      "Storage credentials are required. Set FILE_STORAGE_ACCESS_KEY_ID and FILE_STORAGE_SECRET_ACCESS_KEY."
+    );
+  }
+
+  resolvedConfig = {
+    bucket,
+    region,
+    accessKeyId,
+    secretAccessKey,
+    endpoint,
+    forcePathStyle
+  };
+
+  return resolvedConfig;
+}
+
 function getClient() {
+  const config = getConfig();
+
   if (!client) {
     client = new S3Client({
-      region: STORAGE_REGION,
-      endpoint: STORAGE_ENDPOINT,
-      forcePathStyle: STORAGE_FORCE_PATH_STYLE,
+      region: config.region,
+      endpoint: config.endpoint,
+      forcePathStyle: config.forcePathStyle,
       credentials: {
-        accessKeyId: STORAGE_ACCESS_KEY_ID,
-        secretAccessKey: STORAGE_SECRET_ACCESS_KEY
+        accessKeyId: config.accessKeyId,
+        secretAccessKey: config.secretAccessKey
       }
     });
   }
@@ -68,9 +103,10 @@ export async function createPresignedUpload(params: {
 }) {
   const { key, contentType, contentLength, checksum, expiresIn = 300 } = params;
   const client = getClient();
+  const { bucket } = getConfig();
 
   const command = new PutObjectCommand({
-    Bucket: STORAGE_BUCKET,
+    Bucket: bucket,
     Key: sanitiseKey(key),
     ContentType: contentType,
     ContentLength: contentLength,
@@ -93,13 +129,15 @@ export async function createPresignedUpload(params: {
 
 export async function headStoredObject(key: string) {
   const client = getClient();
-  const command = new HeadObjectCommand({ Bucket: STORAGE_BUCKET, Key: sanitiseKey(key) });
+  const { bucket } = getConfig();
+  const command = new HeadObjectCommand({ Bucket: bucket, Key: sanitiseKey(key) });
   return client.send(command);
 }
 
 export async function deleteStoredObject(key: string) {
   const client = getClient();
-  const command = new DeleteObjectCommand({ Bucket: STORAGE_BUCKET, Key: sanitiseKey(key) });
+  const { bucket } = getConfig();
+  const command = new DeleteObjectCommand({ Bucket: bucket, Key: sanitiseKey(key) });
   await client.send(command);
 }
 
@@ -110,9 +148,10 @@ export async function createPresignedDownload(params: {
 }) {
   const { key, expiresIn = 120, fileName } = params;
   const client = getClient();
+  const { bucket } = getConfig();
 
   const command = new GetObjectCommand({
-    Bucket: STORAGE_BUCKET,
+    Bucket: bucket,
     Key: sanitiseKey(key),
     ResponseContentDisposition: fileName
       ? `attachment; filename="${fileName.replace(/"/g, "")}"; filename*=UTF-8''${encodeURIComponent(fileName)}`
