@@ -517,29 +517,42 @@ const userUpdateSchema = z.object({
 
 export async function updateUserRoleAction(formData: FormData) {
   await requireAdminUser();
-  const parsed = userUpdateSchema.parse({
+  const parsedResult = userUpdateSchema.safeParse({
     userId: formData.get("userId"),
     role: formData.get("role"),
     isAdmin: formData.get("isAdmin")
   });
 
+  if (!parsedResult.success) {
+    const firstError = parsedResult.error.errors[0]?.message ?? "Unable to update the user.";
+    const params = new URLSearchParams({ userError: firstError });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  const parsed = parsedResult.data;
   const isAdmin = parsed.isAdmin === "on";
   const role = isAdmin ? Role.SA : parsed.role;
 
-  await prisma.user.update({
-    where: { id: parsed.userId },
-    data: {
-      role,
-      isAdmin
-    }
-  });
+  try {
+    await prisma.user.update({
+      where: { id: parsed.userId },
+      data: {
+        role,
+        isAdmin
+      }
+    });
+  } catch (error) {
+    console.error("Failed to update user role", error);
+    const params = new URLSearchParams({ userError: "Unable to update the user. Please try again." });
+    return redirect(`/settings?${params.toString()}`);
+  }
 
   revalidatePath("/settings");
   revalidatePath("/skills");
   revalidatePath("/dashboard");
 
   const params = new URLSearchParams({ userUpdated: "1" });
-  redirect(`/settings?${params.toString()}`);
+  return redirect(`/settings?${params.toString()}`);
 }
 
 const invitationSchema = z.object({
@@ -553,44 +566,60 @@ const invitationSchema = z.object({
 
 export async function createInvitationAction(formData: FormData) {
   const user = await requireAdminUser();
-  const parsed = invitationSchema.parse({
+  const parsedResult = invitationSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     role: formData.get("role"),
     isAdmin: formData.get("isAdmin")
   });
 
-  const invitationsSupported = await hasInvitationTable();
-  if (!invitationsSupported) {
-    throw new Error("Invitations will be available once the database migration has completed.");
+  if (!parsedResult.success) {
+    const firstError = parsedResult.error.errors[0]?.message ?? "Please review the invitation details.";
+    const params = new URLSearchParams({ inviteError: firstError });
+    return redirect(`/settings?${params.toString()}`);
   }
 
+  const invitationsSupported = await hasInvitationTable();
+  if (!invitationsSupported) {
+    const params = new URLSearchParams({
+      inviteError: "Invitations will be available once the database migration has completed."
+    });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  const parsed = parsedResult.data;
   const normalizedEmail = parsed.email.toLowerCase();
   const isAdmin = parsed.isAdmin === "on";
   const token = randomUUID();
   const expiresAt = addDays(new Date(), 7);
 
-  await prisma.invitation.deleteMany({
-    where: {
-      email: normalizedEmail,
-      acceptedAt: null
-    }
-  });
+  try {
+    await prisma.invitation.deleteMany({
+      where: {
+        email: normalizedEmail,
+        acceptedAt: null
+      }
+    });
 
-  await prisma.invitation.create({
-    data: {
-      name: parsed.name.trim(),
-      email: normalizedEmail,
-      role: isAdmin ? Role.SA : parsed.role,
-      isAdmin,
-      token,
-      expiresAt,
-      createdBy: user.id
-    }
-  });
+    await prisma.invitation.create({
+      data: {
+        name: parsed.name.trim(),
+        email: normalizedEmail,
+        role: isAdmin ? Role.SA : parsed.role,
+        isAdmin,
+        token,
+        expiresAt,
+        createdBy: user.id
+      }
+    });
+  } catch (error) {
+    console.error("Failed to create invitation", error);
+    const params = new URLSearchParams({ inviteError: "Unable to create the invitation. Please try again." });
+    return redirect(`/settings?${params.toString()}`);
+  }
 
   revalidatePath("/settings");
 
   const params = new URLSearchParams({ inviteCreated: "1", inviteToken: token, inviteEmail: normalizedEmail });
-  redirect(`/settings?${params.toString()}`);
+  return redirect(`/settings?${params.toString()}`);
 }

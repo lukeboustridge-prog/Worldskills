@@ -114,6 +114,12 @@ export default async function SettingsPage({
   const inviteToken = typeof searchParams?.inviteToken === "string" ? searchParams.inviteToken : null;
   const inviteEmail = typeof searchParams?.inviteEmail === "string" ? searchParams.inviteEmail : null;
   const inviteLink = inviteToken ? `/register?token=${inviteToken}` : null;
+  const inviteError = typeof searchParams?.inviteError === "string" ? searchParams.inviteError : null;
+  const userErrorMessage = typeof searchParams?.userError === "string" ? searchParams.userError : null;
+  const errorMessages = [
+    inviteError ? { id: "invite-error", message: inviteError } : null,
+    userErrorMessage ? { id: "user-error", message: userErrorMessage } : null
+  ].filter((entry): entry is { id: string; message: string } => entry !== null);
 
   const gateTemplateSupportPromise = hasGateTemplateCatalogSupport();
   const invitationSupportPromise = hasInvitationTable();
@@ -239,6 +245,14 @@ export default async function SettingsPage({
       </div>
 
       <div className="space-y-4">
+        {errorMessages.map((error) => (
+          <div
+            key={error.id}
+            className="rounded-md border border-destructive/60 bg-destructive/10 p-4 text-sm text-destructive"
+          >
+            {error.message}
+          </div>
+        ))}
         {updated ? (
           <div className="rounded-md border border-green-400 bg-green-50 p-4 text-sm text-green-900">
             Competition settings saved successfully.{" "}
@@ -362,9 +376,9 @@ export default async function SettingsPage({
       >
         <form
           action={createDeliverableTemplateAction}
-          className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
+          className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-2 xl:grid-cols-6 xl:items-end"
         >
-          <div className="space-y-2">
+          <div className="space-y-2 md:col-span-2 xl:col-span-2">
             <Label htmlFor="new-label">New deliverable label</Label>
             <Input id="new-label" name="label" placeholder="WorldSkills Orientation" required />
           </div>
@@ -392,12 +406,14 @@ export default async function SettingsPage({
             <Label htmlFor="new-position">Position</Label>
             <Input id="new-position" name="position" type="number" min={1} placeholder={`${templates.length + 1}`} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 md:col-span-2 xl:col-span-2">
             <Label htmlFor="new-key">Key (optional)</Label>
             <Input id="new-key" name="key" placeholder="OrientationWorkshop" />
           </div>
-          <div className="flex items-end">
-            <Button type="submit">Add deliverable</Button>
+          <div className="flex items-end md:col-span-2 xl:col-span-1 xl:justify-end">
+            <Button type="submit" className="w-full xl:w-auto">
+              Add deliverable
+            </Button>
           </div>
         </form>
 
@@ -406,10 +422,10 @@ export default async function SettingsPage({
             <div key={template.key} className="rounded-md border p-4">
               <form
                 action={updateDeliverableTemplateAction}
-                className="grid gap-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
+                className="grid gap-4 md:grid-cols-2 xl:grid-cols-6 xl:items-end"
               >
                 <input type="hidden" name="key" value={template.key} />
-                <div className="space-y-2">
+                <div className="space-y-2 md:col-span-2 xl:col-span-2">
                   <Label htmlFor={`label-${template.key}`}>Label</Label>
                   <Input id={`label-${template.key}`} name="label" defaultValue={template.label} required />
                 </div>
@@ -458,8 +474,8 @@ export default async function SettingsPage({
                     required
                   />
                 </div>
-                <div className="flex items-end">
-                  <Button type="submit" variant="outline">
+                <div className="flex items-end md:col-span-2 xl:col-span-1 xl:justify-end">
+                  <Button type="submit" variant="outline" className="w-full xl:w-auto">
                     Save
                   </Button>
                 </div>
@@ -486,9 +502,9 @@ export default async function SettingsPage({
           <>
             <form
               action={createGateTemplateAction}
-              className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
+              className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-2 xl:grid-cols-6 xl:items-end"
             >
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2 xl:col-span-2">
                 <Label htmlFor="gate-name">New gate name</Label>
                 <Input id="gate-name" name="name" placeholder="Validation workshop" required />
               </div>
@@ -522,29 +538,31 @@ export default async function SettingsPage({
                   placeholder={`${gateTemplates.length + 1}`}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2 xl:col-span-2">
                 <Label htmlFor="gate-key">Key (optional)</Label>
                 <Input id="gate-key" name="key" placeholder="ValidationGate" />
               </div>
-              <div className="flex items-end">
-                <Button type="submit">Add gate</Button>
+              <div className="flex items-end md:col-span-2 xl:col-span-1 xl:justify-end">
+                <Button type="submit" className="w-full xl:w-auto">
+                  Add gate
+                </Button>
               </div>
             </form>
 
-              <div className="space-y-4">
-                {gateTemplates.map((template) => (
-                  <div key={template.key} className="rounded-md border p-4">
-                    <form
-                      action={updateGateTemplateAction}
-                      className="grid gap-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
-                    >
-                      <input type="hidden" name="key" value={template.key} />
-                      <div className="space-y-2">
-                        <Label htmlFor={`gate-name-${template.key}`}>Name</Label>
-                        <Input id={`gate-name-${template.key}`} name="name" defaultValue={template.name} required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`gate-schedule-${template.key}`}>Schedule type</Label>
+            <div className="space-y-4">
+              {gateTemplates.map((template) => (
+                <div key={template.key} className="rounded-md border p-4">
+                  <form
+                    action={updateGateTemplateAction}
+                    className="grid gap-4 md:grid-cols-2 xl:grid-cols-6 xl:items-end"
+                  >
+                    <input type="hidden" name="key" value={template.key} />
+                    <div className="space-y-2 md:col-span-2 xl:col-span-2">
+                      <Label htmlFor={`gate-name-${template.key}`}>Name</Label>
+                      <Input id={`gate-name-${template.key}`} name="name" defaultValue={template.name} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`gate-schedule-${template.key}`}>Schedule type</Label>
                         <select
                           id={`gate-schedule-${template.key}`}
                           name="scheduleType"
@@ -577,19 +595,19 @@ export default async function SettingsPage({
                           defaultValue={formatDateInput(template.calendarDueDate)}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`gate-position-${template.key}`}>Position</Label>
-                        <Input
-                          id={`gate-position-${template.key}`}
-                          name="position"
+                    <div className="space-y-2">
+                      <Label htmlFor={`gate-position-${template.key}`}>Position</Label>
+                      <Input
+                        id={`gate-position-${template.key}`}
+                        name="position"
                         type="number"
                         min={1}
                         defaultValue={template.position}
                         required
                       />
                     </div>
-                    <div className="flex items-end">
-                      <Button type="submit" variant="outline">
+                    <div className="flex items-end md:col-span-2 xl:col-span-1 xl:justify-end">
+                      <Button type="submit" variant="outline" className="w-full xl:w-auto">
                         Save
                       </Button>
                     </div>

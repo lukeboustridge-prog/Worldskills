@@ -62,6 +62,11 @@ export async function updateDeliverableStateAction(formData: FormData) {
     throw new Error("You do not have access to update this deliverable");
   }
 
+  const isSkillAdvisor = user.id === skill.saId;
+  if (parsed.data.state === DeliverableState.Validated && !isSkillAdvisor) {
+    throw new Error("Only the assigned Skill Advisor can set a deliverable to Validated");
+  }
+
   const updated = await prisma.deliverable.update({
     where: { id: parsed.data.deliverableId },
     data: {

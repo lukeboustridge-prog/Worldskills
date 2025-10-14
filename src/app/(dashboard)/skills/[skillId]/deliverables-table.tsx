@@ -44,6 +44,7 @@ interface DeliverablesTableProps {
   deliverables: DeliverableRow[];
   skillId: string;
   canEdit: boolean;
+  canValidate: boolean;
   overdueCount: number;
   stateCounts: Record<DeliverableState, number>;
   dueSoonThresholdDays: number;
@@ -51,10 +52,22 @@ interface DeliverablesTableProps {
 
 type FilterKey = "all" | "overdue" | "dueSoon";
 
+function getStatusIndicator(state: DeliverableState) {
+  switch (state) {
+    case DeliverableState.NotStarted:
+      return { colorClass: "bg-destructive", label: formatDeliverableState(state) };
+    case DeliverableState.Validated:
+      return { colorClass: "bg-emerald-500", label: formatDeliverableState(state) };
+    default:
+      return { colorClass: "bg-amber-400", label: formatDeliverableState(state) };
+  }
+}
+
 export function DeliverablesTable({
   deliverables,
   skillId,
   canEdit,
+  canValidate,
   overdueCount,
   stateCounts,
   dueSoonThresholdDays
@@ -216,6 +229,9 @@ export function DeliverablesTable({
             );
             const selectedEvidenceType =
               typeSelections[deliverable.id] ?? EVIDENCE_TYPE_OPTIONS[0].value;
+            const { colorClass: statusColorClass, label: statusLabel } = getStatusIndicator(
+              deliverable.state
+            );
 
             return (
               <details
@@ -237,6 +253,10 @@ export function DeliverablesTable({
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                      <div className="flex items-center gap-2 rounded-full border border-muted bg-background px-2 py-1 text-xs font-medium text-muted-foreground">
+                        <span className={`h-2.5 w-2.5 rounded-full ${statusColorClass}`} aria-hidden="true" />
+                        <span>{statusLabel}</span>
+                      </div>
                       {deliverable.isOverdue ? (
                         <Badge variant="destructive">Overdue by {deliverable.overdueByDays} days</Badge>
                       ) : isDueSoon ? (
@@ -299,7 +319,15 @@ export function DeliverablesTable({
                               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-[220px]"
                             >
                               {Object.values(DeliverableState).map((state) => (
-                                <option key={state} value={state}>
+                                <option
+                                  key={state}
+                                  value={state}
+                                  disabled={
+                                    !canValidate &&
+                                    state === DeliverableState.Validated &&
+                                    deliverable.state !== DeliverableState.Validated
+                                  }
+                                >
                                   {formatDeliverableState(state)}
                                 </option>
                               ))}
