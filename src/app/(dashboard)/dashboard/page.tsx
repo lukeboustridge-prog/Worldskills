@@ -114,8 +114,6 @@ export default async function DashboardPage({
   });
 
   const canManageSkills = user.isAdmin || user.role === Role.SA;
-  const canViewSkillsList = user.isAdmin || user.role === Role.SA || user.role === Role.Secretariat;
-  const skillsButtonLabel = user.role === Role.Secretariat && !user.isAdmin ? "View skills" : "Manage skills";
 
   if (canManageSkills) {
     await Promise.all(
@@ -406,11 +404,6 @@ export default async function DashboardPage({
               </Button>
             )}
           </div>
-          {canViewSkillsList ? (
-            <Button asChild variant="outline">
-              <Link href="/skills">{skillsButtonLabel}</Link>
-            </Button>
-          ) : null}
         </div>
       </div>
 

@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { Minus, Plus } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -252,33 +254,41 @@ const ADMIN_SECTIONS: GuideSection[] = [
   }
 ];
 
-function GuideCard({ section }: { section: GuideSection }) {
+function GuideSectionPanel({ section }: { section: GuideSection }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold text-foreground">{section.title}</CardTitle>
-        {section.description ? (
-          <p className="text-sm text-muted-foreground">{section.description}</p>
-        ) : null}
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <ol className="list-decimal space-y-3 pl-6 text-sm text-muted-foreground">
-          {section.steps.map((step, index) => (
-            <li key={index}>{step}</li>
-          ))}
-        </ol>
-        {section.tips ? (
-          <div className="rounded-lg bg-muted/60 p-4">
-            <p className="text-sm font-semibold text-foreground">Tips</p>
-            <ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-              {section.tips.map((tip, index) => (
-                <li key={index}>{tip}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-      </CardContent>
-    </Card>
+    <details className="group rounded-lg border bg-card">
+      <summary className="flex cursor-pointer items-center justify-between gap-3 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <div className="space-y-1">
+          <p className="text-lg font-semibold text-foreground">{section.title}</p>
+          {section.description ? (
+            <p className="text-sm text-muted-foreground">{section.description}</p>
+          ) : null}
+        </div>
+        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-input">
+          <Plus className="h-4 w-4 shrink-0 text-muted-foreground group-open:hidden" aria-hidden="true" />
+          <Minus className="hidden h-4 w-4 shrink-0 text-muted-foreground group-open:block" aria-hidden="true" />
+        </div>
+      </summary>
+      <div className="border-t">
+        <div className="space-y-4 p-6">
+          <ol className="list-decimal space-y-3 pl-6 text-sm text-muted-foreground">
+            {section.steps.map((step, index) => (
+              <li key={index}>{step}</li>
+            ))}
+          </ol>
+          {section.tips ? (
+            <div className="rounded-lg bg-muted/60 p-4">
+              <p className="text-sm font-semibold text-foreground">Tips</p>
+              <ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+                {section.tips.map((tip, index) => (
+                  <li key={index}>{tip}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </details>
   );
 }
 
@@ -309,7 +319,7 @@ export default async function InstructionsPage() {
       </div>
 
       {sections.map((section) => (
-        <GuideCard key={section.title} section={section} />
+        <GuideSectionPanel key={section.title} section={section} />
       ))}
 
       <Card>
