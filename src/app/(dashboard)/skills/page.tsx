@@ -245,63 +245,60 @@ export default async function SkillsPage() {
                               </div>
                             </div>
                             </summary>
-                              <CardContent className="border-t bg-muted/10 px-6 py-6">
-                                <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
-                                  <div className="rounded-lg border bg-background p-4 shadow-sm">
-                                    {canManageSkills ? (
-                                      <SkillAssignmentForm
-                                        skillId={skill.id}
-                                        defaultSaId={skill.saId ?? null}
-                                        defaultScmId={skill.scmId ?? null}
-                                        advisorOptions={advisorOptions}
-                                        managerOptions={managerOptions}
-                                        workspaceHref={`/skills/${skill.id}`}
+                            <CardContent className="space-y-4 border-t bg-muted/10 px-6 py-6">
+                              <div className="rounded-lg border bg-background p-4 shadow-sm">
+                                {canManageSkills ? (
+                                  <SkillAssignmentForm
+                                    skillId={skill.id}
+                                    defaultSaId={skill.saId ?? null}
+                                    defaultScmId={skill.scmId ?? null}
+                                    advisorOptions={advisorOptions}
+                                    managerOptions={managerOptions}
+                                    workspaceHref={`/skills/${skill.id}`}
+                                  />
+                                ) : (
+                                  <div className="space-y-3">
+                                    <p className="text-sm text-muted-foreground">
+                                      View the workspace to manage assignments.
+                                    </p>
+                                    <Button asChild size="sm" variant="outline">
+                                      <Link href={`/skills/${skill.id}`}>Open workspace</Link>
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="rounded-lg border bg-background p-4 shadow-sm">
+                                <div className="space-y-2">
+                                  <p className="text-sm font-semibold text-foreground">Send a message</p>
+                                  {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
+                                    <form action={createMessageAction} className="space-y-2">
+                                      <input type="hidden" name="skillId" value={skill.id} />
+                                      <Textarea
+                                        name="body"
+                                        placeholder="Share an update with your counterpart"
+                                        rows={3}
+                                        required
                                       />
-                                    ) : (
-                                      <div className="space-y-3">
-                                        <p className="text-sm text-muted-foreground">
-                                          View the workspace to manage assignments.
-                                        </p>
-                                        <Button asChild size="sm" variant="outline">
-                                          <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                                        </Button>
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="space-y-4 rounded-lg border bg-background p-4 shadow-sm">
-                                    <div className="space-y-2">
-                                      <p className="text-sm font-semibold text-foreground">Send a message</p>
-                                      {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
-                                        <form action={createMessageAction} className="space-y-2">
-                                          <input type="hidden" name="skillId" value={skill.id} />
-                                          <Textarea
-                                            name="body"
-                                            placeholder="Share an update with your counterpart"
-                                            rows={3}
-                                            required
-                                          />
-                                          <Button type="submit" size="sm">
-                                            Post message
-                                          </Button>
-                                        </form>
-                                      ) : (
-                                        <p className="text-sm text-muted-foreground">
-                                          Open the workspace to view the full conversation thread.
-                                        </p>
-                                      )}
-                                    </div>
-
-                                    {canManageSkills ? (
-                                      <form action={deleteSkillAction} className="flex justify-end">
-                                        <input type="hidden" name="skillId" value={skill.id} />
-                                        <Button type="submit" size="sm" variant="destructive">
-                                          Delete skill
-                                        </Button>
-                                      </form>
-                                    ) : null}
-                                  </div>
+                                      <Button type="submit" size="sm">
+                                        Post message
+                                      </Button>
+                                    </form>
+                                  ) : (
+                                    <p className="text-sm text-muted-foreground">
+                                      Open the workspace to view the full conversation thread.
+                                    </p>
+                                  )}
                                 </div>
-                              </CardContent>
+                              </div>
+                              {canManageSkills ? (
+                                <form action={deleteSkillAction} className="flex justify-end">
+                                  <input type="hidden" name="skillId" value={skill.id} />
+                                  <Button type="submit" size="sm" variant="destructive">
+                                    Delete skill
+                                  </Button>
+                                </form>
+                              ) : null}
+                            </CardContent>
                             </details>
                           </Card>
                         );
@@ -385,64 +382,62 @@ export default async function SkillsPage() {
                               </div>
                             </div>
                           </summary>
-                            <CardContent className="border-t bg-muted/10 px-6 py-6">
-                              <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
-                                <div className="rounded-lg border bg-background p-4 shadow-sm">
-                                  {canManageSkills ? (
-                                    <SkillAssignmentForm
-                                      skillId={skill.id}
-                                      defaultSaId={skill.saId ?? null}
-                                      defaultScmId={skill.scmId ?? null}
-                                      advisorOptions={advisorOptions}
-                                      managerOptions={managerOptions}
-                                      workspaceHref={`/skills/${skill.id}`}
-                                      isUnassigned
+                          <CardContent className="space-y-4 border-t bg-muted/10 px-6 py-6">
+                            <div className="rounded-lg border bg-background p-4 shadow-sm">
+                              {canManageSkills ? (
+                                <SkillAssignmentForm
+                                  skillId={skill.id}
+                                  defaultSaId={skill.saId ?? null}
+                                  defaultScmId={skill.scmId ?? null}
+                                  advisorOptions={advisorOptions}
+                                  managerOptions={managerOptions}
+                                  workspaceHref={`/skills/${skill.id}`}
+                                  isUnassigned
+                                />
+                              ) : (
+                                <div className="space-y-3">
+                                  <p className="text-sm text-muted-foreground">
+                                    View the workspace to manage assignments.
+                                  </p>
+                                  <Button asChild size="sm" variant="outline">
+                                    <Link href={`/skills/${skill.id}`}>Open workspace</Link>
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                            <div className="rounded-lg border bg-background p-4 shadow-sm">
+                              <div className="space-y-2">
+                                <p className="text-sm font-semibold text-foreground">Send a message</p>
+                                {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
+                                  <form action={createMessageAction} className="space-y-2">
+                                    <input type="hidden" name="skillId" value={skill.id} />
+                                    <Textarea
+                                      name="body"
+                                      placeholder="Share an update with your counterpart"
+                                      rows={3}
+                                      required
                                     />
-                                  ) : (
-                                    <div className="space-y-3">
-                                      <p className="text-sm text-muted-foreground">
-                                        View the workspace to manage assignments.
-                                      </p>
-                                      <Button asChild size="sm" variant="outline">
-                                        <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                                      </Button>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="space-y-4 rounded-lg border bg-background p-4 shadow-sm">
-                                  <div className="space-y-2">
-                                    <p className="text-sm font-semibold text-foreground">Send a message</p>
-                                    {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
-                                      <form action={createMessageAction} className="space-y-2">
-                                        <input type="hidden" name="skillId" value={skill.id} />
-                                        <Textarea
-                                          name="body"
-                                          placeholder="Share an update with your counterpart"
-                                          rows={3}
-                                          required
-                                        />
-                                        <Button type="submit" size="sm">
-                                          Post message
-                                        </Button>
-                                      </form>
-                                    ) : (
-                                      <p className="text-sm text-muted-foreground">
-                                        Open the workspace to view the full conversation thread.
-                                      </p>
-                                    )}
-                                  </div>
-
-                                  {canManageSkills ? (
-                                    <form action={deleteSkillAction} className="flex justify-end">
-                                      <input type="hidden" name="skillId" value={skill.id} />
-                                      <Button type="submit" size="sm" variant="destructive">
-                                        Delete skill
-                                      </Button>
-                                    </form>
-                                  ) : null}
-                                </div>
+                                    <Button type="submit" size="sm">
+                                      Post message
+                                    </Button>
+                                  </form>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground">
+                                    Open the workspace to view the full conversation thread.
+                                  </p>
+                                )}
                               </div>
-                            </CardContent>
+                            </div>
+
+                            {canManageSkills ? (
+                              <form action={deleteSkillAction} className="flex justify-end">
+                                <input type="hidden" name="skillId" value={skill.id} />
+                                <Button type="submit" size="sm" variant="destructive">
+                                  Delete skill
+                                </Button>
+                              </form>
+                            ) : null}
+                          </CardContent>
                           </details>
                         </Card>
                       );
