@@ -60,14 +60,18 @@ export async function DELETE(request: NextRequest, { params }: { params: { deliv
   }
 
   const evidenceItems = normaliseEvidenceItems(deliverable.evidenceItems);
-  const removal = removeDocumentEvidenceItem({ items: evidenceItems, evidenceId: params.evidenceId });
-  const removedDocument = removal.removed;
+  const { items: nextEvidenceItems, removed } = removeDocumentEvidenceItem({
+    items: evidenceItems,
+    evidenceId: params.evidenceId
+  });
 
-  if (!removedDocument) {
+  if (!removed) {
     return NextResponse.json({ error: "Document not found." }, { status: 404 });
   }
 
-  const payload = serialiseEvidenceItems(removal.items);
+  const removedDocument = removed;
+
+  const payload = serialiseEvidenceItems(nextEvidenceItems);
 
   await prisma.deliverable.update({
     where: { id: deliverable.id },
@@ -79,12 +83,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { deliv
 
   await logActivity({
     skillId: deliverable.skillId,
-      userId: user.id,
-      action: "DeliverableDocumentRemoved",
-      payload: {
-        deliverableId: deliverable.id,
-        documentId: removedDocument.id
-      }
+    userId: user.id,
+    action: "DeliverableDocumentRemoved",
+    payload: {
+      deliverableId: deliverable.id,
+      documentId: removedDocument.id
+    }
   });
 
   revalidatePath(`/skills/${deliverable.skillId}`);
