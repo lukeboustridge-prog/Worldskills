@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { isDocumentEvidence, normaliseEvidenceItems } from "@/lib/deliverables";
+import {
+  isDocumentEvidence,
+  normaliseEvidenceItems,
+  type DeliverableEvidenceDocument
+} from "@/lib/deliverables";
 import { canViewSkill } from "@/lib/permissions";
 import { createPresignedDownload } from "@/lib/storage";
 import { normaliseFileName } from "@/lib/utils";
@@ -38,7 +42,8 @@ export async function GET(request: NextRequest, { params }: { params: { delivera
 
   const evidenceItems = normaliseEvidenceItems(deliverable.evidenceItems);
   const document = evidenceItems.find(
-    (item) => isDocumentEvidence(item) && item.id === params.evidenceId
+    (item): item is DeliverableEvidenceDocument =>
+      isDocumentEvidence(item) && item.id === params.evidenceId
   );
 
   if (!document) {
