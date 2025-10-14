@@ -224,8 +224,8 @@ export default async function SkillsPage() {
                                       </Badge>
                                     ) : (
                                       <Badge
-                                        variant="secondary"
-                                        className="whitespace-nowrap bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10"
+                                        variant="outline"
+                                        className="whitespace-nowrap border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10"
                                       >
                                         On track
                                       </Badge>
