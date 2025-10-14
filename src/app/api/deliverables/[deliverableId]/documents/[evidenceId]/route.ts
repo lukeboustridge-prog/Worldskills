@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
+  type DeliverableEvidenceDocument,
   normaliseEvidenceItems,
   removeDocumentEvidenceItem,
   serialiseEvidenceItems
@@ -69,7 +70,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { deliv
     return NextResponse.json({ error: "Document not found." }, { status: 404 });
   }
 
-  const removedDocument = removed;
+  const removedDocument: DeliverableEvidenceDocument = removed;
 
   const payload = serialiseEvidenceItems(nextEvidenceItems);
 
