@@ -61,8 +61,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { deliv
 
   const evidenceItems = normaliseEvidenceItems(deliverable.evidenceItems);
   const removal = removeDocumentEvidenceItem({ items: evidenceItems, evidenceId: params.evidenceId });
+  const removedDocument = removal.removed;
 
-  if (!removal.removed) {
+  if (!removedDocument) {
     return NextResponse.json({ error: "Document not found." }, { status: 404 });
   }
 
@@ -78,12 +79,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { deliv
 
   await logActivity({
     skillId: deliverable.skillId,
-    userId: user.id,
-    action: "DeliverableDocumentRemoved",
-    payload: {
-      deliverableId: deliverable.id,
-      documentId: removal.removed.id
-    }
+      userId: user.id,
+      action: "DeliverableDocumentRemoved",
+      payload: {
+        deliverableId: deliverable.id,
+        documentId: removedDocument.id
+      }
   });
 
   revalidatePath(`/skills/${deliverable.skillId}`);
@@ -91,7 +92,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { deliv
 
   let warning: string | null = null;
   try {
-    await deleteStoredObject(removal.removed.storageKey);
+    await deleteStoredObject(removedDocument.storageKey);
   } catch (error) {
     warning = "We removed the document from the record but couldn't delete the stored file.";
     console.error("Failed to delete document evidence", error);
