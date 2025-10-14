@@ -7,24 +7,31 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const STORAGE_BUCKET = process.env.FILE_STORAGE_BUCKET;
-const STORAGE_REGION = process.env.FILE_STORAGE_REGION;
-const STORAGE_ACCESS_KEY_ID = process.env.FILE_STORAGE_ACCESS_KEY_ID;
-const STORAGE_SECRET_ACCESS_KEY = process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
-const STORAGE_ENDPOINT = process.env.FILE_STORAGE_ENDPOINT;
-const STORAGE_FORCE_PATH_STYLE = process.env.FILE_STORAGE_FORCE_PATH_STYLE === "true";
+const storageBucket = process.env.FILE_STORAGE_BUCKET;
+const storageRegion = process.env.FILE_STORAGE_REGION;
+const storageAccessKeyId = process.env.FILE_STORAGE_ACCESS_KEY_ID;
+const storageSecretAccessKey = process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
+const storageEndpoint = process.env.FILE_STORAGE_ENDPOINT;
+const storageForcePathStyle = process.env.FILE_STORAGE_FORCE_PATH_STYLE === "true";
 
-if (!STORAGE_BUCKET) {
+if (!storageBucket) {
   throw new Error("FILE_STORAGE_BUCKET must be configured for document evidence uploads.");
 }
 
-if (!STORAGE_REGION) {
+if (!storageRegion) {
   throw new Error("FILE_STORAGE_REGION must be configured for document evidence uploads.");
 }
 
-if (!STORAGE_ACCESS_KEY_ID || !STORAGE_SECRET_ACCESS_KEY) {
+if (!storageAccessKeyId || !storageSecretAccessKey) {
   throw new Error("Storage credentials are required. Set FILE_STORAGE_ACCESS_KEY_ID and FILE_STORAGE_SECRET_ACCESS_KEY.");
 }
+
+const STORAGE_BUCKET: string = storageBucket;
+const STORAGE_REGION: string = storageRegion;
+const STORAGE_ACCESS_KEY_ID: string = storageAccessKeyId;
+const STORAGE_SECRET_ACCESS_KEY: string = storageSecretAccessKey;
+const STORAGE_ENDPOINT: string | undefined = storageEndpoint;
+const STORAGE_FORCE_PATH_STYLE: boolean = storageForcePathStyle;
 
 let client: S3Client | null = null;
 
