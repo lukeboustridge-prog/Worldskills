@@ -77,7 +77,9 @@ export function SkillAssignmentForm({
       <input type="hidden" name="skillId" value={skillId} />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1">
-          <Label htmlFor={`sa-${skillId}`}>Skill Advisor</Label>
+          <Label htmlFor={`sa-${skillId}`} className="whitespace-nowrap">
+            Skill Advisor
+          </Label>
           <select
             id={`sa-${skillId}`}
             name="saId"
@@ -101,7 +103,9 @@ export function SkillAssignmentForm({
           </select>
         </div>
         <div className="space-y-1">
-          <Label htmlFor={`scm-${skillId}`}>Skill Competition Manager</Label>
+          <Label htmlFor={`scm-${skillId}`} className="whitespace-nowrap">
+            Skill Competition Manager
+          </Label>
           <select
             id={`scm-${skillId}`}
             name="scmId"
