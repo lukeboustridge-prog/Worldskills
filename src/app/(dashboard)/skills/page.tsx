@@ -195,16 +195,18 @@ export default async function SkillsPage() {
                             <details className="group">
                               <summary className="flex cursor-pointer items-start justify-between gap-3 px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                 <div className="space-y-1">
-                                  <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                    {catalogEntry ? (
-                                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                                        Skill {catalogEntry.code}
-                                      </span>
-                                    ) : null}
-                                    <span className="font-medium text-foreground">Sector: {skill.sector ?? "Not recorded"}</span>
-                                  </div>
-                                  <p className="text-lg font-semibold text-foreground">{skill.name}</p>
-                                  <p className="text-xs text-muted-foreground">SCM: {scmLabel}</p>
+                                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                  {catalogEntry ? (
+                                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                                      Skill {catalogEntry.code}
+                                    </span>
+                                  ) : null}
+                                </div>
+                                <p className="text-lg font-semibold text-foreground">{skill.name}</p>
+                                <p className="text-xs text-muted-foreground">SCM: {scmLabel}</p>
+                                {skill.scm?.email ? (
+                                  <p className="text-xs text-muted-foreground">{skill.scm.email}</p>
+                                ) : null}
                                 </div>
                                 <div className="flex items-start gap-2">
                                   {overdueCount > 0 ? (
@@ -305,7 +307,6 @@ export default async function SkillsPage() {
                                       Skill {catalogEntry.code}
                                     </span>
                                   ) : null}
-                                  <span className="font-medium text-foreground">Sector: {skill.sector ?? "Not recorded"}</span>
                                 </div>
                                 <p className="text-lg font-semibold text-foreground">{skill.name}</p>
                                 <p className="text-xs text-muted-foreground">Assign a Skill Advisor to manage deliverables.</p>

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Minus, Plus } from "lucide-react";
 import {
   EVIDENCE_TYPE_OPTIONS,
   type DeliverableEvidenceDocument,
@@ -217,212 +218,228 @@ export function DeliverablesTable({
               typeSelections[deliverable.id] ?? EVIDENCE_TYPE_OPTIONS[0].value;
 
             return (
-              <div key={deliverable.id} className="rounded-lg border bg-card p-5 shadow-sm">
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <p className="text-xs uppercase text-muted-foreground">
-                      {deliverable.scheduleType === DeliverableScheduleType.CMonth
-                        ? deliverable.cMonthLabel ?? "C-month schedule"
-                        : "Calendar date"}
-                    </p>
-                    <h3 className="text-lg font-semibold text-foreground">{deliverable.label}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Due {format(dueDate, "dd MMM yyyy")}
-                      {isDueSoon ? ` · ${daysUntilDue} day${daysUntilDue === 1 ? "" : "s"} remaining` : ""}
-                    </p>
+              <details
+                key={deliverable.id}
+                className="group rounded-lg border bg-card shadow-sm"
+                defaultOpen
+              >
+                <summary className="flex cursor-pointer items-center justify-between gap-3 px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <div className="flex w-full flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div className="space-y-1">
+                      <p className="text-xs uppercase text-muted-foreground">
+                        {deliverable.scheduleType === DeliverableScheduleType.CMonth
+                          ? deliverable.cMonthLabel ?? "C-month schedule"
+                          : "Calendar date"}
+                      </p>
+                      <h3 className="text-lg font-semibold text-foreground">{deliverable.label}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Due {format(dueDate, "dd MMM yyyy")}
+                        {isDueSoon ? ` · ${daysUntilDue} day${daysUntilDue === 1 ? "" : "s"} remaining` : ""}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                      {deliverable.isOverdue ? (
+                        <Badge variant="destructive">Overdue by {deliverable.overdueByDays} days</Badge>
+                      ) : isDueSoon ? (
+                        <Badge variant="default">Due soon</Badge>
+                      ) : (
+                        <Badge variant="outline">On track</Badge>
+                      )}
+                      <Badge variant="outline">{evidenceCount} evidence</Badge>
+                      {!canEdit ? (
+                        <Badge variant="default">{formatDeliverableState(deliverable.state)}</Badge>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full border border-input">
+                    <Plus className="h-4 w-4 group-open:hidden" aria-hidden="true" />
+                    <Minus className="hidden h-4 w-4 group-open:block" aria-hidden="true" />
+                  </div>
+                </summary>
+                <div className="border-t">
+                  <div className="space-y-4 p-6">
                     {canEdit ? (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setEditingDeliverableId((current) =>
-                            current === deliverable.id ? null : deliverable.id
-                          )
-                        }
-                        className="mt-2 text-xs font-medium text-primary underline-offset-2 hover:underline"
-                      >
-                        {editingDeliverableId === deliverable.id ? "Cancel edit" : "Edit schedule"}
-                      </button>
-                    ) : null}
-                  </div>
-                  <div className="flex flex-wrap justify-end gap-2">
-                    {deliverable.isOverdue ? (
-                      <Badge variant="destructive">Overdue by {deliverable.overdueByDays} days</Badge>
-                    ) : isDueSoon ? (
-                      <Badge variant="default">Due soon</Badge>
-                    ) : (
-                      <Badge variant="outline">On track</Badge>
-                    )}
-                    <Badge variant="outline">{evidenceCount} evidence</Badge>
-                    {!canEdit ? (
-                      <Badge variant="default">{formatDeliverableState(deliverable.state)}</Badge>
-                    ) : null}
-                  </div>
-                </div>
-
-                {canEdit && editingDeliverableId === deliverable.id ? (
-                  <div className="mt-4 rounded-md border bg-muted/10 p-4">
-                    <DeliverableScheduleEditor
-                      deliverable={deliverable}
-                      skillId={skillId}
-                      onComplete={() => setEditingDeliverableId(null)}
-                    />
-                  </div>
-                ) : null}
-
-                <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
-                  <div className="space-y-3">
-                    <p className="text-xs font-semibold uppercase text-muted-foreground">Status</p>
-                    {canEdit ? (
-                      <form
-                        action={updateDeliverableStateAction}
-                        className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
-                      >
-                        <input type="hidden" name="skillId" value={skillId} />
-                        <input type="hidden" name="deliverableId" value={deliverable.id} />
-                        <select
-                          name="state"
-                          defaultValue={deliverable.state}
-                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-[220px]"
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditingDeliverableId((current) =>
+                              current === deliverable.id ? null : deliverable.id
+                            )
+                          }
+                          className="text-xs font-medium text-primary underline-offset-2 hover:underline"
                         >
-                          {Object.values(DeliverableState).map((state) => (
-                            <option key={state} value={state}>
-                              {formatDeliverableState(state)}
-                            </option>
-                          ))}
-                        </select>
-                        <Button type="submit" variant="secondary" size="sm">
-                          Update
-                        </Button>
-                      </form>
-                    ) : (
-                      <Badge variant="default" className="w-fit">
-                        {formatDeliverableState(deliverable.state)}
-                      </Badge>
-                    )}
-                  </div>
+                          {editingDeliverableId === deliverable.id ? "Cancel edit" : "Edit schedule"}
+                        </button>
+                      </div>
+                    ) : null}
 
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase text-muted-foreground">Evidence</p>
-                      {canEdit ? (
-                        <div className="space-y-2">
-                          <div className="space-y-1">
-                            <Label htmlFor={`new-evidence-type-${deliverable.id}`}>Evidence type</Label>
+                    {canEdit && editingDeliverableId === deliverable.id ? (
+                      <div className="rounded-md border bg-muted/10 p-4">
+                        <DeliverableScheduleEditor
+                          deliverable={deliverable}
+                          skillId={skillId}
+                          onComplete={() => setEditingDeliverableId(null)}
+                        />
+                      </div>
+                    ) : null}
+
+                    <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
+                      <div className="space-y-3">
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">Status</p>
+                        {canEdit ? (
+                          <form
+                            action={updateDeliverableStateAction}
+                            className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
+                          >
+                            <input type="hidden" name="skillId" value={skillId} />
+                            <input type="hidden" name="deliverableId" value={deliverable.id} />
                             <select
-                              id={`new-evidence-type-${deliverable.id}`}
-                              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                              value={selectedEvidenceType}
-                              onChange={(event) =>
-                                handleTypeSelection(
-                                  deliverable.id,
-                                  event.target.value as EvidenceType
-                                )
-                              }
+                              name="state"
+                              defaultValue={deliverable.state}
+                              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-[220px]"
                             >
-                              {EVIDENCE_TYPE_OPTIONS.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
+                              {Object.values(DeliverableState).map((state) => (
+                                <option key={state} value={state}>
+                                  {formatDeliverableState(state)}
                                 </option>
                               ))}
                             </select>
-                          </div>
-                          {selectedEvidenceType !== "Document" ? (
-                            <form
-                              action={appendEvidenceAction}
-                              className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3"
-                            >
-                              <input type="hidden" name="skillId" value={skillId} />
-                              <input type="hidden" name="deliverableId" value={deliverable.id} />
-                              <input type="hidden" name="type" value={selectedEvidenceType} />
-                              <div className="flex w-full flex-col gap-2 md:flex-1">
-                                <Label htmlFor={`evidence-${deliverable.id}`} className="sr-only">
-                                  Evidence URL
-                                </Label>
-                                <Input
-                                  id={`evidence-${deliverable.id}`}
-                                  type="url"
-                                  name="evidence"
-                                  placeholder="Paste a link to evidence"
-                                  className="h-10 w-full"
-                                  required
-                                />
-                              </div>
-                              <Button type="submit" variant="outline" size="sm" className="md:self-start">
-                                Attach link
-                              </Button>
-                            </form>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </div>
+                            <Button type="submit" variant="secondary" size="sm">
+                              Update
+                            </Button>
+                          </form>
+                        ) : (
+                          <Badge variant="default" className="w-fit">
+                            {formatDeliverableState(deliverable.state)}
+                          </Badge>
+                        )}
+                      </div>
 
-                    <DocumentEvidenceManager
-                      deliverableId={deliverable.id}
-                      skillId={skillId}
-                      evidence={documentEvidence ?? null}
-                      canEdit={canEdit}
-                      showUploader={canEdit && selectedEvidenceType === "Document"}
-                    />
-
-                    {linkEvidence.length > 0 ? (
-                      <div className="space-y-2">
-                        {linkEvidence.map(({ item, index }) => (
-                          <div
-                            key={`${deliverable.id}-${index}`}
-                            className="rounded-md border border-muted bg-background p-3"
-                          >
-                            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                              <a
-                                href={item.url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-sm font-medium text-primary underline"
-                              >
-                                Evidence link
-                              </a>
-                              <Badge variant="outline" className="w-fit text-xs">
-                                {item.type}
-                              </Badge>
-                            </div>
-                            {canEdit ? (
-                              <form
-                                className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center"
-                                action={updateEvidenceTypeAction}
-                              >
-                                <input type="hidden" name="skillId" value={skillId} />
-                                <input type="hidden" name="deliverableId" value={deliverable.id} />
-                                <input type="hidden" name="evidenceIndex" value={index} />
-                                <Label htmlFor={`evidence-type-${deliverable.id}-${index}`} className="sr-only">
-                                  Evidence type
-                                </Label>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold uppercase text-muted-foreground">Evidence</p>
+                          {canEdit ? (
+                            <div className="space-y-2">
+                              <div className="space-y-1">
+                                <Label htmlFor={`new-evidence-type-${deliverable.id}`}>Evidence type</Label>
                                 <select
-                                  id={`evidence-type-${deliverable.id}-${index}`}
-                                  name="type"
-                                  defaultValue={item.type}
-                                  className="h-9 rounded-md border border-input bg-background px-2 text-xs"
+                                  id={`new-evidence-type-${deliverable.id}`}
+                                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                                  value={selectedEvidenceType}
+                                  onChange={(event) =>
+                                    handleTypeSelection(
+                                      deliverable.id,
+                                      event.target.value as EvidenceType
+                                    )
+                                  }
                                 >
-                                  {EVIDENCE_TYPE_OPTIONS.filter(
-                                    (option) => option.value !== "Document"
-                                  ).map((option) => (
+                                  {EVIDENCE_TYPE_OPTIONS.map((option) => (
                                     <option key={option.value} value={option.value}>
                                       {option.label}
                                     </option>
                                   ))}
                                 </select>
-                                <Button type="submit" size="sm" variant="secondary" className="text-xs">
-                                  Update type
-                                </Button>
-                              </form>
-                            ) : null}
+                              </div>
+                              {selectedEvidenceType !== "Document" ? (
+                                <form
+                                  action={appendEvidenceAction}
+                                  className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3"
+                                >
+                                  <input type="hidden" name="skillId" value={skillId} />
+                                  <input type="hidden" name="deliverableId" value={deliverable.id} />
+                                  <input type="hidden" name="type" value={selectedEvidenceType} />
+                                  <div className="flex w-full flex-col gap-2 md:flex-1">
+                                    <Label htmlFor={`evidence-${deliverable.id}`} className="sr-only">
+                                      Evidence URL
+                                    </Label>
+                                    <Input
+                                      id={`evidence-${deliverable.id}`}
+                                      type="url"
+                                      name="evidence"
+                                      placeholder="Paste a link to evidence"
+                                      className="h-10 w-full"
+                                      required
+                                    />
+                                  </div>
+                                  <Button type="submit" variant="outline" size="sm" className="md:self-start">
+                                    Attach link
+                                  </Button>
+                                </form>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <DocumentEvidenceManager
+                          deliverableId={deliverable.id}
+                          skillId={skillId}
+                          evidence={documentEvidence ?? null}
+                          canEdit={canEdit}
+                          showUploader={canEdit && selectedEvidenceType === "Document"}
+                        />
+
+                        {linkEvidence.length > 0 ? (
+                          <div className="space-y-2">
+                            {linkEvidence.map(({ item, index }) => (
+                              <div
+                                key={`${deliverable.id}-${index}`}
+                                className="rounded-md border border-muted bg-background p-3"
+                              >
+                                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                                  <a
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-sm font-medium text-primary underline"
+                                  >
+                                    Evidence link
+                                  </a>
+                                  <Badge variant="outline" className="w-fit text-xs">
+                                    {item.type}
+                                  </Badge>
+                                </div>
+                                {canEdit ? (
+                                  <form
+                                    className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center"
+                                    action={updateEvidenceTypeAction}
+                                  >
+                                    <input type="hidden" name="skillId" value={skillId} />
+                                    <input type="hidden" name="deliverableId" value={deliverable.id} />
+                                    <input type="hidden" name="evidenceIndex" value={index} />
+                                    <Label htmlFor={`evidence-type-${deliverable.id}-${index}`} className="sr-only">
+                                      Evidence type
+                                    </Label>
+                                    <select
+                                      id={`evidence-type-${deliverable.id}-${index}`}
+                                      name="type"
+                                      defaultValue={item.type}
+                                      className="h-9 rounded-md border border-input bg-background px-2 text-xs"
+                                    >
+                                      {EVIDENCE_TYPE_OPTIONS.filter(
+                                        (option) => option.value !== "Document"
+                                      ).map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                          {option.label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <Button type="submit" size="sm" variant="secondary" className="text-xs">
+                                      Update type
+                                    </Button>
+                                  </form>
+                                ) : null}
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No additional evidence attached.</p>
+                        )}
                       </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No additional evidence attached.</p>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </details>
             );
           })}
         </div>
