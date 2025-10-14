@@ -210,3 +210,53 @@ export async function deleteSkillAction(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/skills");
 }
+
+const broadcastMessageSchema = z.object({
+  body: z.string().trim().min(2, "Message cannot be empty")
+});
+
+export async function messageAllSkillsAction(formData: FormData) {
+  const user = await requireUser();
+
+  if (!user.isAdmin) {
+    throw new Error("Only administrators can send broadcast messages");
+  }
+
+  const parsed = broadcastMessageSchema.safeParse({
+    body: formData.get("body")
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const skills = await prisma.skill.findMany({ select: { id: true } });
+
+  if (skills.length === 0) {
+    return;
+  }
+
+  const body = parsed.data.body;
+  const preview = body.length > 140 ? body.slice(0, 140) : body;
+
+  for (const skill of skills) {
+    await prisma.message.create({
+      data: {
+        skillId: skill.id,
+        authorId: user.id,
+        body
+      }
+    });
+
+    await logActivity({
+      skillId: skill.id,
+      userId: user.id,
+      action: "MessagePosted",
+      payload: { body: preview }
+    });
+
+    revalidatePath(`/skills/${skill.id}`);
+  }
+
+  revalidatePath("/skills");
+}

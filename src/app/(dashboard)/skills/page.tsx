@@ -13,7 +13,7 @@ import { getAppSettings } from "@/lib/settings";
 import { decorateDeliverable } from "@/lib/deliverables";
 import { SKILL_CATALOG } from "@/lib/skill-catalog";
 import { getUserDisplayName } from "@/lib/users";
-import { deleteSkillAction } from "./actions";
+import { deleteSkillAction, messageAllSkillsAction } from "./actions";
 import { createMessageAction } from "./[skillId]/actions";
 import { CreateSkillDialog } from "./create-skill-dialog";
 import { SkillAssignmentForm } from "./skill-assignment-form";
@@ -157,6 +157,29 @@ export default async function SkillsPage() {
           />
         ) : null}
       </div>
+
+      {isAdmin && skills.length > 0 ? (
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle>Message all skills</CardTitle>
+            <CardDescription>
+              Post an announcement to every skill conversation thread. The message will appear for each advisor and
+              manager pair.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={messageAllSkillsAction} className="space-y-4">
+              <Textarea
+                name="body"
+                placeholder="Share an important update with every skill team"
+                rows={4}
+                required
+              />
+              <Button type="submit">Send message to all skills</Button>
+            </form>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {skills.length === 0 ? (
         <Card>
