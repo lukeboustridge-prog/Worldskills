@@ -6,6 +6,7 @@ import { DeliverableScheduleType, GateScheduleType, Role } from "@prisma/client"
 import { type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +17,7 @@ import { getAppSettings } from "@/lib/settings";
 import { hasGateTemplateCatalogSupport, hasInvitationTable } from "@/lib/schema-info";
 import {
   createDeliverableTemplateAction,
+  deleteDeliverableTemplateAction,
   createGateTemplateAction,
   createInvitationAction,
   createMissingDeliverablesAction,
@@ -95,8 +97,14 @@ export default async function SettingsPage({
   );
   const templateCreatedKey = typeof searchParams?.templateCreated === "string" ? searchParams.templateCreated : null;
   const templateUpdatedKey = typeof searchParams?.templateUpdated === "string" ? searchParams.templateUpdated : null;
+  const templateDeletedKey = typeof searchParams?.templateDeleted === "string" ? searchParams.templateDeleted : null;
+  const templateDeletedLabel =
+    typeof searchParams?.templateLabel === "string" ? searchParams.templateLabel : null;
   const addedCount = parseCountParam(
     typeof searchParams?.added === "string" ? searchParams.added : undefined
+  );
+  const removedCount = parseCountParam(
+    typeof searchParams?.removed === "string" ? searchParams.removed : undefined
   );
   const gateTemplateCreatedKey =
     typeof searchParams?.gateTemplateCreated === "string" ? searchParams.gateTemplateCreated : null;
@@ -230,6 +238,7 @@ export default async function SettingsPage({
   const updatedTemplate = templateUpdatedKey
     ? templates.find((template) => template.key === templateUpdatedKey)
     : null;
+  const deletedTemplateLabel = templateDeletedLabel ?? templateDeletedKey;
   const createdGateTemplate = gateTemplateCreatedKey
     ? gateTemplates.find((template) => template.key === gateTemplateCreatedKey)
     : null;
@@ -276,6 +285,12 @@ export default async function SettingsPage({
         {templateUpdatedKey ? (
           <div className="rounded-md border border-purple-400 bg-purple-50 p-4 text-sm text-purple-900">
             {updatedTemplate ? `${updatedTemplate.label}` : templateUpdatedKey} updated. Due dates and labels were refreshed for all skills.
+          </div>
+        ) : null}
+        {templateDeletedKey ? (
+          <div className="rounded-md border border-red-400 bg-red-50 p-4 text-sm text-red-900">
+            Removed {deletedTemplateLabel ?? templateDeletedKey} from the catalog.
+            {removedCount > 0 ? ` Deleted ${removedCount} seeded deliverables from existing skills.` : ""}
           </div>
         ) : null}
         {gateTemplatesSupported && gateTemplateCreatedKey ? (
@@ -374,7 +389,7 @@ export default async function SettingsPage({
       <CollapsibleSection
         title="Standard deliverable catalog"
         description="Every skill is seeded with these deliverables. Adjust labels, offsets, and ordering to match the latest guidance."
-        defaultOpen={Boolean(templateCreatedKey || templateUpdatedKey)}
+        defaultOpen={Boolean(templateCreatedKey || templateUpdatedKey || templateDeletedKey)}
       >
         <form
           action={createDeliverableTemplateAction}
@@ -402,7 +417,7 @@ export default async function SettingsPage({
           </div>
           <div className="space-y-2">
             <Label htmlFor="new-calendar-date">Calendar due date</Label>
-            <Input id="new-calendar-date" name="calendarDueDate" type="date" />
+            <DatePicker id="new-calendar-date" name="calendarDueDate" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="new-position">Position</Label>
@@ -458,10 +473,9 @@ export default async function SettingsPage({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor={`calendar-${template.key}`}>Calendar due date</Label>
-                  <Input
+                  <DatePicker
                     id={`calendar-${template.key}`}
                     name="calendarDueDate"
-                    type="date"
                     defaultValue={formatDateInput(template.calendarDueDate)}
                   />
                 </div>
@@ -482,14 +496,22 @@ export default async function SettingsPage({
                   </Button>
                 </div>
               </form>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Key: <span className="font-mono">{template.key}</span> ·{' '}
-                {template.scheduleType === DeliverableScheduleType.CMonth && template.offsetMonths != null
-                  ? buildCMonthLabel(template.offsetMonths)
-                  : template.calendarDueDate
-                    ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`
-                    : "Schedule pending"}
-              </p>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  Key: <span className="font-mono">{template.key}</span> ·{' '}
+                  {template.scheduleType === DeliverableScheduleType.CMonth && template.offsetMonths != null
+                    ? buildCMonthLabel(template.offsetMonths)
+                    : template.calendarDueDate
+                      ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`
+                      : "Schedule pending"}
+                </p>
+                <form action={deleteDeliverableTemplateAction} className="flex">
+                  <input type="hidden" name="key" value={template.key} />
+                  <Button type="submit" variant="destructive" size="sm">
+                    Delete
+                  </Button>
+                </form>
+              </div>
             </div>
           ))}
         </div>

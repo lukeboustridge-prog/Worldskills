@@ -342,6 +342,68 @@ export async function updateDeliverableTemplateAction(formData: FormData) {
   redirect(`/settings?${params.toString()}`);
 }
 
+const deliverableDeletionSchema = z.object({
+  key: z.string().min(1, "Missing deliverable key")
+});
+
+export async function deleteDeliverableTemplateAction(formData: FormData) {
+  const user = await requireAdminUser();
+  const parsed = deliverableDeletionSchema.parse({ key: formData.get("key") });
+
+  const template = await prisma.deliverableTemplate.findUnique({
+    where: { key: parsed.key }
+  });
+
+  if (!template) {
+    throw new Error("Deliverable template not found.");
+  }
+
+  const deliverables = await prisma.deliverable.findMany({
+    where: { key: parsed.key },
+    select: { skillId: true }
+  });
+
+  const uniqueSkillIds = Array.from(new Set(deliverables.map((entry) => entry.skillId)));
+  const operations: Prisma.PrismaPromise<unknown>[] = [
+    prisma.deliverable.deleteMany({ where: { key: parsed.key } }),
+    prisma.deliverableTemplate.delete({ where: { key: parsed.key } })
+  ];
+
+  if (uniqueSkillIds.length > 0) {
+    const now = new Date();
+    operations.push(
+      prisma.activityLog.createMany({
+        data: uniqueSkillIds.map((skillId) => ({
+          skillId,
+          userId: user.id,
+          action: "DeliverableTemplateDeleted",
+          payload: {
+            templateKey: template.key,
+            templateLabel: template.label,
+            deletedAt: now.toISOString()
+          }
+        }))
+      })
+    );
+  }
+
+  const results = await prisma.$transaction(operations);
+  const deliverableDeletionResult = results[0] as Prisma.BatchPayload;
+  const removedCount = deliverableDeletionResult.count;
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  revalidatePath("/skills");
+
+  const params = new URLSearchParams({
+    templateDeleted: template.key,
+    removed: String(removedCount)
+  });
+  params.set("templateLabel", template.label);
+
+  redirect(`/settings?${params.toString()}`);
+}
+
 const gateTemplateSchema = z.discriminatedUnion("scheduleType", [
   z.object({
     scheduleType: z.literal("calendar"),

@@ -7,6 +7,7 @@ import { differenceInCalendarDays, format } from "date-fns";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Minus, Plus } from "lucide-react";
@@ -577,16 +578,16 @@ function DeliverableScheduleEditor({ deliverable, skillId, onComplete }: Deliver
       </div>
       <div className="space-y-2">
         <Label htmlFor={`due-${deliverable.id}`}>Calendar due date</Label>
-        <Input
+        <DatePicker
           id={`due-${deliverable.id}`}
           name="dueDate"
-          type="date"
-          value={dueDate}
-          onChange={(event) => {
-            setDueDate(event.target.value);
+          value={dueDate || null}
+          onChange={(value) => {
+            setDueDate(value ?? "");
             setError(null);
           }}
           disabled={isSaving || scheduleType === "cmonth"}
+          required={scheduleType === "calendar"}
         />
       </div>
       <div className="flex items-end gap-2">
