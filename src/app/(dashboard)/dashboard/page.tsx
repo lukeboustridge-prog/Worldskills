@@ -637,11 +637,11 @@ export default async function DashboardPage({
                         </p>
                       </div>
                       <Badge
-                        variant={sector.overdue > 0 ? "destructive" : "secondary"}
+                        variant={sector.overdue > 0 ? "destructive" : "outline"}
                         className={
                           sector.overdue > 0
                             ? "whitespace-nowrap"
-                            : "whitespace-nowrap bg-primary/10 text-primary hover:bg-primary/10"
+                            : "whitespace-nowrap border-primary/20 bg-primary/10 text-primary hover:bg-primary/10"
                         }
                       >
                         {sector.completionRate}% complete
