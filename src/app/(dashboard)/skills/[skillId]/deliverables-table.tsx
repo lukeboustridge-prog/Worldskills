@@ -221,7 +221,6 @@ export function DeliverablesTable({
               <details
                 key={deliverable.id}
                 className="group rounded-lg border bg-card shadow-sm"
-                defaultOpen
               >
                 <summary className="flex cursor-pointer items-center justify-between gap-3 px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <div className="flex w-full flex-col gap-3 md:flex-row md:items-start md:justify-between">
