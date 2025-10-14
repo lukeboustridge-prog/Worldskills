@@ -1,12 +1,11 @@
 import { Role } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { format } from "date-fns";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -14,13 +13,19 @@ import { getAppSettings } from "@/lib/settings";
 import { decorateDeliverable } from "@/lib/deliverables";
 import { SKILL_CATALOG } from "@/lib/skill-catalog";
 import { getUserDisplayName } from "@/lib/users";
-import { deleteSkillAction, updateSkillAction } from "./actions";
+import { deleteSkillAction } from "./actions";
+import { createMessageAction } from "./[skillId]/actions";
 import { CreateSkillDialog } from "./create-skill-dialog";
+import { SkillAssignmentForm } from "./skill-assignment-form";
 
 export default async function SkillsPage() {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
+  }
+
+  if (!user.isAdmin && user.role === Role.Pending) {
+    redirect("/awaiting-access");
   }
 
   const isSecretariat = user.role === Role.Secretariat;
@@ -49,18 +54,14 @@ export default async function SkillsPage() {
             cMonthOffset: true,
             dueDate: true,
             cMonthLabel: true,
+            scheduleType: true,
             state: true,
-            evidenceLinks: true,
+            evidenceItems: true,
             updatedBy: true,
             updatedAt: true,
             createdAt: true,
             overdueNotifiedAt: true
           }
-        },
-        messages: {
-          include: { author: true },
-          orderBy: { createdAt: "desc" },
-          take: 3
         }
       },
       orderBy: { name: "asc" }
@@ -194,16 +195,18 @@ export default async function SkillsPage() {
                             <details className="group">
                               <summary className="flex cursor-pointer items-start justify-between gap-3 px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                 <div className="space-y-1">
-                                  <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                    {catalogEntry ? (
-                                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                                        Skill {catalogEntry.code}
-                                      </span>
-                                    ) : null}
-                                    <span className="font-medium text-foreground">Sector: {skill.sector ?? "Not recorded"}</span>
-                                  </div>
-                                  <p className="text-lg font-semibold text-foreground">{skill.name}</p>
-                                  <p className="text-xs text-muted-foreground">SCM: {scmLabel}</p>
+                                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                  {catalogEntry ? (
+                                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                                      Skill {catalogEntry.code}
+                                    </span>
+                                  ) : null}
+                                </div>
+                                <p className="text-lg font-semibold text-foreground">{skill.name}</p>
+                                <p className="text-xs text-muted-foreground">SCM: {scmLabel}</p>
+                                {skill.scm?.email ? (
+                                  <p className="text-xs text-muted-foreground">{skill.scm.email}</p>
+                                ) : null}
                                 </div>
                                 <div className="flex items-start gap-2">
                                   {overdueCount > 0 ? (
@@ -216,51 +219,14 @@ export default async function SkillsPage() {
                               </summary>
                               <CardContent className="space-y-4 border-t p-6 pt-6">
                                 {canManageSkills ? (
-                                  <form action={updateSkillAction} className="space-y-4">
-                                    <input type="hidden" name="skillId" value={skill.id} />
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                      <div className="space-y-1">
-                                        <Label htmlFor={`sa-${skill.id}`}>Skill Advisor</Label>
-                                        <select
-                                          id={`sa-${skill.id}`}
-                                          name="saId"
-                                          defaultValue={skill.saId}
-                                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                          required
-                                        >
-                                          {advisorOptions.map((advisorOption) => (
-                                            <option key={advisorOption.id} value={advisorOption.id}>
-                                              {advisorOption.label}
-                                            </option>
-                                          ))}
-                                        </select>
-                                      </div>
-                                      <div className="space-y-1">
-                                        <Label htmlFor={`scm-${skill.id}`}>Skill Competition Manager</Label>
-                                        <select
-                                          id={`scm-${skill.id}`}
-                                          name="scmId"
-                                          defaultValue={skill.scmId ?? ""}
-                                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                        >
-                                          <option value="">Unassigned</option>
-                                          {managerOptions.map((manager) => (
-                                            <option key={manager.id} value={manager.id}>
-                                              {manager.label}
-                                            </option>
-                                          ))}
-                                        </select>
-                                      </div>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      <Button type="submit" size="sm">
-                                        Save changes
-                                      </Button>
-                                      <Button asChild size="sm" variant="outline">
-                                        <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                                      </Button>
-                                    </div>
-                                  </form>
+                                  <SkillAssignmentForm
+                                    skillId={skill.id}
+                                    defaultSaId={skill.saId ?? null}
+                                    defaultScmId={skill.scmId ?? null}
+                                    advisorOptions={advisorOptions}
+                                    managerOptions={managerOptions}
+                                    workspaceHref={`/skills/${skill.id}`}
+                                  />
                                 ) : (
                                   <div className="flex justify-end">
                                     <Button asChild size="sm" variant="outline">
@@ -270,27 +236,24 @@ export default async function SkillsPage() {
                                 )}
 
                                 <div className="space-y-2">
-                                  <p className="text-sm font-semibold text-foreground">Latest messages</p>
-                                  {skill.messages.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground">No messages yet.</p>
+                                  <p className="text-sm font-semibold text-foreground">Send a message</p>
+                                  {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
+                                    <form action={createMessageAction} className="space-y-2">
+                                      <input type="hidden" name="skillId" value={skill.id} />
+                                      <Textarea
+                                        name="body"
+                                        placeholder="Share an update with your counterpart"
+                                        rows={3}
+                                        required
+                                      />
+                                      <Button type="submit" size="sm">
+                                        Post message
+                                      </Button>
+                                    </form>
                                   ) : (
-                                    <ul className="space-y-2">
-                                      {skill.messages.map((message) => (
-                                        <li key={message.id} className="rounded-md border px-3 py-2">
-                                          <div className="flex items-center justify-between gap-2">
-                                            <span className="text-sm font-medium text-foreground">
-                                              {getUserDisplayName(message.author)}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
-                                              {format(message.createdAt, "dd MMM yyyy")}
-                                            </span>
-                                          </div>
-                                          <p className="mt-1 whitespace-pre-line text-xs text-muted-foreground">
-                                            {message.body}
-                                          </p>
-                                        </li>
-                                      ))}
-                                    </ul>
+                                    <p className="text-sm text-muted-foreground">
+                                      Open the workspace to view the full conversation thread.
+                                    </p>
                                   )}
                                 </div>
 
@@ -344,7 +307,6 @@ export default async function SkillsPage() {
                                       Skill {catalogEntry.code}
                                     </span>
                                   ) : null}
-                                  <span className="font-medium text-foreground">Sector: {skill.sector ?? "Not recorded"}</span>
                                 </div>
                                 <p className="text-lg font-semibold text-foreground">{skill.name}</p>
                                 <p className="text-xs text-muted-foreground">Assign a Skill Advisor to manage deliverables.</p>
@@ -360,52 +322,15 @@ export default async function SkillsPage() {
                             </summary>
                             <CardContent className="space-y-4 border-t p-6 pt-6">
                               {canManageSkills ? (
-                                <form action={updateSkillAction} className="space-y-4">
-                                  <input type="hidden" name="skillId" value={skill.id} />
-                                  <div className="space-y-1">
-                                    <Label htmlFor={`unassigned-sa-${skill.id}`}>Skill Advisor</Label>
-                                    <select
-                                      id={`unassigned-sa-${skill.id}`}
-                                      name="saId"
-                                      defaultValue=""
-                                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                      required
-                                    >
-                                      <option value="" disabled>
-                                        Select Skill Advisor
-                                      </option>
-                                      {advisorOptions.map((advisor) => (
-                                        <option key={advisor.id} value={advisor.id}>
-                                          {advisor.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <Label htmlFor={`unassigned-scm-${skill.id}`}>Skill Competition Manager</Label>
-                                    <select
-                                      id={`unassigned-scm-${skill.id}`}
-                                      name="scmId"
-                                      defaultValue={skill.scmId ?? ""}
-                                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                    >
-                                      <option value="">Unassigned</option>
-                                      {managerOptions.map((manager) => (
-                                        <option key={manager.id} value={manager.id}>
-                                          {manager.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <Button type="submit" size="sm">
-                                      Save changes
-                                    </Button>
-                                    <Button asChild size="sm" variant="outline">
-                                      <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                                    </Button>
-                                  </div>
-                                </form>
+                                <SkillAssignmentForm
+                                  skillId={skill.id}
+                                  defaultSaId={skill.saId ?? null}
+                                  defaultScmId={skill.scmId ?? null}
+                                  advisorOptions={advisorOptions}
+                                  managerOptions={managerOptions}
+                                  workspaceHref={`/skills/${skill.id}`}
+                                  isUnassigned
+                                />
                               ) : (
                                 <div className="flex justify-end">
                                   <Button asChild size="sm" variant="outline">
@@ -415,27 +340,24 @@ export default async function SkillsPage() {
                               )}
 
                               <div className="space-y-2">
-                                <p className="text-sm font-semibold text-foreground">Latest messages</p>
-                                {skill.messages.length === 0 ? (
-                                  <p className="text-sm text-muted-foreground">No messages yet.</p>
+                                <p className="text-sm font-semibold text-foreground">Send a message</p>
+                                {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
+                                  <form action={createMessageAction} className="space-y-2">
+                                    <input type="hidden" name="skillId" value={skill.id} />
+                                    <Textarea
+                                      name="body"
+                                      placeholder="Share an update with your counterpart"
+                                      rows={3}
+                                      required
+                                    />
+                                    <Button type="submit" size="sm">
+                                      Post message
+                                    </Button>
+                                  </form>
                                 ) : (
-                                  <ul className="space-y-2">
-                                    {skill.messages.map((message) => (
-                                      <li key={message.id} className="rounded-md border px-3 py-2">
-                                        <div className="flex items-center justify-between gap-2">
-                                          <span className="text-sm font-medium text-foreground">
-                                            {getUserDisplayName(message.author)}
-                                          </span>
-                                          <span className="text-xs text-muted-foreground">
-                                            {format(message.createdAt, "dd MMM yyyy")}
-                                          </span>
-                                        </div>
-                                        <p className="mt-1 whitespace-pre-line text-xs text-muted-foreground">
-                                          {message.body}
-                                        </p>
-                                      </li>
-                                    ))}
-                                  </ul>
+                                  <p className="text-sm text-muted-foreground">
+                                    Open the workspace to view the full conversation thread.
+                                  </p>
                                 )}
                               </div>
 

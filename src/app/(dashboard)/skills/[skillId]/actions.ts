@@ -1,12 +1,29 @@
 "use server";
 
-import { DeliverableState, GateStatus, Role } from "@prisma/client";
+import {
+  DeliverableScheduleType,
+  DeliverableState,
+  GateScheduleType,
+  GateStatus,
+  type Skill
+} from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { logActivity } from "@/lib/activity";
-import { assertSA, requireUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  buildCMonthLabel,
+  computeDueDate,
+  createLinkEvidenceRecord,
+  EVIDENCE_TYPE_VALUES,
+  isDocumentEvidence,
+  normaliseEvidenceItems,
+  serialiseEvidenceItems
+} from "@/lib/deliverables";
+import { requireAppSettings } from "@/lib/settings";
+import { canManageSkill } from "@/lib/permissions";
 
 async function ensureSkill(skillId: string) {
   const skill = await prisma.skill.findUnique({ where: { id: skillId } });
@@ -29,7 +46,6 @@ const deliverableStateSchema = z.object({
 
 export async function updateDeliverableStateAction(formData: FormData) {
   const user = await requireUser();
-  assertSA(user.role as Role);
 
   const parsed = deliverableStateSchema.safeParse({
     deliverableId: formData.get("deliverableId"),
@@ -42,8 +58,8 @@ export async function updateDeliverableStateAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (skill.saId !== user.id) {
-    throw new Error("Only the assigned Skill Advisor can update deliverables");
+  if (!canManageSkill(user, skill)) {
+    throw new Error("You do not have access to update this deliverable");
   }
 
   const updated = await prisma.deliverable.update({
@@ -70,7 +86,8 @@ export async function updateDeliverableStateAction(formData: FormData) {
 const evidenceSchema = z.object({
   deliverableId: z.string().min(1),
   skillId: z.string().min(1),
-  evidence: z.string().url()
+  evidence: z.string().url(),
+  type: z.enum(EVIDENCE_TYPE_VALUES)
 });
 
 export async function appendEvidenceAction(formData: FormData) {
@@ -79,7 +96,8 @@ export async function appendEvidenceAction(formData: FormData) {
   const parsed = evidenceSchema.safeParse({
     deliverableId: formData.get("deliverableId"),
     skillId: formData.get("skillId"),
-    evidence: formData.get("evidence")
+    evidence: formData.get("evidence"),
+    type: formData.get("type")
   });
 
   if (!parsed.success) {
@@ -87,18 +105,37 @@ export async function appendEvidenceAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  const permittedUserIds = [skill.saId, skill.scmId].filter(Boolean) as string[];
-
-  if (!permittedUserIds.includes(user.id)) {
+  if (!canManageSkill(user, skill)) {
     throw new Error("You do not have access to update this deliverable");
   }
+
+  const deliverable = await prisma.deliverable.findUnique({
+    where: { id: parsed.data.deliverableId },
+    select: { evidenceItems: true }
+  });
+
+  if (!deliverable) {
+    throw new Error("Deliverable not found");
+  }
+
+  if (parsed.data.type === "Document") {
+    throw new Error("Upload documents using the document uploader.");
+  }
+
+  const evidenceItems = normaliseEvidenceItems(deliverable.evidenceItems);
+  evidenceItems.push(
+    createLinkEvidenceRecord({
+      url: parsed.data.evidence,
+      type: parsed.data.type
+    })
+  );
+
+  const evidencePayload = serialiseEvidenceItems(evidenceItems);
 
   await prisma.deliverable.update({
     where: { id: parsed.data.deliverableId },
     data: {
-      evidenceLinks: {
-        push: parsed.data.evidence
-      },
+      evidenceItems: evidencePayload,
       updatedBy: user.id
     }
   });
@@ -109,29 +146,32 @@ export async function appendEvidenceAction(formData: FormData) {
     action: "DeliverableEvidenceAdded",
     payload: {
       deliverableId: parsed.data.deliverableId,
-      evidence: parsed.data.evidence
+      evidence: parsed.data.evidence,
+      type: parsed.data.type
     }
   });
 
   revalidateSkill(parsed.data.skillId);
 }
 
-const gateSchema = z.object({
+const evidenceTypeSchema = z.object({
+  deliverableId: z.string().min(1),
   skillId: z.string().min(1),
-  name: z.string().min(2),
-  dueDate: z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
-    message: "Invalid date"
-  })
+  evidenceIndex: z.coerce
+    .number({ invalid_type_error: "Evidence index must be a number" })
+    .int({ message: "Evidence index must be a whole number" })
+    .min(0, { message: "Evidence index is out of range" }),
+  type: z.enum(EVIDENCE_TYPE_VALUES)
 });
 
-export async function createGateAction(formData: FormData) {
+export async function updateEvidenceTypeAction(formData: FormData) {
   const user = await requireUser();
-  assertSA(user.role as Role);
 
-  const parsed = gateSchema.safeParse({
+  const parsed = evidenceTypeSchema.safeParse({
+    deliverableId: formData.get("deliverableId"),
     skillId: formData.get("skillId"),
-    name: formData.get("name"),
-    dueDate: formData.get("dueDate")
+    evidenceIndex: formData.get("evidenceIndex"),
+    type: formData.get("type")
   });
 
   if (!parsed.success) {
@@ -139,15 +179,225 @@ export async function createGateAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (skill.saId !== user.id) {
-    throw new Error("Only the assigned Skill Advisor can create gates");
+  if (!canManageSkill(user, skill)) {
+    throw new Error("You do not have access to update this evidence");
+  }
+
+  const deliverable = await prisma.deliverable.findUnique({
+    where: { id: parsed.data.deliverableId },
+    select: { evidenceItems: true }
+  });
+
+  if (!deliverable) {
+    throw new Error("Deliverable not found");
+  }
+
+  const evidenceItems = normaliseEvidenceItems(deliverable.evidenceItems);
+  if (parsed.data.evidenceIndex >= evidenceItems.length) {
+    throw new Error("Evidence entry not found");
+  }
+
+  const updatedItems = evidenceItems.map((item, index) => {
+    if (index !== parsed.data.evidenceIndex) {
+      return item;
+    }
+
+    if (isDocumentEvidence(item)) {
+      throw new Error("Document evidence type can't be changed.");
+    }
+
+    return { ...item, type: parsed.data.type };
+  });
+
+  const updatedPayload = serialiseEvidenceItems(updatedItems);
+
+  await prisma.deliverable.update({
+    where: { id: parsed.data.deliverableId },
+    data: {
+      evidenceItems: updatedPayload,
+      updatedBy: user.id
+    }
+  });
+
+  await logActivity({
+    skillId: parsed.data.skillId,
+    userId: user.id,
+    action: "DeliverableEvidenceTypeUpdated",
+    payload: {
+      deliverableId: parsed.data.deliverableId,
+      evidenceIndex: parsed.data.evidenceIndex,
+      type: parsed.data.type
+    }
+  });
+
+  revalidateSkill(parsed.data.skillId);
+}
+
+const deliverableScheduleSchema = z.discriminatedUnion("scheduleType", [
+  z.object({
+    scheduleType: z.literal("calendar"),
+    deliverableId: z.string().min(1),
+    skillId: z.string().min(1),
+    dueDate: z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
+      message: "Invalid date"
+    })
+  }),
+  z.object({
+    scheduleType: z.literal("cmonth"),
+    deliverableId: z.string().min(1),
+    skillId: z.string().min(1),
+    offsetMonths: z.coerce
+      .number({ invalid_type_error: "Offset must be a number" })
+      .int({ message: "Offset must be a whole number" })
+      .min(0, { message: "Offset cannot be negative" })
+  })
+]);
+
+export async function updateDeliverableScheduleAction(formData: FormData) {
+  const user = await requireUser();
+
+  const scheduleType = (formData.get("scheduleType") ?? "calendar").toString();
+  const parsed = deliverableScheduleSchema.safeParse(
+    scheduleType === "cmonth"
+      ? {
+          scheduleType: "cmonth",
+          deliverableId: formData.get("deliverableId"),
+          skillId: formData.get("skillId"),
+          offsetMonths: formData.get("offsetMonths")
+        }
+      : {
+          scheduleType: "calendar",
+          deliverableId: formData.get("deliverableId"),
+          skillId: formData.get("skillId"),
+          dueDate: formData.get("dueDate")
+        }
+  );
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const skill = await ensureSkill(parsed.data.skillId);
+  const canManage = canManageSkill(user, skill);
+  if (!canManage) {
+    throw new Error("Only assigned team members or an administrator can update deliverable schedules");
+  }
+
+  let dueDate: Date;
+  let schedule: DeliverableScheduleType = DeliverableScheduleType.Calendar;
+  let offset: number | null = null;
+  let cMonthLabel: string | null = null;
+
+  if (parsed.data.scheduleType === "cmonth") {
+    const settings = await requireAppSettings();
+    offset = parsed.data.offsetMonths;
+    dueDate = computeDueDate(settings.competitionStart, offset);
+    schedule = DeliverableScheduleType.CMonth;
+    cMonthLabel = buildCMonthLabel(offset);
+  } else {
+    dueDate = new Date(parsed.data.dueDate);
+  }
+
+  const updated = await prisma.deliverable.update({
+    where: { id: parsed.data.deliverableId },
+    data: {
+      scheduleType: schedule,
+      dueDate,
+      cMonthOffset: offset,
+      cMonthLabel,
+      updatedBy: user.id,
+      overdueNotifiedAt: null
+    }
+  });
+
+  await logActivity({
+    skillId: parsed.data.skillId,
+    userId: user.id,
+    action: "DeliverableScheduleUpdated",
+    payload: {
+      deliverableId: updated.id,
+      scheduleType: updated.scheduleType,
+      cMonthOffset: updated.cMonthOffset,
+      dueDate: updated.dueDate.toISOString()
+    }
+  });
+
+  revalidateSkill(parsed.data.skillId);
+}
+
+const gateSchema = z.discriminatedUnion("scheduleType", [
+  z.object({
+    scheduleType: z.literal("calendar"),
+    skillId: z.string().min(1),
+    name: z.string().min(2),
+    dueDate: z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
+      message: "Invalid date"
+    })
+  }),
+  z.object({
+    scheduleType: z.literal("cmonth"),
+    skillId: z.string().min(1),
+    name: z.string().min(2),
+    offsetMonths: z.coerce
+      .number({ invalid_type_error: "Offset must be a number" })
+      .int({ message: "Offset must be a whole number" })
+      .min(0, { message: "Offset cannot be negative" })
+  })
+]);
+
+export async function createGateAction(formData: FormData) {
+  const user = await requireUser();
+
+  const scheduleType = formData.get("scheduleType") ?? "calendar";
+
+  const parsed = gateSchema.safeParse(
+    scheduleType === "cmonth"
+      ? {
+          scheduleType,
+          skillId: formData.get("skillId"),
+          name: formData.get("name"),
+          offsetMonths: formData.get("offsetMonths")
+        }
+      : {
+          scheduleType: "calendar",
+          skillId: formData.get("skillId"),
+          name: formData.get("name"),
+          dueDate: formData.get("dueDate")
+        }
+  );
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const skill = await ensureSkill(parsed.data.skillId);
+  if (!canManageSkill(user, skill)) {
+    throw new Error("You do not have access to create gates for this skill");
+  }
+
+  let dueDate: Date;
+  let schedule: GateScheduleType = GateScheduleType.Calendar;
+  let offset: number | null = null;
+  let cMonthLabel: string | null = null;
+
+  if (parsed.data.scheduleType === "cmonth") {
+    const settings = await requireAppSettings();
+    offset = parsed.data.offsetMonths;
+    dueDate = computeDueDate(settings.competitionStart, offset);
+    schedule = GateScheduleType.CMonth;
+    cMonthLabel = buildCMonthLabel(offset);
+  } else {
+    dueDate = new Date(parsed.data.dueDate);
   }
 
   const gate = await prisma.gate.create({
     data: {
       skillId: parsed.data.skillId,
       name: parsed.data.name,
-      dueDate: new Date(parsed.data.dueDate)
+      dueDate,
+      scheduleType: schedule,
+      cMonthOffset: offset,
+      cMonthLabel
     }
   });
 
@@ -157,7 +407,10 @@ export async function createGateAction(formData: FormData) {
     action: "GateCreated",
     payload: {
       gateId: gate.id,
-      name: gate.name
+      name: gate.name,
+      scheduleType: gate.scheduleType,
+      cMonthOffset: gate.cMonthOffset,
+      cMonthLabel: gate.cMonthLabel
     }
   });
 
@@ -172,7 +425,6 @@ const gateStatusSchema = z.object({
 
 export async function updateGateStatusAction(formData: FormData) {
   const user = await requireUser();
-  assertSA(user.role as Role);
 
   const parsed = gateStatusSchema.safeParse({
     gateId: formData.get("gateId"),
@@ -185,8 +437,8 @@ export async function updateGateStatusAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (skill.saId !== user.id) {
-    throw new Error("Only the assigned Skill Advisor can update gates");
+  if (!canManageSkill(user, skill)) {
+    throw new Error("You do not have access to update gates for this skill");
   }
 
   const status = parsed.data.status;
@@ -219,7 +471,6 @@ const deleteGateSchema = z.object({
 
 export async function deleteGateAction(formData: FormData) {
   const user = await requireUser();
-  assertSA(user.role as Role);
 
   const parsed = deleteGateSchema.safeParse({
     gateId: formData.get("gateId"),
@@ -231,8 +482,8 @@ export async function deleteGateAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (skill.saId !== user.id) {
-    throw new Error("Only the assigned Skill Advisor can remove gates");
+  if (!canManageSkill(user, skill)) {
+    throw new Error("You do not have access to remove gates for this skill");
   }
 
   await prisma.gate.delete({ where: { id: parsed.data.gateId } });

@@ -19,7 +19,8 @@ const registrationSchema = z.object({
   password: z
     .string()
     .trim()
-    .min(8, "Password must be at least 8 characters long.")
+    .min(8, "Password must be at least 8 characters long."),
+  token: z.string().optional()
 });
 
 const defaultHostEmail = "luke.boustridge@gmail.com";
@@ -55,7 +56,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { email, name, password } = parsed.data;
+  const { email, name, password, token } = parsed.data;
   const normalizedEmail = email.toLowerCase();
 
   try {
@@ -75,15 +76,95 @@ export async function POST(request: Request) {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
+    let role: Role = normalizedEmail === normalizedHostEmail ? Role.SA : Role.Pending;
+    let isAdmin = normalizedEmail === normalizedHostEmail;
+    let invitation: Awaited<ReturnType<typeof prisma.invitation.findUnique>> | null = null;
+
+    if (token) {
+      try {
+        invitation = await prisma.invitation.findUnique({ where: { token } });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2021") {
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Invitations are temporarily unavailable while the system updates. Please try again later."
+            },
+            { status: 503 }
+          );
+        }
+
+        throw error;
+      }
+      if (!invitation) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Invitation not found. Request a fresh invite from an administrator."
+          },
+          { status: 404 }
+        );
+      }
+
+      if (invitation.acceptedAt) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "This invitation has already been used. Request a fresh invite from an administrator."
+          },
+          { status: 410 }
+        );
+      }
+
+      if (invitation.expiresAt < new Date()) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "This invitation has expired. Request a new link to continue."
+          },
+          { status: 410 }
+        );
+      }
+
+      if (invitation.email !== normalizedEmail) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Use the email address your invitation was sent to."
+          },
+          { status: 400 }
+        );
+      }
+
+      role = invitation.isAdmin ? Role.SA : invitation.role;
+      isAdmin = invitation.isAdmin;
+    }
+
     await prisma.user.create({
       data: {
         name,
         email: normalizedEmail,
         passwordHash,
-        role: normalizedEmail === normalizedHostEmail ? Role.SA : Role.SCM,
-        isAdmin: normalizedEmail === normalizedHostEmail
+        role,
+        isAdmin
       }
     });
+
+    if (invitation) {
+      try {
+        await prisma.invitation.update({
+          where: { id: invitation.id },
+          data: { acceptedAt: new Date() }
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2021") {
+          // Invitation table disappeared mid-request; continue without failing user registration.
+          console.warn("Invitation table missing during registration update", error);
+        } else {
+          throw error;
+        }
+      }
+    }
 
     return NextResponse.json(
       { success: true },
