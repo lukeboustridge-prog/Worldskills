@@ -1,7 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState, useTransition } from "react";
-import { useCallback } from "react";
+import { FormEvent, useMemo, useState, useTransition, useCallback } from "react";
 import { DeliverableScheduleType, DeliverableState } from "@prisma/client";
 import { differenceInCalendarDays, format } from "date-fns";
 
@@ -22,6 +21,9 @@ import { formatDeliverableState } from "@/lib/utils";
 
 import {
   appendEvidenceAction,
+  createCustomDeliverableAction,
+  hideDeliverableAction,
+  unhideDeliverableAction,
   updateEvidenceTypeAction,
   updateDeliverableScheduleAction,
   updateDeliverableStateAction
@@ -30,6 +32,8 @@ import { DocumentEvidenceManager } from "./document-evidence-manager";
 
 export interface DeliverableRow {
   id: string;
+  key: string;
+  templateKey: string | null;
   label: string;
   cMonthLabel: string | null;
   cMonthOffset: number | null;
@@ -39,6 +43,7 @@ export interface DeliverableRow {
   evidence: DeliverableEvidenceItem[];
   isOverdue: boolean;
   overdueByDays: number;
+  isHidden: boolean;
 }
 
 interface DeliverablesTableProps {
@@ -77,14 +82,25 @@ export function DeliverablesTable({
   const [isExporting, startExport] = useTransition();
   const [editingDeliverableId, setEditingDeliverableId] = useState<string | null>(null);
   const [typeSelections, setTypeSelections] = useState<Record<string, EvidenceType>>({});
+  const [showHidden, setShowHidden] = useState(false);
+  const [isCreatingCustom, setIsCreatingCustom] = useState(false);
 
   const handleTypeSelection = useCallback((deliverableId: string, type: EvidenceType) => {
     setTypeSelections((current) => ({ ...current, [deliverableId]: type }));
   }, []);
 
+  const visibleDeliverables = useMemo(
+    () => deliverables.filter((deliverable) => !deliverable.isHidden),
+    [deliverables]
+  );
+  const hiddenDeliverables = useMemo(
+    () => deliverables.filter((deliverable) => deliverable.isHidden),
+    [deliverables]
+  );
+
   const filteredDeliverables = useMemo(() => {
     const now = new Date();
-    return deliverables.filter((deliverable) => {
+    return visibleDeliverables.filter((deliverable) => {
       const dueDate = new Date(deliverable.dueDateISO);
       if (filter === "overdue") {
         return deliverable.isOverdue;
@@ -95,16 +111,19 @@ export function DeliverablesTable({
       }
       return true;
     });
-  }, [deliverables, filter, dueSoonThresholdDays]);
+  }, [visibleDeliverables, filter, dueSoonThresholdDays]);
 
   const dueSoonCount = useMemo(() => {
     const now = new Date();
-    return deliverables.filter((deliverable) => {
+    return visibleDeliverables.filter((deliverable) => {
       const dueDate = new Date(deliverable.dueDateISO);
       const daysUntilDue = differenceInCalendarDays(dueDate, now);
       return !deliverable.isOverdue && daysUntilDue >= 0 && daysUntilDue <= dueSoonThresholdDays;
     }).length;
-  }, [deliverables, dueSoonThresholdDays]);
+  }, [visibleDeliverables, dueSoonThresholdDays]);
+
+  const visibleCount = visibleDeliverables.length;
+  const hiddenCount = hiddenDeliverables.length;
 
   const notStartedCount = stateCounts[DeliverableState.NotStarted] ?? 0;
   const inProgressCount =
@@ -124,7 +143,7 @@ export function DeliverablesTable({
     startExport(() => {
       const header =
         ["Label", "State", "Due date", "ScheduleType", "C-Month", "isOverdue", "overdueByDays"].join(",");
-      const rows = deliverables.map((deliverable) => {
+      const rows = visibleDeliverables.map((deliverable) => {
         return [
           `"${deliverable.label.replace(/"/g, '""')}"`,
           deliverable.state,
@@ -148,7 +167,8 @@ export function DeliverablesTable({
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-lg border bg-muted/20 p-4">
             <p className="text-xs uppercase text-muted-foreground">Not started</p>
             <p className="text-2xl font-semibold text-foreground">{notStartedCount}</p>
@@ -171,6 +191,12 @@ export function DeliverablesTable({
               {overdueCount}
             </p>
           </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {hiddenCount > 0
+              ? `${hiddenCount} hidden deliverable${hiddenCount === 1 ? "" : "s"} are excluded from these totals.`
+              : `${visibleCount} deliverable${visibleCount === 1 ? "" : "s"} currently tracked in these totals.`}
+          </p>
         </div>
         <Button
           variant="outline"
@@ -182,6 +208,34 @@ export function DeliverablesTable({
           {isExporting ? "Exporting…" : "Export CSV"}
         </Button>
       </div>
+
+      {canEdit ? (
+        <div className="rounded-lg border border-dashed bg-muted/20 p-4">
+          {isCreatingCustom ? (
+            <CreateCustomDeliverableForm
+              skillId={skillId}
+              onCancel={() => {
+                setIsCreatingCustom(false);
+              }}
+              onCreated={() => {
+                setIsCreatingCustom(false);
+              }}
+            />
+          ) : (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">Need a bespoke deliverable?</p>
+                <p className="text-xs text-muted-foreground">
+                  Create a deliverable that only applies to this skill.
+                </p>
+              </div>
+              <Button size="sm" onClick={() => setIsCreatingCustom(true)}>
+                Add custom deliverable
+              </Button>
+            </div>
+          )}
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -206,7 +260,12 @@ export function DeliverablesTable({
         </div>
       </div>
 
-      {filteredDeliverables.length === 0 ? (
+      {visibleCount === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          All deliverables for this skill are currently hidden. Use the hidden deliverables panel below to
+          review or restore them.
+        </p>
+      ) : filteredDeliverables.length === 0 ? (
         <p className="text-sm text-muted-foreground">No deliverables match the selected filters.</p>
       ) : (
         <div className="space-y-4">
@@ -233,6 +292,7 @@ export function DeliverablesTable({
             const { colorClass: statusColorClass, label: statusLabel } = getStatusIndicator(
               deliverable.state
             );
+            const isCustom = !deliverable.templateKey;
 
             return (
               <details
@@ -242,11 +302,18 @@ export function DeliverablesTable({
                 <summary className="flex cursor-pointer items-center justify-between gap-3 px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <div className="flex w-full flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div className="space-y-1">
-                      <p className="text-xs uppercase text-muted-foreground">
-                        {deliverable.scheduleType === DeliverableScheduleType.CMonth
-                          ? deliverable.cMonthLabel ?? "C-month schedule"
-                          : "Calendar date"}
-                      </p>
+                      <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                        <span>
+                          {deliverable.scheduleType === DeliverableScheduleType.CMonth
+                            ? deliverable.cMonthLabel ?? "C-month schedule"
+                            : "Calendar date"}
+                        </span>
+                        {isCustom ? (
+                          <span className="rounded-full border border-dashed px-2 py-0.5 text-[11px] font-medium normal-case text-muted-foreground">
+                            Custom
+                          </span>
+                        ) : null}
+                      </div>
                       <h3 className="text-lg font-semibold text-foreground">{deliverable.label}</h3>
                       <p className="text-sm text-muted-foreground">
                         Due {format(dueDate, "dd MMM yyyy")}
@@ -279,7 +346,7 @@ export function DeliverablesTable({
                 <div className="border-t">
                   <div className="space-y-4 p-6">
                     {canEdit ? (
-                      <div className="flex justify-end">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
                         <button
                           type="button"
                           onClick={() =>
@@ -291,6 +358,21 @@ export function DeliverablesTable({
                         >
                           {editingDeliverableId === deliverable.id ? "Cancel edit" : "Edit schedule"}
                         </button>
+                        <form
+                          action={hideDeliverableAction}
+                          onSubmit={(event) => {
+                            if (!window.confirm("Hide this deliverable?")) {
+                              event.preventDefault();
+                            }
+                          }}
+                          className="flex items-center gap-2"
+                        >
+                          <input type="hidden" name="skillId" value={skillId} />
+                          <input type="hidden" name="deliverableId" value={deliverable.id} />
+                          <Button type="submit" variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive">
+                            Hide deliverable
+                          </Button>
+                        </form>
                       </div>
                     ) : null}
 
@@ -472,6 +554,69 @@ export function DeliverablesTable({
           })}
         </div>
       )}
+
+      {hiddenCount > 0 ? (
+        <div className="rounded-lg border border-dashed bg-muted/30 p-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Hidden deliverables</p>
+              <p className="text-xs text-muted-foreground">
+                Hidden deliverables are excluded from dashboards and reports.
+              </p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setShowHidden((value) => !value)}>
+              {showHidden ? "Hide list" : `Show (${hiddenCount})`}
+            </Button>
+          </div>
+          {showHidden ? (
+            <div className="mt-4 space-y-3">
+              {hiddenDeliverables.map((deliverable) => {
+                const dueDate = new Date(deliverable.dueDateISO);
+                const isCustom = !deliverable.templateKey;
+                return (
+                  <div key={deliverable.id} className="rounded-md border bg-background p-4 shadow-sm">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                          <span>
+                            {deliverable.scheduleType === DeliverableScheduleType.CMonth
+                              ? deliverable.cMonthLabel ?? "C-month schedule"
+                              : "Calendar date"}
+                          </span>
+                          {isCustom ? (
+                            <span className="rounded-full border border-dashed px-2 py-0.5 text-[11px] font-medium normal-case text-muted-foreground">
+                              Custom
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="text-sm font-semibold text-foreground">{deliverable.label}</p>
+                        <p className="text-xs text-muted-foreground">Hidden · Due {format(dueDate, "dd MMM yyyy")}</p>
+                      </div>
+                      {canEdit ? (
+                        <form
+                          action={unhideDeliverableAction}
+                          onSubmit={(event) => {
+                            if (!window.confirm("Unhide this deliverable?")) {
+                              event.preventDefault();
+                            }
+                          }}
+                          className="flex items-center gap-2 self-start md:self-auto"
+                        >
+                          <input type="hidden" name="skillId" value={skillId} />
+                          <input type="hidden" name="deliverableId" value={deliverable.id} />
+                          <Button type="submit" size="sm" variant="secondary">
+                            Unhide
+                          </Button>
+                        </form>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -604,6 +749,157 @@ function DeliverableScheduleEditor({ deliverable, skillId, onComplete }: Deliver
         </Button>
       </div>
       {error ? <p className="md:col-span-4 text-sm text-destructive">{error}</p> : null}
+    </form>
+  );
+}
+
+interface CreateCustomDeliverableFormProps {
+  skillId: string;
+  onCancel: () => void;
+  onCreated: () => void;
+}
+
+function CreateCustomDeliverableForm({ skillId, onCancel, onCreated }: CreateCustomDeliverableFormProps) {
+  const [scheduleType, setScheduleType] = useState<"calendar" | "cmonth">("calendar");
+  const [label, setLabel] = useState("");
+  const [dueDate, setDueDate] = useState<string>("");
+  const [offsetMonths, setOffsetMonths] = useState("0");
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, startTransition] = useTransition();
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const trimmedLabel = label.trim();
+    if (trimmedLabel.length < 3) {
+      setError("Enter a deliverable label with at least 3 characters.");
+      return;
+    }
+
+    if (scheduleType === "calendar" && !dueDate) {
+      setError("Select a calendar due date.");
+      return;
+    }
+
+    if (scheduleType === "cmonth" && offsetMonths.trim().length === 0) {
+      setError("Enter the number of months before C1.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("skillId", skillId);
+    formData.append("label", trimmedLabel);
+    formData.append("scheduleType", scheduleType);
+
+    if (scheduleType === "calendar") {
+      formData.append("dueDate", dueDate);
+    } else {
+      formData.append("offsetMonths", offsetMonths.trim());
+    }
+
+    startTransition(async () => {
+      try {
+        await createCustomDeliverableAction(formData);
+        setError(null);
+        setLabel("");
+        setDueDate("");
+        setOffsetMonths("0");
+        setScheduleType("calendar");
+        onCreated();
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Unable to create deliverable");
+      }
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor={`custom-label-${skillId}`}>Deliverable label</Label>
+        <Input
+          id={`custom-label-${skillId}`}
+          value={label}
+          onChange={(event) => {
+            setLabel(event.target.value);
+            setError(null);
+          }}
+          placeholder="e.g. National training plan"
+          disabled={isSaving}
+          required
+        />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor={`custom-schedule-${skillId}`}>Schedule type</Label>
+          <select
+            id={`custom-schedule-${skillId}`}
+            value={scheduleType}
+            onChange={(event) => {
+              const value = event.target.value as "calendar" | "cmonth";
+              setScheduleType(value);
+              setError(null);
+              if (value === "calendar" && !dueDate) {
+                setDueDate("");
+              }
+            }}
+            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            disabled={isSaving}
+          >
+            <option value="calendar">Calendar date</option>
+            <option value="cmonth">C-month offset</option>
+          </select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={`custom-offset-${skillId}`}>Months before C1</Label>
+          <Input
+            id={`custom-offset-${skillId}`}
+            type="number"
+            min={0}
+            step={1}
+            value={offsetMonths}
+            onChange={(event) => {
+              setOffsetMonths(event.target.value);
+              setError(null);
+            }}
+            disabled={isSaving || scheduleType === "calendar"}
+          />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor={`custom-due-${skillId}`}>Calendar due date</Label>
+        <DatePicker
+          id={`custom-due-${skillId}`}
+          name="dueDate"
+          value={dueDate || null}
+          onChange={(value) => {
+            setDueDate(value ?? "");
+            setError(null);
+          }}
+          disabled={isSaving || scheduleType === "cmonth"}
+          required={scheduleType === "calendar"}
+        />
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="submit" disabled={isSaving}>
+          {isSaving ? "Creating..." : "Create deliverable"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => {
+            setLabel("");
+            setDueDate("");
+            setOffsetMonths("0");
+            setScheduleType("calendar");
+            setError(null);
+            onCancel();
+          }}
+          disabled={isSaving}
+        >
+          Cancel
+        </Button>
+      </div>
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </form>
   );
 }

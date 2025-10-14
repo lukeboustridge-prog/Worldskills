@@ -103,10 +103,15 @@ export default async function DashboardPage({
     orderBy: { name: "asc" }
   });
 
-  const decoratedSkills = skills.map((skill) => ({
-    ...skill,
-    deliverables: skill.deliverables.map((deliverable) => decorateDeliverable(deliverable))
-  }));
+  const decoratedSkills = skills.map((skill) => {
+    const decoratedDeliverables = skill.deliverables.map((deliverable) => decorateDeliverable(deliverable));
+    const visibleDeliverables = decoratedDeliverables.filter((deliverable) => !deliverable.isHidden);
+
+    return {
+      ...skill,
+      deliverables: visibleDeliverables
+    };
+  });
 
   const canManageSkills = user.isAdmin || user.role === Role.SA;
   const canViewSkillsList = user.isAdmin || user.role === Role.SA || user.role === Role.Secretariat;
@@ -183,6 +188,38 @@ export default async function DashboardPage({
     }
     return a.name.localeCompare(b.name);
   });
+
+  const sectorStats = Array.from(
+    decoratedSkills.reduce((acc, skill) => {
+      if (skill.deliverables.length === 0) {
+        return acc;
+      }
+      const sectorRaw = typeof skill.sector === "string" ? skill.sector.trim() : "";
+      const sectorName = sectorRaw.length > 0 ? sectorRaw : "Unassigned sector";
+      const entry =
+        acc.get(sectorName) ?? { sector: sectorName, total: 0, validated: 0, overdue: 0 };
+
+      entry.total += skill.deliverables.length;
+      entry.validated += skill.deliverables.filter((deliverable) => deliverable.state === "Validated").length;
+      entry.overdue += skill.deliverables.filter((deliverable) => deliverable.isOverdue).length;
+
+      acc.set(sectorName, entry);
+      return acc;
+    }, new Map<string, { sector: string; total: number; validated: number; overdue: number }>())
+  )
+    .map((stat) => ({
+      ...stat,
+      completionRate: stat.total > 0 ? Math.round((stat.validated / stat.total) * 100) : 0
+    }))
+    .sort((a, b) => {
+      if (a.completionRate !== b.completionRate) {
+        return a.completionRate - b.completionRate;
+      }
+      if (a.overdue !== b.overdue) {
+        return b.overdue - a.overdue;
+      }
+      return a.sector.localeCompare(b.sector);
+    });
 
   const topOverdueAdvisor = advisorStats.find((stat) => stat.overdue > 0);
 
@@ -579,36 +616,48 @@ export default async function DashboardPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming deadlines</CardTitle>
-            <CardDescription>Deliverables due in the next {DUE_SOON_THRESHOLD_DAYS} days</CardDescription>
+            <CardTitle>Sector progress</CardTitle>
+            <CardDescription>Completion rates and overdue counts by sector</CardDescription>
           </CardHeader>
           <CardContent>
-            {dueSoonDeliverables.length === 0 ? (
-              <p className="text-sm text-muted-foreground">There are no upcoming deadlines in the next month.</p>
+            {sectorStats.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No deliverables tracked yet.</p>
             ) : (
               <ul className="space-y-3">
-                {dueSoonDeliverables.slice(0, 8).map(({ deliverable, skill }) => {
-                  const daysUntilDue = differenceInCalendarDays(deliverable.dueDate, now);
-                  const dueLabel =
-                    daysUntilDue === 0
-                      ? "Due today"
-                      : daysUntilDue === 1
-                      ? "Due tomorrow"
-                      : `Due in ${daysUntilDue} days`;
-
-                  return (
-                    <li key={deliverable.id} className="rounded-md border p-3 text-sm">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="font-medium leading-tight">{deliverable.label}</p>
-                        <Badge variant="outline">{deliverable.cMonthLabel}</Badge>
+                {sectorStats.map((sector) => (
+                  <li key={sector.sector} className="rounded-md border p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <p className="font-medium leading-tight">{sector.sector}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {sector.total} deliverable{sector.total === 1 ? "" : "s"}
+                        </p>
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {skill.name} · SA {getUserDisplayName(skill.sa)} · Due {format(deliverable.dueDate, "dd MMM yyyy")}
-                      </p>
-                      <p className="mt-1 text-xs font-medium text-foreground">{dueLabel}</p>
-                    </li>
-                  );
-                })}
+                      <Badge
+                        variant={sector.overdue > 0 ? "destructive" : "secondary"}
+                        className={
+                          sector.overdue > 0
+                            ? "whitespace-nowrap"
+                            : "whitespace-nowrap bg-primary/10 text-primary hover:bg-primary/10"
+                        }
+                      >
+                        {sector.completionRate}% complete
+                      </Badge>
+                    </div>
+                    <div className="mt-2 h-2 w-full rounded-full bg-muted">
+                      <div
+                        className={`h-2 rounded-full ${sector.overdue > 0 ? "bg-destructive" : "bg-primary"}`}
+                        style={{ width: `${sector.completionRate}%` }}
+                      />
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                      <span>{sector.validated} validated</span>
+                      <span className={sector.overdue > 0 ? "text-destructive" : undefined}>
+                        {sector.overdue} overdue
+                      </span>
+                    </div>
+                  </li>
+                ))}
               </ul>
             )}
           </CardContent>

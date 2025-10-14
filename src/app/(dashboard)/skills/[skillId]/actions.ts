@@ -1,5 +1,7 @@
 "use server";
 
+import { randomUUID } from "crypto";
+
 import {
   DeliverableScheduleType,
   DeliverableState,
@@ -331,6 +333,108 @@ export async function updateDeliverableScheduleAction(formData: FormData) {
   revalidateSkill(parsed.data.skillId);
 }
 
+const customDeliverableSchema = z.discriminatedUnion("scheduleType", [
+  z.object({
+    scheduleType: z.literal("calendar"),
+    skillId: z.string().min(1),
+    label: z.string().min(3, "Provide a label for the deliverable"),
+    dueDate: z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
+      message: "Select a valid calendar due date"
+    })
+  }),
+  z.object({
+    scheduleType: z.literal("cmonth"),
+    skillId: z.string().min(1),
+    label: z.string().min(3, "Provide a label for the deliverable"),
+    offsetMonths: z.coerce
+      .number({ invalid_type_error: "Offset must be a number" })
+      .int({ message: "Offset must be a whole number" })
+      .min(0, { message: "Offset cannot be negative" })
+      .max(48, { message: "Offset cannot exceed 48 months" })
+  })
+]);
+
+export async function createCustomDeliverableAction(formData: FormData) {
+  const user = await requireUser();
+
+  const scheduleType = (formData.get("scheduleType") ?? "calendar").toString();
+  const parsed = customDeliverableSchema.safeParse(
+    scheduleType === "cmonth"
+      ? {
+          scheduleType: "cmonth",
+          skillId: formData.get("skillId"),
+          label: formData.get("label"),
+          offsetMonths: formData.get("offsetMonths")
+        }
+      : {
+          scheduleType: "calendar",
+          skillId: formData.get("skillId"),
+          label: formData.get("label"),
+          dueDate: formData.get("dueDate")
+        }
+  );
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const skill = await ensureSkill(parsed.data.skillId);
+  if (!canManageSkill(user, skill)) {
+    throw new Error("You do not have permission to create deliverables for this skill");
+  }
+
+  const label = parsed.data.label.trim();
+  if (label.length < 3) {
+    throw new Error("Deliverable label must be at least 3 characters long");
+  }
+
+  let dueDate: Date;
+  let schedule: DeliverableScheduleType = DeliverableScheduleType.Calendar;
+  let offset: number | null = null;
+  let cMonthLabel: string | null = null;
+
+  if (parsed.data.scheduleType === "cmonth") {
+    const settings = await requireAppSettings();
+    offset = parsed.data.offsetMonths;
+    dueDate = computeDueDate(settings.competitionStart, offset);
+    schedule = DeliverableScheduleType.CMonth;
+    cMonthLabel = buildCMonthLabel(offset);
+  } else {
+    dueDate = new Date(parsed.data.dueDate);
+  }
+
+  const key = `custom-${randomUUID()}`;
+
+  const deliverable = await prisma.deliverable.create({
+    data: {
+      skillId: skill.id,
+      key,
+      templateKey: null,
+      label,
+      scheduleType: schedule,
+      dueDate,
+      cMonthOffset: offset,
+      cMonthLabel,
+      updatedBy: user.id,
+      overdueNotifiedAt: null
+    }
+  });
+
+  await logActivity({
+    skillId: skill.id,
+    userId: user.id,
+    action: "DeliverableCreated",
+    payload: {
+      deliverableId: deliverable.id,
+      label: deliverable.label,
+      key: deliverable.key,
+      kind: "Custom"
+    }
+  });
+
+  revalidateSkill(skill.id);
+}
+
 const gateSchema = z.discriminatedUnion("scheduleType", [
   z.object({
     scheduleType: z.literal("calendar"),
@@ -417,6 +521,89 @@ export async function createGateAction(formData: FormData) {
       scheduleType: gate.scheduleType,
       cMonthOffset: gate.cMonthOffset,
       cMonthLabel: gate.cMonthLabel
+    }
+  });
+
+  revalidateSkill(parsed.data.skillId);
+}
+
+const deliverableVisibilitySchema = z.object({
+  deliverableId: z.string().min(1),
+  skillId: z.string().min(1)
+});
+
+export async function hideDeliverableAction(formData: FormData) {
+  const user = await requireUser();
+
+  const parsed = deliverableVisibilitySchema.safeParse({
+    deliverableId: formData.get("deliverableId"),
+    skillId: formData.get("skillId")
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const skill = await ensureSkill(parsed.data.skillId);
+  if (!canManageSkill(user, skill)) {
+    throw new Error("You do not have permission to update this deliverable");
+  }
+
+  const deliverable = await prisma.deliverable.update({
+    where: { id: parsed.data.deliverableId },
+    data: {
+      isHidden: true,
+      updatedBy: user.id,
+      overdueNotifiedAt: null
+    }
+  });
+
+  await logActivity({
+    skillId: parsed.data.skillId,
+    userId: user.id,
+    action: "DeliverableHidden",
+    payload: {
+      deliverableId: deliverable.id,
+      label: deliverable.label
+    }
+  });
+
+  revalidateSkill(parsed.data.skillId);
+}
+
+export async function unhideDeliverableAction(formData: FormData) {
+  const user = await requireUser();
+
+  const parsed = deliverableVisibilitySchema.safeParse({
+    deliverableId: formData.get("deliverableId"),
+    skillId: formData.get("skillId")
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const skill = await ensureSkill(parsed.data.skillId);
+  if (!canManageSkill(user, skill)) {
+    throw new Error("You do not have permission to update this deliverable");
+  }
+
+  const deliverable = await prisma.deliverable.update({
+    where: { id: parsed.data.deliverableId },
+    data: {
+      isHidden: false,
+      updatedBy: user.id,
+      overdueNotifiedAt: null
+    }
+  });
+
+  await logActivity({
+    skillId: parsed.data.skillId,
+    userId: user.id,
+    action: "DeliverableRestored",
+    payload: {
+      deliverableId: deliverable.id,
+      label: deliverable.label
     }
   });
 

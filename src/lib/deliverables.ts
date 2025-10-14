@@ -459,7 +459,7 @@ export function decorateDeliverable(
 ): DeliverableWithStatus {
   const isFinished = FINISHED_STATES.has(deliverable.state);
   const pastDue = isAfter(now, deliverable.dueDate);
-  const isOverdue = pastDue && !isFinished;
+  const isOverdue = !deliverable.isHidden && pastDue && !isFinished;
   const overdueByDays = isOverdue ? Math.max(0, differenceInCalendarDays(now, deliverable.dueDate)) : 0;
 
   return {
@@ -534,6 +534,7 @@ export async function ensureStandardDeliverablesForSkill(params: {
         data: {
           skillId,
           key: definition.key,
+          templateKey: definition.key,
           label: definition.label,
           cMonthOffset: usingCMonth ? offset : null,
           cMonthLabel: usingCMonth && offset !== null ? buildCMonthLabel(offset) : null,
@@ -703,6 +704,9 @@ export async function applyTemplateUpdateToDeliverables(params: {
 export function classifyDeliverables(deliverables: DeliverableWithStatus[]) {
   return deliverables.reduce(
     (acc, deliverable) => {
+      if (deliverable.isHidden) {
+        return acc;
+      }
       acc.total += 1;
       acc.stateCounts[deliverable.state] = (acc.stateCounts[deliverable.state] ?? 0) + 1;
       if (deliverable.isOverdue) {
@@ -721,19 +725,22 @@ export function classifyDeliverables(deliverables: DeliverableWithStatus[]) {
 export function sortSkillsByRisk<T extends { deliverables: DeliverableWithStatus[] }>(skills: T[]) {
   const now = new Date();
   return skills.sort((a, b) => {
-    const overdueA = a.deliverables.filter((deliverable) => deliverable.isOverdue).length;
-    const overdueB = b.deliverables.filter((deliverable) => deliverable.isOverdue).length;
+    const visibleA = a.deliverables.filter((deliverable) => !deliverable.isHidden);
+    const visibleB = b.deliverables.filter((deliverable) => !deliverable.isHidden);
+
+    const overdueA = visibleA.filter((deliverable) => deliverable.isOverdue).length;
+    const overdueB = visibleB.filter((deliverable) => deliverable.isOverdue).length;
     if (overdueA !== overdueB) {
       return overdueB - overdueA;
     }
 
-    const dueSoonA = a.deliverables.filter(
+    const dueSoonA = visibleA.filter(
       (deliverable) =>
         !deliverable.isOverdue &&
         differenceInCalendarDays(deliverable.dueDate, now) <= DUE_SOON_THRESHOLD_DAYS &&
         differenceInCalendarDays(deliverable.dueDate, now) >= 0
     ).length;
-    const dueSoonB = b.deliverables.filter(
+    const dueSoonB = visibleB.filter(
       (deliverable) =>
         !deliverable.isOverdue &&
         differenceInCalendarDays(deliverable.dueDate, now) <= DUE_SOON_THRESHOLD_DAYS &&
@@ -744,8 +751,8 @@ export function sortSkillsByRisk<T extends { deliverables: DeliverableWithStatus
       return dueSoonB - dueSoonA;
     }
 
-    const nextDueA = Math.min(...a.deliverables.map((deliverable) => deliverable.dueDate.getTime()));
-    const nextDueB = Math.min(...b.deliverables.map((deliverable) => deliverable.dueDate.getTime()));
+    const nextDueA = visibleA.length > 0 ? Math.min(...visibleA.map((deliverable) => deliverable.dueDate.getTime())) : Infinity;
+    const nextDueB = visibleB.length > 0 ? Math.min(...visibleB.map((deliverable) => deliverable.dueDate.getTime())) : Infinity;
     return nextDueA - nextDueB;
   });
 }
@@ -758,7 +765,9 @@ export async function ensureOverdueNotifications(params: {
   const { skillId, deliverables, saId } = params;
   const now = new Date();
 
-  const overdueNeedingMessage = deliverables.filter(
+  const visibleDeliverables = deliverables.filter((deliverable) => !deliverable.isHidden);
+
+  const overdueNeedingMessage = visibleDeliverables.filter(
     (deliverable) =>
       deliverable.isOverdue &&
       (!deliverable.overdueNotifiedAt || deliverable.overdueNotifiedAt < deliverable.dueDate)

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAppSettings } from "@/lib/settings";
@@ -77,12 +77,15 @@ export default async function SkillsPage() {
 
   const skills = skillRecords.map((skill) => {
     const deliverables = skill.deliverables.map((deliverable) => decorateDeliverable(deliverable));
-    const overdueCount = deliverables.filter((deliverable) => deliverable.isOverdue).length;
+    const visibleDeliverables = deliverables.filter((deliverable) => !deliverable.isHidden);
+    const overdueCount = visibleDeliverables.filter((deliverable) => deliverable.isOverdue).length;
+    const hiddenCount = deliverables.length - visibleDeliverables.length;
 
     return {
       ...skill,
       deliverables,
-      overdueCount
+      overdueCount,
+      hiddenCount
     };
   });
 
@@ -193,78 +196,109 @@ export default async function SkillsPage() {
                         return (
                           <Card key={skill.id} className="h-full overflow-hidden">
                             <details className="group">
-                              <summary className="flex cursor-pointer items-start justify-between gap-3 px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                                <div className="space-y-1">
-                                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            <summary className="grid gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto]">
+                              <div className="space-y-3">
+                                <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
                                   {catalogEntry ? (
-                                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                                    <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
                                       Skill {catalogEntry.code}
                                     </span>
                                   ) : null}
                                 </div>
-                                <p className="text-lg font-semibold text-foreground">{skill.name}</p>
-                                <p className="text-xs text-muted-foreground">SCM: {scmLabel}</p>
-                                {skill.scm?.email ? (
-                                  <p className="text-xs text-muted-foreground">{skill.scm.email}</p>
-                                ) : null}
-                                </div>
-                                <div className="flex items-start gap-2">
-                                  {overdueCount > 0 ? (
-                                    <Badge variant="destructive" className="whitespace-nowrap">
-                                      {overdueCount} overdue
-                                    </Badge>
+                                <div className="space-y-1">
+                                  <p className="text-xl font-semibold text-foreground">{skill.name}</p>
+                                  <p className="text-sm text-muted-foreground">SCM: {scmLabel}</p>
+                                  {skill.scm?.email ? (
+                                    <p className="text-xs text-muted-foreground">{skill.scm.email}</p>
                                   ) : null}
-                                  <ChevronRight className="mt-1 h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-90" aria-hidden="true" />
                                 </div>
-                              </summary>
-                              <CardContent className="space-y-4 border-t p-6 pt-6">
-                                {canManageSkills ? (
-                                  <SkillAssignmentForm
-                                    skillId={skill.id}
-                                    defaultSaId={skill.saId ?? null}
-                                    defaultScmId={skill.scmId ?? null}
-                                    advisorOptions={advisorOptions}
-                                    managerOptions={managerOptions}
-                                    workspaceHref={`/skills/${skill.id}`}
-                                  />
-                                ) : (
-                                  <div className="flex justify-end">
-                                    <Button asChild size="sm" variant="outline">
-                                      <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                                    </Button>
+                              </div>
+                              <div className="flex items-start gap-3">
+                                <div className="flex flex-col items-end gap-2 text-right">
+                                  <div className="flex flex-wrap justify-end gap-2">
+                                    {overdueCount > 0 ? (
+                                      <Badge variant="destructive" className="whitespace-nowrap">
+                                        {overdueCount} overdue
+                                      </Badge>
+                                    ) : (
+                                      <Badge
+                                        variant="secondary"
+                                        className="whitespace-nowrap bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10"
+                                      >
+                                        On track
+                                      </Badge>
+                                    )}
+                                    {skill.hiddenCount > 0 ? (
+                                      <Badge variant="outline" className="whitespace-nowrap border-dashed text-muted-foreground">
+                                        {skill.hiddenCount} hidden
+                                      </Badge>
+                                    ) : null}
                                   </div>
-                                )}
-
-                                <div className="space-y-2">
-                                  <p className="text-sm font-semibold text-foreground">Send a message</p>
-                                  {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
-                                    <form action={createMessageAction} className="space-y-2">
-                                      <input type="hidden" name="skillId" value={skill.id} />
-                                      <Textarea
-                                        name="body"
-                                        placeholder="Share an update with your counterpart"
-                                        rows={3}
-                                        required
-                                      />
-                                      <Button type="submit" size="sm">
-                                        Post message
-                                      </Button>
-                                    </form>
-                                  ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                      Open the workspace to view the full conversation thread.
-                                    </p>
-                                  )}
+                                  <Badge variant="outline" className="whitespace-nowrap text-xs text-muted-foreground">
+                                    SA {getUserDisplayName(skill.sa)}
+                                  </Badge>
                                 </div>
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-input bg-background">
+                                  <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+                                </div>
+                              </div>
+                            </summary>
+                              <CardContent className="border-t bg-muted/10 px-6 py-6">
+                                <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+                                  <div className="rounded-lg border bg-background p-4 shadow-sm">
+                                    {canManageSkills ? (
+                                      <SkillAssignmentForm
+                                        skillId={skill.id}
+                                        defaultSaId={skill.saId ?? null}
+                                        defaultScmId={skill.scmId ?? null}
+                                        advisorOptions={advisorOptions}
+                                        managerOptions={managerOptions}
+                                        workspaceHref={`/skills/${skill.id}`}
+                                      />
+                                    ) : (
+                                      <div className="space-y-3">
+                                        <p className="text-sm text-muted-foreground">
+                                          View the workspace to manage assignments.
+                                        </p>
+                                        <Button asChild size="sm" variant="outline">
+                                          <Link href={`/skills/${skill.id}`}>Open workspace</Link>
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="space-y-4 rounded-lg border bg-background p-4 shadow-sm">
+                                    <div className="space-y-2">
+                                      <p className="text-sm font-semibold text-foreground">Send a message</p>
+                                      {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
+                                        <form action={createMessageAction} className="space-y-2">
+                                          <input type="hidden" name="skillId" value={skill.id} />
+                                          <Textarea
+                                            name="body"
+                                            placeholder="Share an update with your counterpart"
+                                            rows={3}
+                                            required
+                                          />
+                                          <Button type="submit" size="sm">
+                                            Post message
+                                          </Button>
+                                        </form>
+                                      ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                          Open the workspace to view the full conversation thread.
+                                        </p>
+                                      )}
+                                    </div>
 
-                                {canManageSkills ? (
-                                  <form action={deleteSkillAction} className="flex justify-end">
-                                    <input type="hidden" name="skillId" value={skill.id} />
-                                    <Button type="submit" size="sm" variant="destructive">
-                                      Delete skill
-                                    </Button>
-                                  </form>
-                                ) : null}
+                                    {canManageSkills ? (
+                                      <form action={deleteSkillAction} className="flex justify-end">
+                                        <input type="hidden" name="skillId" value={skill.id} />
+                                        <Button type="submit" size="sm" variant="destructive">
+                                          Delete skill
+                                        </Button>
+                                      </form>
+                                    ) : null}
+                                  </div>
+                                </div>
                               </CardContent>
                             </details>
                           </Card>
@@ -278,14 +312,23 @@ export default async function SkillsPage() {
 
           {unassignedSkills.length > 0 ? (
             <details className="group rounded-lg border bg-card">
-              <summary className="flex cursor-pointer items-center justify-between gap-3 px-6 py-4 text-left font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <summary className="grid gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto]">
                 <div className="space-y-1">
-                  <p className="text-lg font-semibold">Unassigned</p>
+                  <p className="text-xl font-semibold text-foreground">Unassigned skills</p>
                   <p className="text-sm text-muted-foreground">
-                    {unassignedSkills.length} {unassignedSkills.length === 1 ? "skill" : "skills"}
+                    {unassignedSkills.length} {unassignedSkills.length === 1 ? "skill" : "skills"} awaiting assignment
                   </p>
                 </div>
-                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+                <div className="flex items-start gap-3">
+                  <div className="flex flex-col items-end gap-2 text-right">
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <Badge variant="destructive" className="whitespace-nowrap">Needs advisor</Badge>
+                    </div>
+                  </div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full border border-input bg-background">
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+                  </div>
+                </div>
               </summary>
               <div className="border-t">
                 <div className="grid gap-4 p-6 lg:grid-cols-2">
@@ -299,76 +342,104 @@ export default async function SkillsPage() {
                       return (
                         <Card key={skill.id} className="h-full overflow-hidden">
                           <details className="group">
-                            <summary className="flex cursor-pointer items-start justify-between gap-3 px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                          <summary className="grid gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto]">
+                            <div className="space-y-3">
+                              <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
+                                {catalogEntry ? (
+                                  <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                                    Skill {catalogEntry.code}
+                                  </span>
+                                ) : null}
+                              </div>
                               <div className="space-y-1">
-                                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                  {catalogEntry ? (
-                                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                                      Skill {catalogEntry.code}
-                                    </span>
+                                <p className="text-xl font-semibold text-foreground">{skill.name}</p>
+                                <p className="text-sm text-muted-foreground">Assign a Skill Advisor to manage deliverables.</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <div className="flex flex-col items-end gap-2 text-right">
+                                <div className="flex flex-wrap justify-end gap-2">
+                                  {overdueCount > 0 ? (
+                                    <Badge variant="destructive" className="whitespace-nowrap">
+                                      {overdueCount} overdue
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="whitespace-nowrap text-muted-foreground">
+                                      No overdue
+                                    </Badge>
+                                  )}
+                                  {skill.hiddenCount > 0 ? (
+                                    <Badge variant="outline" className="whitespace-nowrap border-dashed text-muted-foreground">
+                                      {skill.hiddenCount} hidden
+                                    </Badge>
                                   ) : null}
                                 </div>
-                                <p className="text-lg font-semibold text-foreground">{skill.name}</p>
-                                <p className="text-xs text-muted-foreground">Assign a Skill Advisor to manage deliverables.</p>
+                                <Badge variant="outline" className="whitespace-nowrap text-xs text-muted-foreground">
+                                  {skill.deliverables.length - skill.hiddenCount} active deliverables
+                                </Badge>
                               </div>
-                              <div className="flex items-start gap-2">
-                                {overdueCount > 0 ? (
-                                  <Badge variant="destructive" className="whitespace-nowrap">
-                                    {overdueCount} overdue
-                                  </Badge>
-                                ) : null}
-                                <ChevronRight className="mt-1 h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-90" aria-hidden="true" />
+                              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-input bg-background">
+                                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
                               </div>
-                            </summary>
-                            <CardContent className="space-y-4 border-t p-6 pt-6">
-                              {canManageSkills ? (
-                                <SkillAssignmentForm
-                                  skillId={skill.id}
-                                  defaultSaId={skill.saId ?? null}
-                                  defaultScmId={skill.scmId ?? null}
-                                  advisorOptions={advisorOptions}
-                                  managerOptions={managerOptions}
-                                  workspaceHref={`/skills/${skill.id}`}
-                                  isUnassigned
-                                />
-                              ) : (
-                                <div className="flex justify-end">
-                                  <Button asChild size="sm" variant="outline">
-                                    <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                                  </Button>
-                                </div>
-                              )}
-
-                              <div className="space-y-2">
-                                <p className="text-sm font-semibold text-foreground">Send a message</p>
-                                {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
-                                  <form action={createMessageAction} className="space-y-2">
-                                    <input type="hidden" name="skillId" value={skill.id} />
-                                    <Textarea
-                                      name="body"
-                                      placeholder="Share an update with your counterpart"
-                                      rows={3}
-                                      required
+                            </div>
+                          </summary>
+                            <CardContent className="border-t bg-muted/10 px-6 py-6">
+                              <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+                                <div className="rounded-lg border bg-background p-4 shadow-sm">
+                                  {canManageSkills ? (
+                                    <SkillAssignmentForm
+                                      skillId={skill.id}
+                                      defaultSaId={skill.saId ?? null}
+                                      defaultScmId={skill.scmId ?? null}
+                                      advisorOptions={advisorOptions}
+                                      managerOptions={managerOptions}
+                                      workspaceHref={`/skills/${skill.id}`}
+                                      isUnassigned
                                     />
-                                    <Button type="submit" size="sm">
-                                      Post message
-                                    </Button>
-                                  </form>
-                                ) : (
-                                  <p className="text-sm text-muted-foreground">
-                                    Open the workspace to view the full conversation thread.
-                                  </p>
-                                )}
-                              </div>
+                                  ) : (
+                                    <div className="space-y-3">
+                                      <p className="text-sm text-muted-foreground">
+                                        View the workspace to manage assignments.
+                                      </p>
+                                      <Button asChild size="sm" variant="outline">
+                                        <Link href={`/skills/${skill.id}`}>Open workspace</Link>
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="space-y-4 rounded-lg border bg-background p-4 shadow-sm">
+                                  <div className="space-y-2">
+                                    <p className="text-sm font-semibold text-foreground">Send a message</p>
+                                    {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
+                                      <form action={createMessageAction} className="space-y-2">
+                                        <input type="hidden" name="skillId" value={skill.id} />
+                                        <Textarea
+                                          name="body"
+                                          placeholder="Share an update with your counterpart"
+                                          rows={3}
+                                          required
+                                        />
+                                        <Button type="submit" size="sm">
+                                          Post message
+                                        </Button>
+                                      </form>
+                                    ) : (
+                                      <p className="text-sm text-muted-foreground">
+                                        Open the workspace to view the full conversation thread.
+                                      </p>
+                                    )}
+                                  </div>
 
-                              {canManageSkills ? (
-                                <form action={deleteSkillAction} className="flex justify-end">
-                                  <input type="hidden" name="skillId" value={skill.id} />
-                                  <Button type="submit" size="sm" variant="destructive">
-                                    Delete skill
-                                  </Button>
-                                </form>
-                              ) : null}
+                                  {canManageSkills ? (
+                                    <form action={deleteSkillAction} className="flex justify-end">
+                                      <input type="hidden" name="skillId" value={skill.id} />
+                                      <Button type="submit" size="sm" variant="destructive">
+                                        Delete skill
+                                      </Button>
+                                    </form>
+                                  ) : null}
+                                </div>
+                              </div>
                             </CardContent>
                           </details>
                         </Card>
