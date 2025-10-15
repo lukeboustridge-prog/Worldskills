@@ -18,7 +18,11 @@ import { createMessageAction } from "./[skillId]/actions";
 import { CreateSkillDialog } from "./create-skill-dialog";
 import { SkillAssignmentForm } from "./skill-assignment-form";
 
-export default async function SkillsPage() {
+export default async function SkillsPage({
+  searchParams
+}: {
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
@@ -118,6 +122,9 @@ export default async function SkillsPage() {
     label: getUserDisplayName(manager)
   }));
 
+  const broadcastParam = searchParams?.broadcast;
+  const broadcastStatus = Array.isArray(broadcastParam) ? broadcastParam[0] : broadcastParam;
+
   const advisorLookup = new Map(advisors.map((advisor) => [advisor.id, advisor]));
 
   const groupedByAdvisor = advisorOptions
@@ -157,6 +164,29 @@ export default async function SkillsPage() {
           />
         ) : null}
       </div>
+
+      {broadcastStatus === "sent" ? (
+        <div className="flex items-start justify-between gap-4 rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+          <p className="font-medium">Announcement sent to every skill conversation thread.</p>
+          <Link
+            href="/skills"
+            className="text-xs font-semibold uppercase tracking-wide text-emerald-700 underline-offset-4 hover:underline"
+          >
+            Dismiss
+          </Link>
+        </div>
+      ) : null}
+      {broadcastStatus === "none" ? (
+        <div className="flex items-start justify-between gap-4 rounded-md border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
+          <p className="font-medium">No skills are available yet to receive a broadcast message.</p>
+          <Link
+            href="/skills"
+            className="text-xs font-semibold uppercase tracking-wide text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Dismiss
+          </Link>
+        </div>
+      ) : null}
 
       {isAdmin && skills.length > 0 ? (
         <Card>

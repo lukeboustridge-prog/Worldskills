@@ -2,6 +2,7 @@
 
 import { Prisma, Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { logActivity } from "@/lib/activity";
@@ -233,7 +234,8 @@ export async function messageAllSkillsAction(formData: FormData) {
   const skills = await prisma.skill.findMany({ select: { id: true } });
 
   if (skills.length === 0) {
-    return;
+    revalidatePath("/skills");
+    redirect("/skills?broadcast=none");
   }
 
   const body = parsed.data.body;
@@ -259,4 +261,5 @@ export async function messageAllSkillsAction(formData: FormData) {
   }
 
   revalidatePath("/skills");
+  redirect("/skills?broadcast=sent");
 }
