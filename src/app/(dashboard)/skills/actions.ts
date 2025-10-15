@@ -219,8 +219,8 @@ const broadcastMessageSchema = z.object({
 export async function messageAllSkillsAction(formData: FormData) {
   const user = await requireUser();
 
-  if (!user.isAdmin) {
-    throw new Error("Only administrators can send broadcast messages");
+  if (!user.isAdmin && user.role !== Role.Secretariat) {
+    throw new Error("Only administrators or Secretariat can send broadcast messages");
   }
 
   const parsed = broadcastMessageSchema.safeParse({

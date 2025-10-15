@@ -188,7 +188,7 @@ export default async function SkillsPage({
         </div>
       ) : null}
 
-      {isAdmin && skills.length > 0 ? (
+      {(isAdmin || isSecretariat) && skills.length > 0 ? (
         <Card>
           <CardHeader className="space-y-1">
             <CardTitle>Message all skills</CardTitle>
@@ -325,7 +325,7 @@ export default async function SkillsPage({
                               <div className="rounded-lg border bg-background p-4 shadow-sm">
                                 <div className="space-y-2">
                                   <p className="text-sm font-semibold text-foreground">Send a message</p>
-                                  {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
+                                  {user.isAdmin || isSecretariat || user.id === skill.saId || user.id === skill.scmId ? (
                                     <form action={createMessageAction} className="space-y-2">
                                       <input type="hidden" name="skillId" value={skill.id} />
                                       <Textarea
@@ -463,7 +463,7 @@ export default async function SkillsPage({
                             <div className="rounded-lg border bg-background p-4 shadow-sm">
                               <div className="space-y-2">
                                 <p className="text-sm font-semibold text-foreground">Send a message</p>
-                                {user.isAdmin || user.id === skill.saId || user.id === skill.scmId ? (
+                                {user.isAdmin || isSecretariat || user.id === skill.saId || user.id === skill.scmId ? (
                                   <form action={createMessageAction} className="space-y-2">
                                     <input type="hidden" name="skillId" value={skill.id} />
                                     <Textarea

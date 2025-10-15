@@ -7,6 +7,7 @@ import {
   DeliverableState,
   GateScheduleType,
   GateStatus,
+  Role,
   type Skill
 } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -710,8 +711,12 @@ export async function createMessageAction(formData: FormData) {
 
   const skill = await ensureSkill(parsed.data.skillId);
   const permittedUserIds = [skill.saId, skill.scmId].filter(Boolean) as string[];
+  const canPost =
+    user.isAdmin ||
+    user.role === Role.Secretariat ||
+    permittedUserIds.includes(user.id);
 
-  if (!permittedUserIds.includes(user.id)) {
+  if (!canPost) {
     throw new Error("You do not have access to this conversation");
   }
 
