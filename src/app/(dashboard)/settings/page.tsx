@@ -47,6 +47,31 @@ function parseCountParam(value: string | undefined) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+const DEFAULT_APP_URL = "https://worldskillsskilladvisors.vercel.app";
+
+function resolveAppBaseUrl() {
+  const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+
+    try {
+      const withProtocol = candidate.startsWith("http") ? candidate : `https://${candidate}`;
+      return new URL(withProtocol).origin;
+    } catch {
+      // Ignore invalid candidate and continue to the next fallback.
+    }
+  }
+
+  return DEFAULT_APP_URL;
+}
+
+const appBaseUrl = resolveAppBaseUrl();
+
 interface CollapsibleSectionProps {
   title: string;
   description?: string;
@@ -121,7 +146,7 @@ export default async function SettingsPage({
   const inviteCreated = typeof searchParams?.inviteCreated === "string";
   const inviteToken = typeof searchParams?.inviteToken === "string" ? searchParams.inviteToken : null;
   const inviteEmail = typeof searchParams?.inviteEmail === "string" ? searchParams.inviteEmail : null;
-  const inviteLink = inviteToken ? `/register?token=${inviteToken}` : null;
+  const inviteLink = inviteToken ? new URL(`/register?token=${inviteToken}`, appBaseUrl).toString() : null;
   const inviteError = typeof searchParams?.inviteError === "string" ? searchParams.inviteError : null;
   const userErrorMessage = typeof searchParams?.userError === "string" ? searchParams.userError : null;
   const errorMessages = [
@@ -309,7 +334,14 @@ export default async function SettingsPage({
         {invitationsSupported && inviteCreated && inviteLink ? (
           <div className="rounded-md border border-emerald-400 bg-emerald-50 p-4 text-sm text-emerald-900">
             Invitation ready for {inviteEmail ?? "the recipient"}. Share {" "}
-            <code className="rounded bg-emerald-100 px-1 py-0.5 font-mono text-xs">{inviteLink}</code>
+            <a
+              href={inviteLink}
+              className="rounded bg-emerald-100 px-1 py-0.5 font-mono text-xs underline underline-offset-2"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {inviteLink}
+            </a>
             {" "}with them to complete registration within 7 days.
           </div>
         ) : null}
@@ -774,7 +806,7 @@ export default async function SettingsPage({
                 {invitations.map((invitation) => {
                   const expires = new Date(invitation.expiresAt);
                   const isExpired = expires.getTime() < Date.now();
-                  const invitePath = `/register?token=${invitation.token}`;
+                  const inviteUrl = new URL(`/register?token=${invitation.token}`, appBaseUrl).toString();
                   return (
                     <div key={invitation.id} className="rounded-md border p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -796,7 +828,14 @@ export default async function SettingsPage({
                         </div>
                         <div className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
                           Link:
-                          <code className="ml-2 inline-block rounded bg-muted px-2 py-0.5 text-xs">{invitePath}</code>
+                          <a
+                            href={inviteUrl}
+                            className="ml-2 inline-block rounded bg-muted px-2 py-0.5 font-mono text-xs underline underline-offset-2"
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {inviteUrl}
+                          </a>
                         </div>
                       </div>
                     </div>
