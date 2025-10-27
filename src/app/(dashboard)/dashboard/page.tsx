@@ -70,6 +70,10 @@ export default async function DashboardPage({
     redirect("/login");
   }
 
+  if (!user.isAdmin && user.role === Role.Pending) {
+    redirect("/awaiting-access");
+  }
+
   const canAccessDashboard =
     user.isAdmin || user.role === Role.SA || user.role === Role.Secretariat;
   if (!canAccessDashboard) {

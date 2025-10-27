@@ -1,12 +1,10 @@
-import { DeliverableState, GateStatus, Role } from "@prisma/client";
+import { DeliverableState, GateScheduleType, GateStatus, Role } from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
 import { format } from "date-fns";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,13 +12,9 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDeliverableState } from "@/lib/utils";
 import { getUserDisplayName } from "@/lib/users";
-import {
-  createGateAction,
-  createMessageAction,
-  deleteGateAction,
-  updateGateStatusAction
-} from "./actions";
+import { createMessageAction, deleteGateAction, updateGateStatusAction } from "./actions";
 import { DeliverablesTable, type DeliverableRow } from "./deliverables-table";
+import { CreateGateForm } from "./create-gate-form";
 import {
   DUE_SOON_THRESHOLD_DAYS,
   classifyDeliverables,
@@ -34,6 +28,10 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
+  }
+
+  if (!user.isAdmin && user.role === Role.Pending) {
+    redirect("/awaiting-access");
   }
 
   const skill = await prisma.skill.findUnique({
@@ -66,6 +64,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     redirect("/dashboard");
   }
 
+  const canEditSkill = user.isAdmin || user.id === skill.saId || user.id === skill.scmId;
   const isAdvisor = user.isAdmin || (user.role === Role.SA && skill.saId === user.id);
   const canPostMessage = isAdmin || user.id === skill.saId || user.id === skill.scmId;
   const advisorLabel = getUserDisplayName(skill.sa);
@@ -90,9 +89,11 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     id: deliverable.id,
     label: deliverable.label,
     cMonthLabel: deliverable.cMonthLabel,
+    cMonthOffset: deliverable.cMonthOffset,
     dueDateISO: deliverable.dueDate.toISOString(),
+    scheduleType: deliverable.scheduleType,
     state: deliverable.state,
-    evidenceLinks: deliverable.evidenceLinks,
+    evidence: deliverable.evidenceItems,
     isOverdue: deliverable.isOverdue,
     overdueByDays: deliverable.overdueByDays
   }));
@@ -141,8 +142,8 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
             <CardHeader>
               <CardTitle>Deliverables</CardTitle>
               <CardDescription>
-                Track the status of key competition artefacts and attach supporting evidence. Due dates are derived from the
-                competition start date (C1) and cannot be edited manually.
+                Track the status of key competition artefacts and attach supporting evidence. Schedule each deliverable by
+                choosing a calendar deadline or an offset from the competition start date (C1).
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -152,7 +153,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                 <DeliverablesTable
                   deliverables={deliverablesForClient}
                   skillId={skill.id}
-                  isAdvisor={isAdvisor}
+                  canEdit={canEditSkill}
                   overdueCount={summary.overdue}
                   stateCounts={summary.stateCounts}
                   dueSoonThresholdDays={DUE_SOON_THRESHOLD_DAYS}
@@ -162,27 +163,14 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
           </Card>
         </TabsContent>
         <TabsContent value="gates" className="space-y-6">
-          {isAdvisor ? (
+          {canEditSkill ? (
             <Card>
               <CardHeader>
                 <CardTitle>Add a gate</CardTitle>
                 <CardDescription>Track key deadlines and gate approvals for this skill.</CardDescription>
               </CardHeader>
               <CardContent>
-                <form action={createGateAction} className="grid gap-4 md:grid-cols-2">
-                  <input type="hidden" name="skillId" value={skill.id} />
-                  <div className="space-y-2">
-                    <Label htmlFor="gate-name">Gate name</Label>
-                    <Input id="gate-name" name="name" placeholder="Validation workshop" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="gate-date">Due date</Label>
-                    <Input id="gate-date" name="dueDate" type="date" required />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Button type="submit">Create gate</Button>
-                  </div>
-                </form>
+                <CreateGateForm skillId={skill.id} />
               </CardContent>
             </Card>
           ) : null}
@@ -209,14 +197,23 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                     {skill.gates.map((gate) => (
                       <TableRow key={gate.id}>
                         <TableCell>{gate.name}</TableCell>
-                        <TableCell>{format(gate.dueDate, "dd MMM yyyy")}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span>{format(gate.dueDate, "dd MMM yyyy")}</span>
+                            {gate.scheduleType === GateScheduleType.CMonth && gate.cMonthLabel ? (
+                              <span className="text-xs text-muted-foreground">{gate.cMonthLabel}</span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Calendar date</span>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <Badge variant={gate.status === GateStatus.Complete ? "default" : "outline"}>
                             {gate.status}
                           </Badge>
                         </TableCell>
                         <TableCell className="space-x-2 text-right">
-                          {isAdvisor ? (
+                          {canEditSkill ? (
                             <form action={updateGateStatusAction} className="inline-flex items-center gap-2">
                               <input type="hidden" name="skillId" value={skill.id} />
                               <input type="hidden" name="gateId" value={gate.id} />
@@ -236,7 +233,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                               </Button>
                             </form>
                           ) : null}
-                          {isAdvisor ? (
+                          {canEditSkill ? (
                             <form action={deleteGateAction} className="inline">
                               <input type="hidden" name="skillId" value={skill.id} />
                               <input type="hidden" name="gateId" value={gate.id} />
