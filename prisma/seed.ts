@@ -1,4 +1,4 @@
-import { PrismaClient, Role } from "@prisma/client";
+import { DeliverableScheduleType, PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 import { SKILL_CATALOG } from "../src/lib/skill-catalog";
@@ -200,6 +200,21 @@ async function main() {
   const seededSkills = await prisma.skill.findMany({ select: { id: true } });
   for (const skill of seededSkills) {
     for (const definition of DEFAULT_DELIVERABLE_TEMPLATES) {
+      const usingCMonth = definition.scheduleType === DeliverableScheduleType.CMonth;
+      const offset = definition.offsetMonths;
+      const dueDate = usingCMonth
+        ? offset == null
+          ? null
+          : computeDueDate(appSettings.competitionStart, offset)
+        : definition.calendarDueDate ?? null;
+
+      if (!dueDate) {
+        console.warn(
+          `Skipping deliverable ${definition.key} during seed because it is missing a due date.`
+        );
+        continue;
+      }
+
       await prisma.deliverable.upsert({
         where: {
           skillId_key: {
@@ -209,17 +224,21 @@ async function main() {
         },
         update: {
           label: definition.label,
-          cMonthOffset: definition.offsetMonths,
-          cMonthLabel: buildCMonthLabel(definition.offsetMonths),
-          dueDate: computeDueDate(appSettings.competitionStart, definition.offsetMonths)
+          scheduleType: definition.scheduleType,
+          cMonthOffset: usingCMonth ? offset ?? null : null,
+          cMonthLabel:
+            usingCMonth && offset != null ? buildCMonthLabel(offset) : null,
+          dueDate
         },
         create: {
           skillId: skill.id,
           key: definition.key,
           label: definition.label,
-          cMonthOffset: definition.offsetMonths,
-          cMonthLabel: buildCMonthLabel(definition.offsetMonths),
-          dueDate: computeDueDate(appSettings.competitionStart, definition.offsetMonths)
+          scheduleType: definition.scheduleType,
+          cMonthOffset: usingCMonth ? offset ?? null : null,
+          cMonthLabel:
+            usingCMonth && offset != null ? buildCMonthLabel(offset) : null,
+          dueDate
         }
       });
     }

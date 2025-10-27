@@ -12,10 +12,24 @@ const NAME_MIN_LENGTH = 2;
 const PASSWORD_MIN_LENGTH = 8;
 const GENERIC_ERROR_MESSAGE = "We couldn't create your account right now. Please try again.";
 
+const ROLE_LABELS: Record<string, string> = {
+  SA: "Skill Advisor",
+  SCM: "Skill Competition Manager",
+  Secretariat: "Secretariat"
+};
+
 type MessageState = {
   type: "success" | "error";
   text: string;
 } | null;
+
+type InvitationDetails = {
+  name: string;
+  email: string;
+  role: string;
+  isAdmin: boolean;
+  expiresAt: string;
+};
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -25,6 +39,9 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<MessageState>(null);
+  const [inviteInfo, setInviteInfo] = useState<string | null>(null);
+  const [invitation, setInvitation] = useState<InvitationDetails | null>(null);
+  const [isLoadingInvitation, setIsLoadingInvitation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -34,6 +51,57 @@ export default function RegisterPage() {
         text: "Account created successfully. Sign in with your new credentials."
       });
     }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const tokenParam = searchParams.get("token");
+    if (!tokenParam) {
+      setInvitation(null);
+      setInviteInfo(null);
+      return;
+    }
+
+    setIsLoadingInvitation(true);
+    setInviteInfo(null);
+
+    void fetch(`/api/invitations/${tokenParam}`)
+      .then(async (response) => {
+        const data = (await response.json().catch(() => null)) as
+          | { success?: boolean; error?: string; invitation?: InvitationDetails }
+          | null;
+
+        if (!response.ok || !data?.success || !data.invitation) {
+          const errorMessage = data?.error ?? "We couldn't validate your invitation link.";
+          setInvitation(null);
+          setInviteInfo(null);
+          setMessage({ type: "error", text: errorMessage });
+          return;
+        }
+
+        const invitationDetails = data.invitation;
+
+        setInvitation(invitationDetails);
+        const roleLabel = ROLE_LABELS[invitationDetails.role] ?? invitationDetails.role;
+        setInviteInfo(
+          `Invitation confirmed. You'll join as ${
+            invitationDetails.isAdmin ? "an administrator" : roleLabel
+          }.`
+        );
+        setMessage(null);
+        setName((current) => (current.trim().length > 0 ? current : invitationDetails.name ?? ""));
+        setEmail(invitationDetails.email);
+      })
+      .catch(() => {
+        setInvitation(null);
+        setInviteInfo(null);
+        setMessage({
+          type: "error",
+          text: "We couldn't validate your invitation link. Please try again."
+        });
+      })
+      .finally(() => {
+        setIsLoadingInvitation(false);
+      });
   }, [searchParams]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -63,6 +131,7 @@ export default function RegisterPage() {
     setMessage(null);
 
     try {
+      const tokenParam = searchParams.get("token");
       const response = await fetch("/api/register", {
         method: "POST",
         headers: {
@@ -71,7 +140,8 @@ export default function RegisterPage() {
         body: JSON.stringify({
           name: trimmedName,
           email: normalizedEmail,
-          password: trimmedPassword
+          password: trimmedPassword,
+          token: tokenParam ?? undefined
         })
       });
 
@@ -101,6 +171,11 @@ export default function RegisterPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Set up your login details to access the WorldSkills Skill Advisor Tracker.
         </p>
+        {inviteInfo ? (
+          <p className="mt-4 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+            {inviteInfo}
+          </p>
+        ) : null}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full name</Label>
@@ -127,6 +202,7 @@ export default function RegisterPage() {
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              disabled={Boolean(invitation)}
             />
           </div>
           <div className="space-y-2">
@@ -143,7 +219,7 @@ export default function RegisterPage() {
               onChange={(event) => setPassword(event.target.value)}
             />
           </div>
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button type="submit" className="w-full" disabled={isSubmitting || isLoadingInvitation}>
             {isSubmitting ? "Creating account..." : "Create account"}
           </Button>
         </form>

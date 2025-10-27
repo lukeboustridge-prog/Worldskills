@@ -8,6 +8,7 @@ import { logActivity } from "@/lib/activity";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ensureStandardDeliverablesForSkill } from "@/lib/deliverables";
+import { ensureStandardGatesForSkill } from "@/lib/gates";
 import { requireAppSettings } from "@/lib/settings";
 import { SKILL_CATALOG } from "@/lib/skill-catalog";
 
@@ -77,6 +78,12 @@ export async function createSkillAction(formData: FormData) {
   }
 
   await ensureStandardDeliverablesForSkill({
+    skillId: skill.id,
+    settings,
+    actorId: user.id
+  });
+
+  await ensureStandardGatesForSkill({
     skillId: skill.id,
     settings,
     actorId: user.id

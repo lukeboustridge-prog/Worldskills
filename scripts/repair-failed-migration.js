@@ -7,7 +7,11 @@ async function main() {
   }
 
   const prisma = new PrismaClient();
-  const migrationsToRepair = ['0004_deliverable_schedule', '0005_admin_flag_and_templates'];
+  const migrationsToRepair = [
+    '0004_deliverable_schedule',
+    '0005_admin_flag_and_templates',
+    '0009_pending_role',
+  ];
 
   try {
     const tableCheck = await prisma.$queryRaw(
