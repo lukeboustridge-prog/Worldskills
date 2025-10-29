@@ -19,6 +19,7 @@ import {
   createDeliverableTemplateAction,
   deleteDeliverableTemplateAction,
   createGateTemplateAction,
+  deleteGateTemplateAction,
   createInvitationAction,
   createMissingDeliverablesAction,
   saveCompetitionSettingsAction,
@@ -135,11 +136,16 @@ export default async function SettingsPage({
     typeof searchParams?.gateTemplateCreated === "string" ? searchParams.gateTemplateCreated : null;
   const gateTemplateUpdatedKey =
     typeof searchParams?.gateTemplateUpdated === "string" ? searchParams.gateTemplateUpdated : null;
+  const gateTemplateDeletedKey =
+    typeof searchParams?.gateTemplateDeleted === "string" ? searchParams.gateTemplateDeleted : null;
   const gatesAddedCount = parseCountParam(
     typeof searchParams?.gatesAdded === "string" ? searchParams.gatesAdded : undefined
   );
   const gatesCreatedCount = parseCountParam(
     typeof searchParams?.gatesCreated === "string" ? searchParams.gatesCreated : undefined
+  );
+  const gatesRemovedCount = parseCountParam(
+    typeof searchParams?.gatesRemoved === "string" ? searchParams.gatesRemoved : undefined
   );
   const userUpdated = typeof searchParams?.userUpdated === "string";
   const userQuery = typeof searchParams?.userQuery === "string" ? searchParams.userQuery.trim() : "";
@@ -270,6 +276,8 @@ export default async function SettingsPage({
   const updatedGateTemplate = gateTemplateUpdatedKey
     ? gateTemplates.find((template) => template.key === gateTemplateUpdatedKey)
     : null;
+  const deletedGateTemplateLabel =
+    typeof searchParams?.gateTemplateName === "string" ? searchParams.gateTemplateName : gateTemplateDeletedKey;
 
   return (
     <div className="space-y-6">
@@ -329,6 +337,12 @@ export default async function SettingsPage({
           <div className="rounded-md border border-rose-400 bg-rose-50 p-4 text-sm text-rose-900">
             Gate template {updatedGateTemplate ? updatedGateTemplate.name : gateTemplateUpdatedKey} updated. Existing gates now
             reflect the new schedule.
+          </div>
+        ) : null}
+        {gateTemplatesSupported && gateTemplateDeletedKey ? (
+          <div className="rounded-md border border-red-400 bg-red-50 p-4 text-sm text-red-900">
+            Removed {deletedGateTemplateLabel ?? gateTemplateDeletedKey} from the gate catalog.
+            {gatesRemovedCount > 0 ? ` Deleted ${gatesRemovedCount} seeded gates from existing skills.` : ""}
           </div>
         ) : null}
         {invitationsSupported && inviteCreated && inviteLink ? (
@@ -552,7 +566,9 @@ export default async function SettingsPage({
       <CollapsibleSection
         title="Gate templates"
         description="Define the standard gates that are created for every skill."
-        defaultOpen={Boolean(gateTemplateCreatedKey || gateTemplateUpdatedKey) || !gateTemplatesSupported}
+        defaultOpen={
+          Boolean(gateTemplateCreatedKey || gateTemplateUpdatedKey || gateTemplateDeletedKey) || !gateTemplatesSupported
+        }
       >
         {gateTemplatesSupported ? (
           <>
@@ -668,14 +684,22 @@ export default async function SettingsPage({
                       </Button>
                     </div>
                   </form>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Key: <span className="font-mono">{template.key}</span> ·{' '}
-                    {template.scheduleType === GateScheduleType.CMonth && template.offsetMonths != null
-                      ? buildCMonthLabel(template.offsetMonths)
-                      : template.calendarDueDate
-                        ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`
-                        : "Schedule pending"}
-                  </p>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">
+                      Key: <span className="font-mono">{template.key}</span> ·{' '}
+                      {template.scheduleType === GateScheduleType.CMonth && template.offsetMonths != null
+                        ? buildCMonthLabel(template.offsetMonths)
+                        : template.calendarDueDate
+                          ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`
+                          : "Schedule pending"}
+                    </p>
+                    <form action={deleteGateTemplateAction} className="flex">
+                      <input type="hidden" name="key" value={template.key} />
+                      <Button type="submit" variant="destructive" size="sm">
+                        Delete
+                      </Button>
+                    </form>
+                  </div>
                 </div>
               ))}
             </div>

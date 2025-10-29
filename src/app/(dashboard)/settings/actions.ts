@@ -404,6 +404,72 @@ export async function deleteDeliverableTemplateAction(formData: FormData) {
   redirect(`/settings?${params.toString()}`);
 }
 
+const gateTemplateDeletionSchema = z.object({
+  key: z.string().min(1, "Missing gate key")
+});
+
+export async function deleteGateTemplateAction(formData: FormData) {
+  const user = await requireAdminUser();
+
+  const supportsCatalog = await hasGateTemplateCatalogSupport();
+  if (!supportsCatalog) {
+    throw new Error("Gate template catalog is not available.");
+  }
+
+  const parsed = gateTemplateDeletionSchema.parse({ key: formData.get("key") });
+
+  const template = await prisma.gateTemplate.findUnique({
+    where: { key: parsed.key }
+  });
+
+  if (!template) {
+    throw new Error("Gate template not found.");
+  }
+
+  const gates = await prisma.gate.findMany({
+    where: { templateKey: parsed.key },
+    select: { skillId: true }
+  });
+
+  const uniqueSkillIds = Array.from(new Set(gates.map((entry) => entry.skillId)));
+  const operations: Prisma.PrismaPromise<unknown>[] = [
+    prisma.gate.deleteMany({ where: { templateKey: parsed.key } }),
+    prisma.gateTemplate.delete({ where: { key: parsed.key } })
+  ];
+
+  if (uniqueSkillIds.length > 0) {
+    const now = new Date();
+    operations.push(
+      prisma.activityLog.createMany({
+        data: uniqueSkillIds.map((skillId) => ({
+          skillId,
+          userId: user.id,
+          action: "GateTemplateDeleted",
+          payload: {
+            templateKey: template.key,
+            templateName: template.name,
+            deletedAt: now.toISOString()
+          }
+        }))
+      })
+    );
+  }
+
+  const results = await prisma.$transaction(operations);
+  const gateDeletionResult = results[0] as Prisma.BatchPayload;
+  const removedCount = gateDeletionResult.count;
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  revalidatePath("/skills");
+
+  const params = new URLSearchParams({ gateTemplateDeleted: template.key });
+  params.set("gateTemplateName", template.name);
+  params.set("gatesRemoved", String(removedCount));
+
+  redirect(`/settings?${params.toString()}`);
+}
+
 const gateTemplateSchema = z.discriminatedUnion("scheduleType", [
   z.object({
     scheduleType: z.literal("calendar"),
