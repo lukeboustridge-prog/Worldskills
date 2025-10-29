@@ -8,7 +8,7 @@ import {
   type DeliverableEvidenceDocument
 } from "@/lib/deliverables";
 import { canViewSkill } from "@/lib/permissions";
-import { createPresignedDownload, StorageConfigurationError } from "@/lib/storage";
+import { createPresignedDownload, StorageConfigurationError } from "@/lib/storage/client";
 import { normaliseFileName } from "@/lib/utils";
 
 const DOWNLOAD_TTL_SECONDS = Number(process.env.FILE_DOWNLOAD_TTL_SECONDS ?? 120);

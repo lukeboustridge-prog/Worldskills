@@ -11,6 +11,7 @@ import {
 
 import { logActivity } from "@/lib/activity";
 import { prisma } from "@/lib/prisma";
+import { getFileUploadPolicy } from "@/lib/env";
 
 export const DUE_SOON_THRESHOLD_DAYS = 30;
 
@@ -136,21 +137,13 @@ const LEGACY_EVIDENCE_TYPES = new Map<string, EvidenceType>([
 
 const EVIDENCE_TYPE_SET = new Set<string>(EVIDENCE_TYPE_VALUES);
 
-export const DOCUMENT_MIME_TYPES = [
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-powerpoint",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "image/jpeg",
-  "image/png"
-] as const;
+const DOCUMENT_UPLOAD_POLICY = getFileUploadPolicy();
+
+export const DOCUMENT_MIME_TYPES = DOCUMENT_UPLOAD_POLICY.allowedMimeTypes;
 
 export type DocumentMimeType = (typeof DOCUMENT_MIME_TYPES)[number];
 
-export const DOCUMENT_MAX_BYTES = 25 * 1024 * 1024; // 25 MB
+export const DOCUMENT_MAX_BYTES = DOCUMENT_UPLOAD_POLICY.maxBytes;
 
 export const DOCUMENT_STATUS_VALUES = ["available", "processing", "blocked"] as const;
 export type DocumentEvidenceStatus = (typeof DOCUMENT_STATUS_VALUES)[number];
@@ -289,7 +282,7 @@ export function validateDocumentEvidenceInput(params: {
   const { mimeType, fileSize } = params;
 
   if (!DOCUMENT_MIME_TYPES.includes(mimeType as DocumentMimeType)) {
-    throw new Error("That file type isn\'t supported. Upload a PDF, Office document, or image.");
+    throw new Error("That file type isn\'t supported. Upload a PDF, Word document, or image.");
   }
 
   if (!Number.isFinite(fileSize) || fileSize <= 0) {
@@ -297,7 +290,9 @@ export function validateDocumentEvidenceInput(params: {
   }
 
   if (fileSize > DOCUMENT_MAX_BYTES) {
-    throw new Error("The file is larger than the maximum allowed size (25 MB).");
+    throw new Error(
+      `The file is larger than the maximum allowed size (${formatFileSize(DOCUMENT_MAX_BYTES)}).`
+    );
   }
 }
 

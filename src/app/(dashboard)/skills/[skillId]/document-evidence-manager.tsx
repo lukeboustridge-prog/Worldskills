@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 
@@ -25,10 +25,6 @@ const MIME_EXTENSION_FALLBACKS: Record<string, string> = {
   pdf: "application/pdf",
   doc: "application/msword",
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  xls: "application/vnd.ms-excel",
-  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ppt: "application/vnd.ms-powerpoint",
-  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
   png: "image/png"
@@ -119,6 +115,10 @@ export function DocumentEvidenceManager({
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [storageStatus, setStorageStatus] = useState<"checking" | "ready" | "not-configured" | "error">(
+    "checking"
+  );
+  const [storageNotice, setStorageNotice] = useState<string | null>(null);
 
   const disabled = status !== "idle";
   const hasEvidence = Boolean(evidence);
@@ -130,10 +130,69 @@ export function DocumentEvidenceManager({
     setSuccess(null);
   };
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkStorage() {
+      try {
+        const response = await fetch("/api/storage/health", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("Storage health check failed");
+        }
+
+        const payload = await response.json();
+        if (cancelled) {
+          return;
+        }
+
+        if (payload.ok) {
+          setStorageStatus("ready");
+          setStorageNotice(null);
+        } else if (payload.reason === "not_configured") {
+          setStorageStatus("not-configured");
+          setStorageNotice(
+            "Document storage is not configured yet. Please contact the administrator to enable uploads."
+          );
+        } else {
+          setStorageStatus("error");
+          setStorageNotice(
+            "We couldn't confirm document storage is available right now. Try again later or contact the administrator."
+          );
+        }
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        console.error("Failed to verify storage configuration", error);
+        setStorageStatus("error");
+        setStorageNotice(
+          "We couldn't confirm document storage is available right now. Try again later or contact the administrator."
+        );
+      }
+    }
+
+    checkStorage();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const storageReady = storageStatus === "ready";
+
   const handleUpload = useCallback(
     async (file: File, replaceId?: string | null) => {
       resetNotices();
       setProgress(0);
+
+      if (!storageReady) {
+        setError(
+          storageNotice ??
+            "Document storage is not configured yet. Please contact the administrator to enable uploads."
+        );
+        return;
+      }
 
       const mimeType = resolveMimeType(file);
       if (!mimeType) {
@@ -142,12 +201,14 @@ export function DocumentEvidenceManager({
       }
 
       if (!DOCUMENT_MIME_TYPES.includes(mimeType as (typeof DOCUMENT_MIME_TYPES)[number])) {
-        setError("That file type isn't supported. Upload a PDF, Office document, or image.");
+        setError("That file type isn't supported. Upload a PDF, Word document, or image.");
         return;
       }
 
       if (file.size > DOCUMENT_MAX_BYTES) {
-        setError("The file is larger than the 25 MB limit. Choose a smaller upload.");
+        setError(
+          `The file is larger than the ${formatFileSize(DOCUMENT_MAX_BYTES)} limit. Choose a smaller upload.`
+        );
         return;
       }
 
@@ -164,31 +225,50 @@ export function DocumentEvidenceManager({
 
       let presigned;
       try {
-        const response = await fetch(`/api/deliverables/${deliverableId}/documents/presign`, {
+        const response = await fetch(`/api/storage/presign`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            deliverableId,
             skillId,
-            fileName: file.name,
-            mimeType,
-            fileSize: file.size,
+            filename: file.name,
+            contentType: mimeType,
+            byteSize: file.size,
             checksum
           })
         });
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({ error: "We couldn't start the upload." }));
+          if (response.status === 503) {
+            setStorageStatus("not-configured");
+            setStorageNotice(
+              data.error ??
+                "Document storage is not configured yet. Please contact the administrator to enable uploads."
+            );
+          }
           throw new Error(data.error ?? "We couldn't start the upload.");
         }
 
         presigned = await response.json();
+        if (!presigned?.url || !presigned?.key) {
+          throw new Error("We couldn't prepare the upload. Please try again shortly.");
+        }
       } catch (cause) {
         setStatus("idle");
-        setError(
+        const message =
           cause instanceof Error
             ? cause.message
-            : "We couldn't prepare the upload. Check your connection and try again."
-        );
+            : "We couldn't prepare the upload. Check your connection and try again.";
+        setError(message);
+
+        if (
+          message.includes("not configured") &&
+          storageStatus !== "not-configured"
+        ) {
+          setStorageStatus("not-configured");
+          setStorageNotice(message);
+        }
         return;
       }
 
@@ -196,7 +276,7 @@ export function DocumentEvidenceManager({
 
       try {
         await uploadWithProgress({
-          url: presigned.uploadUrl,
+          url: presigned.url,
           file,
           headers: presigned.headers as UploadHeaders,
           onProgress: setProgress
@@ -222,7 +302,7 @@ export function DocumentEvidenceManager({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             skillId,
-            storageKey: presigned.storageKey,
+            storageKey: presigned.key,
             fileName: file.name,
             mimeType,
             fileSize: file.size,
@@ -253,7 +333,7 @@ export function DocumentEvidenceManager({
 
       setStatus("idle");
     },
-    [deliverableId, router, skillId]
+    [deliverableId, router, skillId, storageNotice, storageReady, storageStatus]
   );
 
   const onFileSelected = useCallback(
@@ -338,7 +418,7 @@ export function DocumentEvidenceManager({
     }
   };
 
-  const dropHandlers = showUploader && canEdit
+  const dropHandlers = showUploader && canEdit && storageReady
     ? {
         onDragOver: (event: React.DragEvent<HTMLDivElement>) => {
           event.preventDefault();
@@ -446,14 +526,14 @@ export function DocumentEvidenceManager({
             {hasEvidence ? "Drop a file to replace the upload" : "Drop a document or image to upload"}
           </p>
           <p className="text-xs text-muted-foreground">
-            Supported types: PDF, Office documents, JPEG, PNG · Max size {formatFileSize(DOCUMENT_MAX_BYTES)}
+            Supported types: PDF, Word documents, JPEG, PNG · Max size {formatFileSize(DOCUMENT_MAX_BYTES)}
           </p>
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={onUploadClick}
-            disabled={disabled}
+            disabled={disabled || !storageReady}
             aria-label={hasEvidence ? "Replace file" : "Upload file"}
           >
             {hasEvidence ? "Replace file" : "Upload file"}
@@ -462,6 +542,11 @@ export function DocumentEvidenceManager({
       ) : null}
 
       {error ? <p className="text-sm text-destructive" aria-live="polite">{error}</p> : null}
+      {!error && storageNotice ? (
+        <p className="text-sm text-muted-foreground" aria-live="polite">
+          {storageNotice}
+        </p>
+      ) : null}
       {warning ? <p className="text-sm text-amber-600" aria-live="polite">{warning}</p> : null}
       {success ? <p className="text-sm text-emerald-600" aria-live="polite">{success}</p> : null}
 
@@ -496,6 +581,7 @@ export function DocumentEvidenceManager({
         accept={DOCUMENT_MIME_TYPES.join(",")}
         className="sr-only"
         onChange={onFileSelected}
+        disabled={!storageReady}
       />
     </div>
   );

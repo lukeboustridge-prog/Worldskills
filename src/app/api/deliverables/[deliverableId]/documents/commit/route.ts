@@ -16,7 +16,7 @@ import {
   deleteStoredObject,
   headStoredObject,
   StorageConfigurationError
-} from "@/lib/storage";
+} from "@/lib/storage/client";
 import { canManageSkill } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 
