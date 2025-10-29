@@ -30,6 +30,11 @@ import {
 } from "./actions";
 import { DocumentEvidenceManager } from "./document-evidence-manager";
 
+const EVIDENCE_TYPE_LABELS: Record<EvidenceType, string> = {
+  Document: "Document or image upload",
+  Other: "Other reference"
+};
+
 export interface DeliverableRow {
   id: string;
   key: string;
@@ -133,11 +138,14 @@ export function DeliverablesTable({
     (stateCounts[DeliverableState.Uploaded] ?? 0) +
     (stateCounts[DeliverableState.Validated] ?? 0);
 
-  const filterOptions: { key: FilterKey; label: string }[] = [
-    { key: "all", label: "All deliverables" },
-    { key: "overdue", label: `Overdue (${overdueCount})` },
-    { key: "dueSoon", label: `Due soon (${dueSoonCount})` }
-  ];
+  const filterOptions = useMemo(
+    () => [
+      { key: "all" as const, label: "All deliverables" },
+      { key: "overdue" as const, label: `Overdue (${overdueCount})` },
+      { key: "dueSoon" as const, label: `Due soon (${dueSoonCount})` }
+    ],
+    [overdueCount, dueSoonCount]
+  );
 
   const handleExport = () => {
     startExport(() => {
@@ -506,7 +514,7 @@ export function DeliverablesTable({
                                     Evidence link
                                   </a>
                                   <Badge variant="outline" className="w-fit text-xs">
-                                    {item.type}
+                                    {EVIDENCE_TYPE_LABELS[item.type] ?? item.type}
                                   </Badge>
                                 </div>
                                 {canEdit ? (

@@ -69,7 +69,7 @@ export async function POST(request: NextRequest, { params }: { params: { deliver
   }
 
   if (!canManageSkill(user, { saId: deliverable.skill.saId, scmId: deliverable.skill.scmId })) {
-    return NextResponse.json({ error: "You do not have permission to upload documents for this skill." }, { status: 403 });
+    return NextResponse.json({ error: "You do not have permission to upload documents or images for this skill." }, { status: 403 });
   }
 
   validateDocumentEvidenceInput({

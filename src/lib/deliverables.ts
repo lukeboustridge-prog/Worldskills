@@ -118,16 +118,21 @@ export function computeDueDate(competitionStart: Date, offsetMonths: number) {
   return subMonths(competitionStart, offsetMonths);
 }
 
-export const EVIDENCE_TYPE_VALUES = ["Document", "Image", "Video", "Other"] as const;
+export const EVIDENCE_TYPE_VALUES = ["Document", "Other"] as const;
 
 export type EvidenceType = (typeof EVIDENCE_TYPE_VALUES)[number];
 
 export const EVIDENCE_TYPE_OPTIONS = [
-  { value: EVIDENCE_TYPE_VALUES[0], label: "Document" },
-  { value: EVIDENCE_TYPE_VALUES[1], label: "Image" },
-  { value: EVIDENCE_TYPE_VALUES[2], label: "Video walkthrough" },
-  { value: EVIDENCE_TYPE_VALUES[3], label: "Other reference" }
+  { value: EVIDENCE_TYPE_VALUES[0], label: "Document or image upload" },
+  { value: EVIDENCE_TYPE_VALUES[1], label: "Other reference" }
 ] as const;
+
+const LEGACY_EVIDENCE_TYPES = new Map<string, EvidenceType>([
+  ["Image", "Other"],
+  ["Video", "Other"],
+  ["Video walkthrough", "Other"],
+  ["Link", "Other"]
+]);
 
 const EVIDENCE_TYPE_SET = new Set<string>(EVIDENCE_TYPE_VALUES);
 
@@ -377,8 +382,17 @@ export function serialiseEvidenceItems(
 }
 
 function normaliseEvidenceType(raw: unknown): EvidenceType {
-  const value = typeof raw === "string" ? raw : "Document";
-  return EVIDENCE_TYPE_SET.has(value) ? (value as EvidenceType) : "Document";
+  const value = typeof raw === "string" ? raw : undefined;
+
+  if (value && EVIDENCE_TYPE_SET.has(value)) {
+    return value as EvidenceType;
+  }
+
+  if (value && LEGACY_EVIDENCE_TYPES.has(value)) {
+    return LEGACY_EVIDENCE_TYPES.get(value)!;
+  }
+
+  return "Document";
 }
 
 function normaliseAddedAt(raw: unknown) {
@@ -404,6 +418,7 @@ export function normaliseEvidenceItems(
       const addedAt = normaliseAddedAt(record.addedAt);
       const kindRaw = typeof record.kind === "string" ? record.kind : undefined;
       const kind = kindRaw === "Document" || (kindRaw == null && type === "Document") ? "Document" : "Link";
+      const resolvedType: EvidenceType = kind === "Link" && type === "Document" ? "Other" : type;
 
       if (kind === "Document" && type === "Document") {
         const storageKey = typeof record.storageKey === "string" ? record.storageKey : null;
@@ -444,7 +459,7 @@ export function normaliseEvidenceItems(
         id,
         kind: "Link",
         url,
-        type,
+        type: resolvedType,
         addedAt
       } satisfies DeliverableEvidenceLink;
     })

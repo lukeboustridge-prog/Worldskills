@@ -86,7 +86,7 @@ async function uploadWithProgress(params: {
     };
 
     request.onerror = () => {
-      reject(new Error("Network error while uploading the document."));
+      reject(new Error("Network error while uploading the file."));
     };
 
     request.onload = () => {
@@ -137,7 +137,7 @@ export function DocumentEvidenceManager({
 
       const mimeType = resolveMimeType(file);
       if (!mimeType) {
-        setError("We couldn't determine the file type. Please upload a supported document.");
+        setError("We couldn't determine the file type. Please upload a supported document or image.");
         return;
       }
 
@@ -147,7 +147,7 @@ export function DocumentEvidenceManager({
       }
 
       if (file.size > DOCUMENT_MAX_BYTES) {
-        setError("The document is larger than the 25 MB limit. Choose a smaller file.");
+        setError("The file is larger than the 25 MB limit. Choose a smaller upload.");
         return;
       }
 
@@ -158,7 +158,7 @@ export function DocumentEvidenceManager({
         checksum = await computeChecksum(file);
       } catch (cause) {
         setStatus("idle");
-        setError("We couldn't read the file. Try again or choose a different document.");
+        setError("We couldn't read the file. Try again or choose a different document or image.");
         return;
       }
 
@@ -232,8 +232,8 @@ export function DocumentEvidenceManager({
         });
 
         if (!response.ok) {
-          const data = await response.json().catch(() => ({ error: "We couldn't save the document." }));
-          throw new Error(data.error ?? "We couldn't save the document.");
+          const data = await response.json().catch(() => ({ error: "We couldn't save the file." }));
+          throw new Error(data.error ?? "We couldn't save the file.");
         }
 
         const result = await response.json();
@@ -241,13 +241,11 @@ export function DocumentEvidenceManager({
           setWarning(result.warning as string);
         }
 
-        setSuccess("Document uploaded successfully.");
+        setSuccess("Document or image uploaded successfully.");
         router.refresh();
       } catch (cause) {
         setError(
-          cause instanceof Error
-            ? cause.message
-            : "We couldn't save the document. Please try again."
+          cause instanceof Error ? cause.message : "We couldn't save the file. Please try again."
         );
         setStatus("idle");
         return;
@@ -306,7 +304,7 @@ export function DocumentEvidenceManager({
       return;
     }
 
-    if (!window.confirm("Remove the document from this deliverable?")) {
+    if (!window.confirm("Remove the uploaded file from this deliverable?")) {
       return;
     }
 
@@ -320,8 +318,8 @@ export function DocumentEvidenceManager({
       );
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: "We couldn't remove the document." }));
-        throw new Error(data.error ?? "We couldn't remove the document.");
+        const data = await response.json().catch(() => ({ error: "We couldn't remove the file." }));
+        throw new Error(data.error ?? "We couldn't remove the file.");
       }
 
       const data = await response.json();
@@ -329,13 +327,11 @@ export function DocumentEvidenceManager({
         setWarning(data.warning as string);
       }
 
-      setSuccess("Document removed.");
+      setSuccess("Document or image removed.");
       router.refresh();
     } catch (cause) {
       setError(
-        cause instanceof Error
-          ? cause.message
-          : "Something went wrong while removing the document."
+        cause instanceof Error ? cause.message : "Something went wrong while removing the file."
       );
     } finally {
       setStatus("idle");
@@ -366,7 +362,7 @@ export function DocumentEvidenceManager({
     <div className="space-y-3 rounded-md border border-dashed border-muted-foreground/40 p-4">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm font-medium">Document evidence</p>
+          <p className="text-sm font-medium">Document or image evidence</p>
           {evidence ? (
             <>
               <p className="text-sm text-muted-foreground">
@@ -374,14 +370,14 @@ export function DocumentEvidenceManager({
                 {format(new Date(evidence.addedAt), "d MMM yyyy 'at' HH:mm")}
               </p>
               {evidence.status === "processing" ? (
-                <p className="text-xs text-muted-foreground">Scanning in progress. The document will be available shortly.</p>
+                <p className="text-xs text-muted-foreground">Scanning in progress. The file will be available shortly.</p>
               ) : null}
               {evidence.status === "blocked" ? (
-                <p className="text-xs text-destructive">Download is temporarily disabled while we investigate a potential issue with this document.</p>
+                <p className="text-xs text-destructive">Download is temporarily disabled while we investigate a potential issue with this file.</p>
               ) : null}
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">No document uploaded yet.</p>
+            <p className="text-sm text-muted-foreground">No document or image uploaded yet.</p>
           )}
         </div>
         {canEdit && evidence ? (
@@ -391,7 +387,7 @@ export function DocumentEvidenceManager({
               variant="outline"
               size="sm"
               asChild
-              aria-label="Download document"
+              aria-label="Download file"
               disabled={evidence.status === "blocked"}
             >
               <a href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download`}>
@@ -404,7 +400,7 @@ export function DocumentEvidenceManager({
               size="sm"
               onClick={onReplaceClick}
               disabled={disabled}
-              aria-label="Replace document"
+              aria-label="Replace file"
             >
               {status === "uploading" || status === "committing" ? "Replacing…" : "Replace"}
             </Button>
@@ -414,7 +410,7 @@ export function DocumentEvidenceManager({
               size="sm"
               onClick={onRemove}
               disabled={disabled}
-              aria-label="Remove document"
+              aria-label="Remove file"
             >
               Remove
             </Button>
@@ -426,7 +422,7 @@ export function DocumentEvidenceManager({
               variant="outline"
               size="sm"
               asChild
-              aria-label="Download document"
+              aria-label="Download file"
               disabled={evidence.status === "blocked"}
             >
               <a href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download`}>
@@ -447,7 +443,7 @@ export function DocumentEvidenceManager({
           }`}
         >
           <p className="text-sm font-medium">
-            {hasEvidence ? "Drop a file to replace the document" : "Drop a file to upload"}
+            {hasEvidence ? "Drop a file to replace the upload" : "Drop a document or image to upload"}
           </p>
           <p className="text-xs text-muted-foreground">
             Supported types: PDF, Office documents, JPEG, PNG · Max size {formatFileSize(DOCUMENT_MAX_BYTES)}
@@ -458,9 +454,9 @@ export function DocumentEvidenceManager({
             size="sm"
             onClick={onUploadClick}
             disabled={disabled}
-            aria-label={hasEvidence ? "Replace document" : "Upload document"}
+            aria-label={hasEvidence ? "Replace file" : "Upload file"}
           >
-            {hasEvidence ? "Replace document" : "Upload document"}
+            {hasEvidence ? "Replace file" : "Upload file"}
           </Button>
         </div>
       ) : null}
@@ -490,7 +486,7 @@ export function DocumentEvidenceManager({
 
       {status === "preparing" || status === "committing" ? (
         <p className="text-xs text-muted-foreground" aria-live="polite">
-          {status === "preparing" ? "Preparing upload…" : "Saving document…"}
+          {status === "preparing" ? "Preparing upload…" : "Saving file…"}
         </p>
       ) : null}
 

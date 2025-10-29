@@ -128,7 +128,7 @@ export async function appendEvidenceAction(formData: FormData) {
   }
 
   if (parsed.data.type === "Document") {
-    throw new Error("Upload documents using the document uploader.");
+    throw new Error("Upload documents or images using the uploader.");
   }
 
   const evidenceItems = normaliseEvidenceItems(deliverable.evidenceItems);

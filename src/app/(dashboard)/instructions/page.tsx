@@ -82,7 +82,7 @@ const COMMON_SECTIONS: GuideSection[] = [
       "Open a skill card and choose “Open workspace” to see the full detail.",
       "Use the tabs to switch between Deliverables, Gates, Notes, and the Activity log.",
       "Within Deliverables, each row shows the due date, status, and any supporting evidence. The calendar icon opens a date picker so you can choose new dates without typing.",
-      "The evidence section lets you attach links or upload documents (depending on your permissions) so progress is easy to audit.",
+      "The evidence section lets you attach links or upload documents or images (depending on your permissions) so progress is easy to audit.",
       "Scroll to the bottom of the page to add a message. Messages appear instantly for everyone who has access to the skill."
     ],
     tips: [
@@ -124,7 +124,7 @@ const ROLE_SECTIONS: Record<Role, GuideSection[]> = {
         "Within the Deliverables tab, click a row to reveal the editing form.",
         "Change the due date using the date picker when competition plans shift. The new date is saved once you click “Save changes”.",
         "Update the status as work progresses. Use “Not started” until tasks begin, move through the in-progress options, and choose “Validated” once you have checked the evidence yourself.",
-        "Attach links or files that prove completion. This keeps the audit trail complete for the Secretariat.",
+        "Attach links or documents/images that prove completion. This keeps the audit trail complete for the Secretariat.",
         "Only Skill Advisors and administrators can mark a deliverable as “Validated”. If you are waiting on information, leave the status at the appropriate in-progress level."
       ],
       tips: [
