@@ -262,10 +262,7 @@ export function DocumentEvidenceManager({
             : "We couldn't prepare the upload. Check your connection and try again.";
         setError(message);
 
-        if (
-          message.includes("not configured") &&
-          storageStatus !== "not-configured"
-        ) {
+        if (message.includes("not configured")) {
           setStorageStatus("not-configured");
           setStorageNotice(message);
         }
