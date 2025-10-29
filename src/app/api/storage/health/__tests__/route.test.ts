@@ -20,7 +20,7 @@ describe("GET /api/storage/health", () => {
   });
 
   it("reports not configured when required variables are missing", async () => {
-    const response = await GET();
+    const response = await GET(new Request("http://localhost/api/storage/health"));
     expect(response.status).toBe(200);
     const payload = await response.json();
     expect(payload).toEqual({ ok: false, reason: "not_configured" });
@@ -32,7 +32,7 @@ describe("GET /api/storage/health", () => {
     process.env.FILE_STORAGE_ACCESS_KEY_ID = "id";
     process.env.FILE_STORAGE_SECRET_ACCESS_KEY = "secret";
 
-    const response = await GET();
+    const response = await GET(new Request("http://localhost/api/storage/health"));
     expect(response.status).toBe(200);
     const payload = await response.json();
     expect(payload).toEqual({ ok: true });

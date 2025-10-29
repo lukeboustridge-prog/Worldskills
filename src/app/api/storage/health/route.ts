@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { getStorageDiagnostics } from "@/lib/env";
 import type { StorageHealthResponse } from "@/lib/storage/diagnostics";
 
-export async function GET(request?: Request) {
+export async function GET(request: Request) {
   try {
-    const url = new URL(request?.url ?? "http://localhost/api/storage/health");
+    const url = new URL(request.url);
     const includeDetails = url.searchParams.get("details") === "1";
     const diagnostics = getStorageDiagnostics();
 
