@@ -12,7 +12,11 @@ import {
   upsertDocumentEvidenceItem,
   validateDocumentEvidenceInput
 } from "@/lib/deliverables";
-import { deleteStoredObject, headStoredObject } from "@/lib/storage";
+import {
+  deleteStoredObject,
+  headStoredObject,
+  StorageConfigurationError
+} from "@/lib/storage";
 import { canManageSkill } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 
@@ -93,7 +97,21 @@ export async function POST(request: NextRequest, { params }: { params: { deliver
   try {
     metadata = await headStoredObject(parsed.data.storageKey);
   } catch (error) {
-    return NextResponse.json({ error: "We couldn't confirm the uploaded file. Try uploading again." }, { status: 400 });
+    if (error instanceof StorageConfigurationError) {
+      console.error("Document storage is not configured", error);
+      return NextResponse.json(
+        {
+          error:
+            "Document storage is not configured yet. Please contact the administrator to enable uploads."
+        },
+        { status: 503 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "We couldn't confirm the uploaded file. Try uploading again." },
+      { status: 400 }
+    );
   }
 
   if (metadata.ContentLength != null && metadata.ContentLength !== parsed.data.fileSize) {

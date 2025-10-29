@@ -19,11 +19,30 @@ type StorageConfig = {
 let resolvedConfig: StorageConfig | null = null;
 let client: S3Client | null = null;
 
-class StorageConfigurationError extends Error {
+export class StorageConfigurationError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "StorageConfigurationError";
   }
+}
+
+const TRUE_VALUES = new Set(["1", "true", "TRUE", "True"]);
+
+function readEnv(...keys: string[]) {
+  for (const key of keys) {
+    const value = process.env[key];
+    if (value && value.trim() !== "") {
+      return value;
+    }
+  }
+  return undefined;
+}
+
+function parseBoolean(value: string | undefined) {
+  if (!value) {
+    return false;
+  }
+  return TRUE_VALUES.has(value);
 }
 
 function getConfig(): StorageConfig {
@@ -31,12 +50,14 @@ function getConfig(): StorageConfig {
     return resolvedConfig;
   }
 
-  const bucket = process.env.FILE_STORAGE_BUCKET;
-  const region = process.env.FILE_STORAGE_REGION;
-  const accessKeyId = process.env.FILE_STORAGE_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
-  const endpoint = process.env.FILE_STORAGE_ENDPOINT;
-  const forcePathStyle = process.env.FILE_STORAGE_FORCE_PATH_STYLE === "true";
+  const bucket = readEnv("FILE_STORAGE_BUCKET", "AWS_S3_BUCKET", "AWS_BUCKET", "S3_BUCKET");
+  const region = readEnv("FILE_STORAGE_REGION", "AWS_REGION", "AWS_DEFAULT_REGION");
+  const accessKeyId = readEnv("FILE_STORAGE_ACCESS_KEY_ID", "AWS_ACCESS_KEY_ID");
+  const secretAccessKey = readEnv("FILE_STORAGE_SECRET_ACCESS_KEY", "AWS_SECRET_ACCESS_KEY");
+  const endpoint = readEnv("FILE_STORAGE_ENDPOINT", "AWS_S3_ENDPOINT", "S3_ENDPOINT");
+  const forcePathStyle = parseBoolean(
+    readEnv("FILE_STORAGE_FORCE_PATH_STYLE", "AWS_S3_FORCE_PATH_STYLE")
+  );
 
   if (!bucket) {
     throw new StorageConfigurationError(
