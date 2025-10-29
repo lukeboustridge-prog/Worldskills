@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import {
   formatFileSize,
   isRetryableDocumentUploadError
 } from "@/lib/deliverables";
+import type { StorageHealthResponse } from "@/lib/storage/diagnostics";
 
 interface DocumentEvidenceManagerProps {
   deliverableId: string;
@@ -33,6 +35,13 @@ const MIME_EXTENSION_FALLBACKS: Record<string, string> = {
 interface UploadHeaders {
   [key: string]: string;
 }
+
+type StorageHealthSnapshot = {
+  payload: StorageHealthResponse;
+  receivedAt: number;
+};
+
+const STORAGE_DEBUG_ENABLED = process.env.NEXT_PUBLIC_DEBUG_STORAGE === "true";
 
 async function computeChecksum(file: File) {
   const buffer = await file.arrayBuffer();
@@ -119,10 +128,12 @@ export function DocumentEvidenceManager({
     "checking"
   );
   const [storageNotice, setStorageNotice] = useState<string | null>(null);
+  const [lastHealthCheck, setLastHealthCheck] = useState<StorageHealthSnapshot | null>(null);
 
   const disabled = status !== "idle";
   const hasEvidence = Boolean(evidence);
   const shouldRender = hasEvidence || showUploader || !canEdit;
+  const uploadDisabled = disabled || storageStatus !== "ready";
 
   const resetNotices = () => {
     setError(null);
@@ -134,16 +145,27 @@ export function DocumentEvidenceManager({
     let cancelled = false;
 
     async function checkStorage() {
+      if (STORAGE_DEBUG_ENABLED) {
+        console.info("[storage] Starting document storage health check");
+      }
       try {
-        const response = await fetch("/api/storage/health", { cache: "no-store" });
+        const response = await fetch(
+          STORAGE_DEBUG_ENABLED ? "/api/storage/health?details=1" : "/api/storage/health",
+          { cache: "no-store" }
+        );
         if (!response.ok) {
           throw new Error("Storage health check failed");
         }
 
-        const payload = await response.json();
+        const payload: StorageHealthResponse = await response.json();
+        if (STORAGE_DEBUG_ENABLED) {
+          console.info("[storage] Document storage health response", payload);
+        }
         if (cancelled) {
           return;
         }
+
+        setLastHealthCheck({ payload, receivedAt: Date.now() });
 
         if (payload.ok) {
           setStorageStatus("ready");
@@ -169,6 +191,10 @@ export function DocumentEvidenceManager({
         setStorageNotice(
           "We couldn't confirm document storage is available right now. Try again later or contact the administrator."
         );
+        setLastHealthCheck({ payload: { ok: false, reason: "error" }, receivedAt: Date.now() });
+        if (STORAGE_DEBUG_ENABLED) {
+          console.error("[storage] Document storage health check failed", error);
+        }
       }
     }
 
@@ -330,7 +356,7 @@ export function DocumentEvidenceManager({
 
       setStatus("idle");
     },
-    [deliverableId, router, skillId, storageNotice, storageReady, storageStatus]
+    [deliverableId, router, skillId, storageNotice, storageReady]
   );
 
   const onFileSelected = useCallback(
@@ -530,17 +556,35 @@ export function DocumentEvidenceManager({
             variant="outline"
             size="sm"
             onClick={onUploadClick}
-            disabled={disabled || !storageReady}
+            disabled={uploadDisabled}
             aria-label={hasEvidence ? "Replace file" : "Upload file"}
           >
-            {hasEvidence ? "Replace file" : "Upload file"}
+            {storageStatus === "checking"
+              ? "Checking storage…"
+              : hasEvidence
+                ? "Replace file"
+                : "Upload file"}
           </Button>
+          {storageStatus === "checking" ? (
+            <p className="flex items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
+              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" /> Checking storage configuration…
+            </p>
+          ) : null}
         </div>
       ) : null}
 
       {error ? <p className="text-sm text-destructive" aria-live="polite">{error}</p> : null}
       {!error && storageNotice ? (
-        <p className="text-sm text-muted-foreground" aria-live="polite">
+        <p
+          className={`text-sm ${
+            storageStatus === "not-configured"
+              ? "text-amber-600"
+              : storageStatus === "error"
+                ? "text-destructive"
+                : "text-muted-foreground"
+          }`}
+          aria-live="polite"
+        >
           {storageNotice}
         </p>
       ) : null}
@@ -578,8 +622,18 @@ export function DocumentEvidenceManager({
         accept={DOCUMENT_MIME_TYPES.join(",")}
         className="sr-only"
         onChange={onFileSelected}
-        disabled={!storageReady}
+        disabled={uploadDisabled}
       />
+
+      {STORAGE_DEBUG_ENABLED && lastHealthCheck ? (
+        <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/10 p-3 text-left text-xs text-muted-foreground">
+          <p className="mb-1 font-semibold text-foreground">Storage diagnostics</p>
+          <p className="mb-2">Last check: {new Date(lastHealthCheck.receivedAt).toLocaleString()}</p>
+          <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] text-muted-foreground">
+            {JSON.stringify(lastHealthCheck.payload, null, 2)}
+          </pre>
+        </div>
+      ) : null}
     </div>
   );
 }

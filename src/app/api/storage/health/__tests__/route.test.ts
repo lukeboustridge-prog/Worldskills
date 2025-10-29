@@ -37,4 +37,27 @@ describe("GET /api/storage/health", () => {
     const payload = await response.json();
     expect(payload).toEqual({ ok: true });
   });
+
+  it("can return diagnostic details when requested", async () => {
+    process.env.FILE_STORAGE_BUCKET = "bucket";
+    process.env.FILE_STORAGE_REGION = "us-east-1";
+    process.env.FILE_STORAGE_ACCESS_KEY_ID = "id";
+    process.env.FILE_STORAGE_SECRET_ACCESS_KEY = "secret";
+
+    const response = await GET(new Request("http://localhost/api/storage/health?details=1"));
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.ok).toBe(true);
+    expect(payload.details).toBeTruthy();
+    expect(payload.details.requirements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "bucket", present: true }),
+        expect.objectContaining({ id: "region", present: true }),
+        expect.objectContaining({ id: "accessKeyId", present: true }),
+        expect.objectContaining({ id: "secretAccessKey", present: true })
+      ])
+    );
+    expect(payload.details.bucket).toBe("bucket");
+    expect(payload.details.region).toBe("us-east-1");
+  });
 });

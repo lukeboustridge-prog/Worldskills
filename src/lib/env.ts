@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+import type {
+  StorageDiagnosticsDetails,
+  StorageDiagnosticsSnapshot,
+  StorageProviderType,
+  StorageRequirementStatus
+} from "./storage/diagnostics";
+
 const TRUE_VALUES = new Set(["1", "true", "TRUE", "True"]);
 
 export class StorageConfigurationError extends Error {
@@ -37,6 +44,97 @@ const DEFAULT_ALLOWED_MIME =
 let storageConfigCache: StorageEnvConfig | null = null;
 let uploadPolicyCache: FileUploadPolicy | null = null;
 
+const STORAGE_REQUIREMENTS: Array<{
+  id: StorageRequirementStatus["id"];
+  label: string;
+  keys: string[];
+  missingMessage: string;
+}> = [
+  {
+    id: "bucket",
+    label: "FILE_STORAGE_BUCKET",
+    keys: [
+      "FILE_STORAGE_BUCKET",
+      "AWS_S3_BUCKET",
+      "AWS_S3_BUCKET_NAME",
+      "AWS_BUCKET",
+      "AWS_BUCKET_NAME",
+      "S3_BUCKET",
+      "S3_BUCKET_NAME",
+      "S3_UPLOAD_BUCKET",
+      "STORAGE_BUCKET",
+      "R2_BUCKET_NAME"
+    ],
+    missingMessage: "FILE_STORAGE_BUCKET must be configured for document evidence uploads."
+  },
+  {
+    id: "region",
+    label: "FILE_STORAGE_REGION",
+    keys: [
+      "FILE_STORAGE_REGION",
+      "AWS_REGION",
+      "AWS_DEFAULT_REGION",
+      "AWS_S3_REGION",
+      "AWS_BUCKET_REGION",
+      "S3_REGION",
+      "S3_UPLOAD_REGION",
+      "STORAGE_REGION",
+      "R2_REGION"
+    ],
+    missingMessage: "FILE_STORAGE_REGION must be configured for document evidence uploads."
+  },
+  {
+    id: "accessKeyId",
+    label: "FILE_STORAGE_ACCESS_KEY_ID",
+    keys: [
+      "FILE_STORAGE_ACCESS_KEY_ID",
+      "AWS_ACCESS_KEY_ID",
+      "AWS_S3_ACCESS_KEY_ID",
+      "S3_ACCESS_KEY_ID",
+      "S3_KEY",
+      "S3_UPLOAD_KEY",
+      "STORAGE_ACCESS_KEY_ID",
+      "R2_ACCESS_KEY_ID"
+    ],
+    missingMessage:
+      "Storage credentials are required. Set FILE_STORAGE_ACCESS_KEY_ID and FILE_STORAGE_SECRET_ACCESS_KEY."
+  },
+  {
+    id: "secretAccessKey",
+    label: "FILE_STORAGE_SECRET_ACCESS_KEY",
+    keys: [
+      "FILE_STORAGE_SECRET_ACCESS_KEY",
+      "AWS_SECRET_ACCESS_KEY",
+      "AWS_S3_SECRET_ACCESS_KEY",
+      "S3_SECRET_ACCESS_KEY",
+      "S3_SECRET",
+      "S3_UPLOAD_SECRET",
+      "STORAGE_SECRET_ACCESS_KEY",
+      "R2_SECRET_ACCESS_KEY"
+    ],
+    missingMessage:
+      "Storage credentials are required. Set FILE_STORAGE_ACCESS_KEY_ID and FILE_STORAGE_SECRET_ACCESS_KEY."
+  }
+];
+
+const STORAGE_OPTIONAL_ENDPOINT_KEYS = [
+  "FILE_STORAGE_ENDPOINT",
+  "AWS_S3_ENDPOINT",
+  "AWS_S3_ENDPOINT_URL",
+  "S3_ENDPOINT",
+  "S3_UPLOAD_ENDPOINT",
+  "STORAGE_ENDPOINT",
+  "R2_ENDPOINT",
+  "R2_URL"
+];
+
+const STORAGE_OPTIONAL_FORCE_PATH_STYLE_KEYS = [
+  "FILE_STORAGE_FORCE_PATH_STYLE",
+  "AWS_S3_FORCE_PATH_STYLE",
+  "S3_FORCE_PATH_STYLE",
+  "STORAGE_FORCE_PATH_STYLE"
+];
+
 function readEnv(...keys: string[]): string | undefined {
   for (const key of keys) {
     const value = process.env[key];
@@ -47,18 +145,21 @@ function readEnv(...keys: string[]): string | undefined {
   return undefined;
 }
 
+function pickEnvValue(keys: string[]): { key: string; value?: string } {
+  for (const key of keys) {
+    const value = process.env[key];
+    if (typeof value === "string" && value.trim() !== "") {
+      return { key, value: value.trim() };
+    }
+  }
+  return { key: keys[0] };
+}
+
 function parseBoolean(value: string | undefined): boolean {
   if (!value) {
     return false;
   }
   return TRUE_VALUES.has(value);
-}
-
-function parseRequiredString(value: string | undefined, message: string) {
-  if (!value) {
-    throw new StorageConfigurationError(message);
-  }
-  return value;
 }
 
 function parseUploadPolicy(): FileUploadPolicy {
@@ -94,95 +195,121 @@ export function getStorageEnv(): StorageEnvConfig {
     return storageConfigCache;
   }
 
-  const bucket = parseRequiredString(
-    readEnv(
-      "FILE_STORAGE_BUCKET",
-      "AWS_S3_BUCKET",
-      "AWS_S3_BUCKET_NAME",
-      "AWS_BUCKET",
-      "AWS_BUCKET_NAME",
-      "S3_BUCKET",
-      "S3_BUCKET_NAME",
-      "S3_UPLOAD_BUCKET",
-      "STORAGE_BUCKET",
-      "R2_BUCKET_NAME"
-    ),
-    "FILE_STORAGE_BUCKET must be configured for document evidence uploads."
-  );
+  const { config, errors } = resolveStorageConfig();
 
-  const region = parseRequiredString(
-    readEnv(
-      "FILE_STORAGE_REGION",
-      "AWS_REGION",
-      "AWS_DEFAULT_REGION",
-      "AWS_S3_REGION",
-      "AWS_BUCKET_REGION",
-      "S3_REGION",
-      "S3_UPLOAD_REGION",
-      "STORAGE_REGION",
-      "R2_REGION"
-    ),
-    "FILE_STORAGE_REGION must be configured for document evidence uploads."
-  );
+  if (!config) {
+    throw new StorageConfigurationError(errors[0] ?? "Document storage is not configured");
+  }
 
-  const accessKeyId = parseRequiredString(
-    readEnv(
-      "FILE_STORAGE_ACCESS_KEY_ID",
-      "AWS_ACCESS_KEY_ID",
-      "AWS_S3_ACCESS_KEY_ID",
-      "S3_ACCESS_KEY_ID",
-      "S3_KEY",
-      "S3_UPLOAD_KEY",
-      "STORAGE_ACCESS_KEY_ID",
-      "R2_ACCESS_KEY_ID"
-    ),
-    "Storage credentials are required. Set FILE_STORAGE_ACCESS_KEY_ID and FILE_STORAGE_SECRET_ACCESS_KEY."
-  );
-
-  const secretAccessKey = parseRequiredString(
-    readEnv(
-      "FILE_STORAGE_SECRET_ACCESS_KEY",
-      "AWS_SECRET_ACCESS_KEY",
-      "AWS_S3_SECRET_ACCESS_KEY",
-      "S3_SECRET_ACCESS_KEY",
-      "S3_SECRET",
-      "S3_UPLOAD_SECRET",
-      "STORAGE_SECRET_ACCESS_KEY",
-      "R2_SECRET_ACCESS_KEY"
-    ),
-    "Storage credentials are required. Set FILE_STORAGE_ACCESS_KEY_ID and FILE_STORAGE_SECRET_ACCESS_KEY."
-  );
-
-  const endpoint = readEnv(
-    "FILE_STORAGE_ENDPOINT",
-    "AWS_S3_ENDPOINT",
-    "AWS_S3_ENDPOINT_URL",
-    "S3_ENDPOINT",
-    "S3_UPLOAD_ENDPOINT",
-    "STORAGE_ENDPOINT",
-    "R2_ENDPOINT",
-    "R2_URL"
-  );
-
-  const forcePathStyle = parseBoolean(
-    readEnv(
-      "FILE_STORAGE_FORCE_PATH_STYLE",
-      "AWS_S3_FORCE_PATH_STYLE",
-      "S3_FORCE_PATH_STYLE",
-      "STORAGE_FORCE_PATH_STYLE"
-    )
-  );
-
-  storageConfigCache = {
-    bucket,
-    region,
-    accessKeyId,
-    secretAccessKey,
-    endpoint,
-    forcePathStyle
-  };
-
+  storageConfigCache = config;
   return storageConfigCache;
+}
+
+function resolveStorageConfig(): {
+  config: StorageEnvConfig | null;
+  diagnostics: StorageDiagnosticsDetails;
+  errors: string[];
+} {
+  const present: string[] = [];
+  const missing: string[] = [];
+  const errors: string[] = [];
+  const requirements: StorageRequirementStatus[] = [];
+
+  const resolvedValues: Partial<Record<StorageRequirementStatus["id"], { value: string; key: string }>> = {};
+
+  for (const requirement of STORAGE_REQUIREMENTS) {
+    const candidate = pickEnvValue(requirement.keys);
+    const presentValue = candidate.value;
+    if (presentValue) {
+      present.push(candidate.key);
+      resolvedValues[requirement.id] = { value: presentValue, key: candidate.key };
+      requirements.push({
+        id: requirement.id,
+        label: requirement.label,
+        keys: requirement.keys,
+        present: true,
+        resolvedKey: candidate.key
+      });
+    } else {
+      missing.push(requirement.label);
+      errors.push(requirement.missingMessage);
+      requirements.push({
+        id: requirement.id,
+        label: requirement.label,
+        keys: requirement.keys,
+        present: false
+      });
+    }
+  }
+
+  const endpointCandidate = pickEnvValue(STORAGE_OPTIONAL_ENDPOINT_KEYS);
+  const endpoint = endpointCandidate.value;
+  if (endpoint) {
+    present.push(endpointCandidate.key);
+  }
+
+  const forcePathStyleCandidate = pickEnvValue(STORAGE_OPTIONAL_FORCE_PATH_STYLE_KEYS);
+  const forcePathStyleValue = forcePathStyleCandidate.value;
+  if (forcePathStyleValue) {
+    present.push(forcePathStyleCandidate.key);
+  }
+
+  const forcePathStyle = parseBoolean(forcePathStyleValue);
+
+  const config: StorageEnvConfig | null = missing.length
+    ? null
+    : {
+        bucket: resolvedValues.bucket!.value,
+        region: resolvedValues.region!.value,
+        accessKeyId: resolvedValues.accessKeyId!.value,
+        secretAccessKey: resolvedValues.secretAccessKey!.value,
+        endpoint,
+        forcePathStyle
+      };
+
+  return {
+    config,
+    diagnostics: {
+      requirements,
+      present,
+      missing,
+      bucket: resolvedValues.bucket?.value,
+      region: resolvedValues.region?.value,
+      endpoint,
+      provider: detectStorageProvider(endpoint),
+      forcePathStyle
+    },
+    errors
+  };
+}
+
+function detectStorageProvider(endpoint?: string): StorageProviderType {
+  if (!endpoint) {
+    return "aws-s3";
+  }
+
+  const normalized = endpoint.toLowerCase();
+  if (normalized.includes("amazonaws")) {
+    return "aws-s3";
+  }
+  if (normalized.includes("r2.cloudflarestorage") || normalized.includes("cloudflare")) {
+    return "cloudflare-r2";
+  }
+  if (normalized.includes("supabase")) {
+    return "supabase";
+  }
+  if (normalized.includes("minio")) {
+    return "minio";
+  }
+  return "custom";
+}
+
+export function getStorageDiagnostics(): StorageDiagnosticsSnapshot {
+  const { diagnostics, config } = resolveStorageConfig();
+  return {
+    ...diagnostics,
+    ok: Boolean(config)
+  };
 }
 
 export function getRequiredEnv(key: string, message: string) {

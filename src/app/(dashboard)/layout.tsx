@@ -39,6 +39,7 @@ export default async function DashboardLayout({
 
   if (user.isAdmin) {
     navItems.push({ href: "/settings", label: "Settings" });
+    navItems.push({ href: "/storage-debug", label: "Storage debug" });
   }
 
   return (

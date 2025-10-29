@@ -66,3 +66,10 @@ Allow the app origin to perform presigned uploads. Update `https://worldskillssk
 6. Verify the configuration by visiting `/api/storage/health`; the response should be `{ "ok": true }`.
 
 Once these values are present, document uploads, downloads, and bulk validations will work across the application.
+
+## Debugging tips
+
+- Administrators can review the live configuration at `/storage-debug`, which calls the same health endpoint used by the uploader
+  and highlights any missing environment variables.
+- Set `NEXT_PUBLIC_DEBUG_STORAGE=true` in local development to surface additional console logs and inline diagnostics while
+  testing the deliverable uploader.
