@@ -32,7 +32,7 @@ function readEnv(...keys: string[]) {
   for (const key of keys) {
     const value = process.env[key];
     if (value && value.trim() !== "") {
-      return value;
+      return value.trim();
     }
   }
   return undefined;
@@ -50,13 +50,66 @@ function getConfig(): StorageConfig {
     return resolvedConfig;
   }
 
-  const bucket = readEnv("FILE_STORAGE_BUCKET", "AWS_S3_BUCKET", "AWS_BUCKET", "S3_BUCKET");
-  const region = readEnv("FILE_STORAGE_REGION", "AWS_REGION", "AWS_DEFAULT_REGION");
-  const accessKeyId = readEnv("FILE_STORAGE_ACCESS_KEY_ID", "AWS_ACCESS_KEY_ID");
-  const secretAccessKey = readEnv("FILE_STORAGE_SECRET_ACCESS_KEY", "AWS_SECRET_ACCESS_KEY");
-  const endpoint = readEnv("FILE_STORAGE_ENDPOINT", "AWS_S3_ENDPOINT", "S3_ENDPOINT");
+  const bucket = readEnv(
+    "FILE_STORAGE_BUCKET",
+    "AWS_S3_BUCKET",
+    "AWS_S3_BUCKET_NAME",
+    "AWS_BUCKET",
+    "AWS_BUCKET_NAME",
+    "S3_BUCKET",
+    "S3_BUCKET_NAME",
+    "S3_UPLOAD_BUCKET",
+    "STORAGE_BUCKET",
+    "R2_BUCKET_NAME"
+  );
+  const region = readEnv(
+    "FILE_STORAGE_REGION",
+    "AWS_REGION",
+    "AWS_DEFAULT_REGION",
+    "AWS_S3_REGION",
+    "AWS_BUCKET_REGION",
+    "S3_REGION",
+    "S3_UPLOAD_REGION",
+    "STORAGE_REGION",
+    "R2_REGION"
+  );
+  const accessKeyId = readEnv(
+    "FILE_STORAGE_ACCESS_KEY_ID",
+    "AWS_ACCESS_KEY_ID",
+    "AWS_S3_ACCESS_KEY_ID",
+    "S3_ACCESS_KEY_ID",
+    "S3_KEY",
+    "S3_UPLOAD_KEY",
+    "STORAGE_ACCESS_KEY_ID",
+    "R2_ACCESS_KEY_ID"
+  );
+  const secretAccessKey = readEnv(
+    "FILE_STORAGE_SECRET_ACCESS_KEY",
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_S3_SECRET_ACCESS_KEY",
+    "S3_SECRET_ACCESS_KEY",
+    "S3_SECRET",
+    "S3_UPLOAD_SECRET",
+    "STORAGE_SECRET_ACCESS_KEY",
+    "R2_SECRET_ACCESS_KEY"
+  );
+  const endpoint = readEnv(
+    "FILE_STORAGE_ENDPOINT",
+    "AWS_S3_ENDPOINT",
+    "AWS_S3_ENDPOINT_URL",
+    "S3_ENDPOINT",
+    "S3_UPLOAD_ENDPOINT",
+    "STORAGE_ENDPOINT",
+    "R2_ENDPOINT",
+    "R2_URL"
+  );
   const forcePathStyle = parseBoolean(
-    readEnv("FILE_STORAGE_FORCE_PATH_STYLE", "AWS_S3_FORCE_PATH_STYLE")
+    readEnv(
+      "FILE_STORAGE_FORCE_PATH_STYLE",
+      "AWS_S3_FORCE_PATH_STYLE",
+      "S3_FORCE_PATH_STYLE",
+      "STORAGE_FORCE_PATH_STYLE"
+    )
   );
 
   if (!bucket) {
