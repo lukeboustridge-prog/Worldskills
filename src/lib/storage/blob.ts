@@ -1,4 +1,4 @@
-import { createClient } from "@vercel/blob";
+import { list } from "@vercel/blob";
 
 export type BlobVerificationStatus =
   | { status: "missing_token" }
@@ -13,8 +13,7 @@ export async function verifyBlobAccess(): Promise<BlobVerificationStatus> {
   }
 
   try {
-    const client = createClient({ token });
-    await client.list({ limit: 1 });
+    await list({ token, limit: 1 });
     return { status: "verified" };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error verifying Vercel Blob access";
