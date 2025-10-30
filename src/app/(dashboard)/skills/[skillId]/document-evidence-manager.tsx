@@ -48,8 +48,10 @@ type StorageHealthSnapshot = {
 };
 
 const STORAGE_DEBUG_ENABLED = process.env.NEXT_PUBLIC_DEBUG_STORAGE === "true";
-const SHOW_READY_HINT = process.env.NODE_ENV !== "production";
-const SHOW_STATUS_DEBUG = process.env.NODE_ENV !== "production";
+const SHOW_READY_HINT =
+  process.env.NODE_ENV !== "production" || STORAGE_DEBUG_ENABLED;
+const SHOW_STATUS_DEBUG =
+  process.env.NODE_ENV !== "production" || STORAGE_DEBUG_ENABLED;
 
 async function computeChecksum(file: File) {
   const buffer = await file.arrayBuffer();
@@ -180,29 +182,23 @@ export function DocumentEvidenceManager({
         setLastHealthCheck({ payload, receivedAt: Date.now() });
         setStorageStatusSource("health");
 
-        if (payload.ok) {
-          setStorageStatus("ready");
-          setStorageNotice(null);
-          return;
-        }
+        const nextStatus: typeof storageStatus = payload.ok
+          ? "ready"
+          : payload.reason === "missing_blob_token" ||
+              payload.reason === "not_configured"
+            ? "not-configured"
+            : payload.reason === "blob_unreachable"
+              ? "error"
+              : "error";
 
-        if (
-          payload.reason === "not_configured" ||
-          payload.reason === "missing_blob_token"
-        ) {
-          setStorageStatus("not-configured");
-          setStorageNotice(NOT_CONFIGURED_MESSAGE);
-          return;
-        }
-
-        if (payload.reason === "blob_unreachable") {
-          setStorageStatus("error");
-          setStorageNotice(UNREACHABLE_MESSAGE);
-          return;
-        }
-
-        setStorageStatus("error");
-        setStorageNotice(UNREACHABLE_MESSAGE);
+        setStorageStatus(nextStatus);
+        setStorageNotice(
+          nextStatus === "ready"
+            ? null
+            : nextStatus === "not-configured"
+              ? NOT_CONFIGURED_MESSAGE
+              : UNREACHABLE_MESSAGE
+        );
       } catch (error) {
         if (cancelled || controller.signal.aborted) {
           return;
@@ -235,7 +231,13 @@ export function DocumentEvidenceManager({
       setProgress(0);
 
       if (!storageReady) {
-        setError(storageNotice ?? NOT_CONFIGURED_MESSAGE);
+        const notReadyMessage =
+          storageStatus === "not-configured"
+            ? NOT_CONFIGURED_MESSAGE
+            : storageStatus === "error"
+              ? storageNotice ?? UNREACHABLE_MESSAGE
+              : storageNotice ?? NOT_CONFIGURED_MESSAGE;
+        setError(notReadyMessage);
         return;
       }
 
@@ -486,6 +488,13 @@ export function DocumentEvidenceManager({
     return null;
   }
 
+  const computedStorageNotice =
+    storageStatus === "not-configured"
+      ? storageNotice ?? NOT_CONFIGURED_MESSAGE
+      : storageStatus === "error"
+        ? storageNotice ?? UNREACHABLE_MESSAGE
+        : null;
+
   return (
     <div className="space-y-3 rounded-md border border-dashed border-muted-foreground/40 p-4">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -603,16 +612,16 @@ export function DocumentEvidenceManager({
           {SHOW_STATUS_DEBUG ? (
             <p className="text-xs text-muted-foreground" data-storage-status-debug>
               Storage status: {storageStatus}
-              {lastHealthCheck?.payload.provider ? ` (${lastHealthCheck.payload.provider})` : ""} (source:
-              {" "}
-              {storageDebugSourceLabel})
+              {lastHealthCheck?.payload.provider
+                ? ` (${lastHealthCheck.payload.provider})`
+                : ""} (from {storageDebugSourceLabel})
             </p>
           ) : null}
         </div>
       ) : null}
 
       {error ? <p className="text-sm text-destructive" aria-live="polite">{error}</p> : null}
-      {!error && storageNotice && storageStatus !== "ready" ? (
+      {!error && computedStorageNotice && storageStatus !== "ready" ? (
         <p
           className={`text-sm ${
             storageStatus === "not-configured"
@@ -623,7 +632,7 @@ export function DocumentEvidenceManager({
           }`}
           aria-live="polite"
         >
-          {storageNotice}
+          {computedStorageNotice}
         </p>
       ) : null}
       {warning ? <p className="text-sm text-amber-600" aria-live="polite">{warning}</p> : null}
