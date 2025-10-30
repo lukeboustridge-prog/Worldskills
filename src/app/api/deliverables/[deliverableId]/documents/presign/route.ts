@@ -11,7 +11,7 @@ import {
   DOCUMENT_MIME_TYPES
 } from "@/lib/deliverables";
 import { normaliseFileName } from "@/lib/utils";
-import { createPresignedUpload, StorageConfigurationError } from "@/lib/storage";
+import { createPresignedUpload, StorageConfigurationError } from "@/lib/storage/client";
 import { canManageSkill } from "@/lib/permissions";
 
 const payloadSchema = z.object({
@@ -114,7 +114,8 @@ export async function POST(request: NextRequest, { params }: { params: { deliver
     uploadUrl: upload.uploadUrl,
     headers: upload.headers,
     expiresAt: upload.expiresAt,
-    storageKey,
+    storageKey: upload.key,
+    provider: upload.provider,
     maxBytes: DOCUMENT_MAX_BYTES,
     allowedMimeTypes: DOCUMENT_MIME_TYPES
   });

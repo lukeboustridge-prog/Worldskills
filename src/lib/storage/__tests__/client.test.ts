@@ -19,6 +19,8 @@ describe("storage configuration", () => {
     delete process.env.FILE_STORAGE_FORCE_PATH_STYLE;
     delete process.env.FILE_MAX_MB;
     delete process.env.FILE_ALLOWED_MIME;
+    delete process.env.BLOB_READ_WRITE_TOKEN;
+    delete process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
   });
 
   afterEach(() => {
@@ -30,6 +32,8 @@ describe("storage configuration", () => {
     delete process.env.FILE_STORAGE_FORCE_PATH_STYLE;
     delete process.env.FILE_MAX_MB;
     delete process.env.FILE_ALLOWED_MIME;
+    delete process.env.BLOB_READ_WRITE_TOKEN;
+    delete process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
   });
 
   it("throws a configuration error when required values are missing", async () => {
@@ -62,7 +66,7 @@ describe("storage configuration", () => {
       checksum: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
     });
 
-    expect(result.url).toContain("test-bucket");
+    expect(result.uploadUrl).toContain("test-bucket");
     expect(result.key).toBe("deliverables/skill/example.txt");
     expect(result.headers["Content-Type"]).toBe("image/png");
     expect(result.headers["x-amz-checksum-sha256"]).toBe(

@@ -131,10 +131,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        url: presigned.url,
+        uploadUrl: presigned.uploadUrl,
         key: presigned.key,
         expiresAt: presigned.expiresAt,
         headers: presigned.headers,
+        provider: presigned.provider,
         maxBytes: DOCUMENT_MAX_BYTES,
         allowedMimeTypes: DOCUMENT_MIME_TYPES
       },

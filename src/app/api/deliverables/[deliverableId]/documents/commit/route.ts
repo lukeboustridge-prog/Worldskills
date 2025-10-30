@@ -17,6 +17,7 @@ import {
   headStoredObject,
   StorageConfigurationError
 } from "@/lib/storage/client";
+import { getStorageDiagnostics } from "@/lib/env";
 import { canManageSkill } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 
@@ -87,10 +88,15 @@ export async function POST(request: NextRequest, { params }: { params: { deliver
     fileSize: parsed.data.fileSize
   });
 
-  try {
-    ensureKeyForDeliverable(parsed.data.storageKey, deliverable.skillId, deliverable.id);
-  } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+  const storageDiagnostics = getStorageDiagnostics();
+  const usingBlobStorage = storageDiagnostics.provider === "vercel-blob" && storageDiagnostics.blobTokenPresent;
+
+  if (!usingBlobStorage) {
+    try {
+      ensureKeyForDeliverable(parsed.data.storageKey, deliverable.skillId, deliverable.id);
+    } catch (error) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+    }
   }
 
   let metadata;

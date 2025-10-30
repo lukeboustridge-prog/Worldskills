@@ -286,19 +286,30 @@ export function DocumentEvidenceManager({
         });
 
         if (!response.ok) {
-          const data = await response.json().catch(() => ({ error: "We couldn't start the upload." }));
+          const data = await response.json().catch(() => ({ error: "Upload service is not available." }));
           if (response.status === 503) {
             setStorageStatus("not-configured");
             setStorageStatusSource("upload");
             setStorageNotice(data.error ?? NOT_CONFIGURED_MESSAGE);
           }
-          throw new Error(data.error ?? "We couldn't start the upload.");
+          const fallback =
+            response.status >= 500
+              ? "Upload service is not available. Please try again shortly."
+              : data.error ?? "We couldn't start the upload.";
+          if (response.status >= 500) {
+            setStorageStatus("error");
+            setStorageStatusSource("upload");
+            setStorageNotice(fallback);
+          }
+          throw new Error(fallback);
         }
 
         presigned = await response.json();
-        if (!presigned?.url || !presigned?.key) {
+        const uploadUrl: string | undefined = presigned?.uploadUrl ?? presigned?.url;
+        if (!uploadUrl || !presigned?.key) {
           throw new Error("We couldn't prepare the upload. Please try again shortly.");
         }
+        presigned.uploadUrl = uploadUrl;
       } catch (cause) {
         setStatus("idle");
         const message =
@@ -319,18 +330,15 @@ export function DocumentEvidenceManager({
 
       try {
         await uploadWithProgress({
-          url: presigned.url,
+          url: presigned.uploadUrl,
           file,
-          headers: presigned.headers as UploadHeaders,
+          headers: (presigned.headers as UploadHeaders) ?? { "Content-Type": mimeType },
           onProgress: setProgress
         });
       } catch (cause) {
         setStatus("idle");
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "The upload was interrupted. Please try again."
-        );
+        console.error("Document upload failed", cause);
+        setError("Could not upload the file. Check the file size and try again.");
         if (isRetryableDocumentUploadError(cause)) {
           setWarning("The connection dropped during upload. You can retry without losing progress.");
         }
@@ -367,9 +375,11 @@ export function DocumentEvidenceManager({
         setSuccess("Document or image uploaded successfully.");
         router.refresh();
       } catch (cause) {
-        setError(
-          cause instanceof Error ? cause.message : "We couldn't save the file. Please try again."
-        );
+        const fallbackCommitMessage =
+          cause instanceof Error && cause.message
+            ? cause.message
+            : "File uploaded but could not be saved. Contact the administrator if this continues.";
+        setError(fallbackCommitMessage);
         setStatus("idle");
         return;
       }
