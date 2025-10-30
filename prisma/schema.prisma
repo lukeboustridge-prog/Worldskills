@@ -97,6 +97,7 @@ model Deliverable {
   id                String                   @id @default(cuid())
   skillId           String
   key               String
+  templateKey       String?
   label             String
   cMonthOffset      Int?
   dueDate           DateTime
@@ -108,9 +109,10 @@ model Deliverable {
   updatedAt         DateTime                @updatedAt
   createdAt         DateTime                @default(now())
   overdueNotifiedAt DateTime?
+  isHidden          Boolean                 @default(false)
 
   skill    Skill               @relation(fields: [skillId], references: [id])
-  template DeliverableTemplate @relation(fields: [key], references: [key])
+  template DeliverableTemplate? @relation(fields: [templateKey], references: [key])
 
   @@index([skillId])
   @@unique([skillId, key])
