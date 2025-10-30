@@ -175,12 +175,7 @@ export function DocumentEvidenceManager({
 
         setLastHealthCheck({ payload, receivedAt: Date.now() });
 
-        const isBlobProvider = payload.provider === "vercel-blob";
-        const blobTokenReady =
-          isBlobProvider &&
-          (payload.ok || payload.diagnostic === "blob_verified" || payload.details?.blobTokenPresent === true);
-
-        if (payload.ok || blobTokenReady) {
+        if (payload.ok) {
           setStorageStatus("ready");
           setStorageNotice(null);
           return;
