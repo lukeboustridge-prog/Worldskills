@@ -150,7 +150,12 @@ export async function POST(request: NextRequest) {
   let body: unknown;
   const env = process.env.VERCEL_ENV ?? "local";
   const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
-  console.log("[storage/presign] hit", { env, hasBlobToken });
+  const hasFileStorageBucket = Boolean(process.env.FILE_STORAGE_BUCKET?.trim());
+  console.log("[storage/presign] hit", {
+    env,
+    hasBlobToken,
+    hasFileStorageBucket
+  });
 
   let providerHint: StorageProviderType | undefined;
 
@@ -264,7 +269,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (error instanceof StorageConfigurationError) {
-      console.error("Document storage is not configured", error);
+      console.error("[storage/presign] configuration error", {
+        message: error.message,
+        stack: error.stack,
+        provider,
+        env,
+        hasBlobToken,
+        hasFileStorageBucket
+      });
       return NextResponse.json(
         {
           error: "storage_not_configured",
@@ -278,7 +290,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error("Failed to create presigned upload", error);
+    console.error("[storage/presign] failed", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      provider,
+      env,
+      hasBlobToken,
+      hasFileStorageBucket
+    });
     const message =
       error instanceof Error
         ? error.message
