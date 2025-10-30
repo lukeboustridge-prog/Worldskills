@@ -4,6 +4,7 @@ import { getStorageDiagnostics } from "@/lib/env";
 import type { StorageHealthResponse } from "@/lib/storage/diagnostics";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 function getEnvironmentName() {
   if (process.env.VERCEL_ENV) {
