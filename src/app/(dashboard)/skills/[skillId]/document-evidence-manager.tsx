@@ -49,6 +49,7 @@ type StorageHealthSnapshot = {
 
 const STORAGE_DEBUG_ENABLED = process.env.NEXT_PUBLIC_DEBUG_STORAGE === "true";
 const SHOW_READY_HINT = process.env.NODE_ENV !== "production";
+const SHOW_STATUS_DEBUG = process.env.NODE_ENV !== "production";
 
 async function computeChecksum(file: File) {
   const buffer = await file.arrayBuffer();
@@ -136,6 +137,9 @@ export function DocumentEvidenceManager({
   );
   const [storageNotice, setStorageNotice] = useState<string | null>(null);
   const [lastHealthCheck, setLastHealthCheck] = useState<StorageHealthSnapshot | null>(null);
+  const [storageStatusSource, setStorageStatusSource] = useState<"initial" | "health" | "upload">(
+    "initial"
+  );
 
   const disabled = status !== "idle";
   const hasEvidence = Boolean(evidence);
@@ -174,6 +178,7 @@ export function DocumentEvidenceManager({
         }
 
         setLastHealthCheck({ payload, receivedAt: Date.now() });
+        setStorageStatusSource("health");
 
         if (payload.ok) {
           setStorageStatus("ready");
@@ -210,6 +215,7 @@ export function DocumentEvidenceManager({
         if (STORAGE_DEBUG_ENABLED) {
           console.error("[storage] Document storage health check failed", error);
         }
+        setStorageStatusSource("health");
       }
     }
 
@@ -281,6 +287,7 @@ export function DocumentEvidenceManager({
           const data = await response.json().catch(() => ({ error: "We couldn't start the upload." }));
           if (response.status === 503) {
             setStorageStatus("not-configured");
+            setStorageStatusSource("upload");
             setStorageNotice(data.error ?? NOT_CONFIGURED_MESSAGE);
           }
           throw new Error(data.error ?? "We couldn't start the upload.");
@@ -300,6 +307,7 @@ export function DocumentEvidenceManager({
 
         if (message.includes("not configured")) {
           setStorageStatus("not-configured");
+          setStorageStatusSource("upload");
           setStorageNotice(message);
         }
         return;
@@ -451,6 +459,13 @@ export function DocumentEvidenceManager({
     }
   };
 
+  const storageDebugSourceLabel =
+    storageStatusSource === "health"
+      ? "/api/storage/health"
+      : storageStatusSource === "upload"
+        ? "upload flow"
+        : "initial";
+
   const dropHandlers = showUploader && canEdit && storageReady
     ? {
         onDragOver: (event: React.DragEvent<HTMLDivElement>) => {
@@ -585,11 +600,19 @@ export function DocumentEvidenceManager({
               <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" /> Checking storage configuration…
             </p>
           ) : null}
+          {SHOW_STATUS_DEBUG ? (
+            <p className="text-xs text-muted-foreground" data-storage-status-debug>
+              Storage status: {storageStatus}
+              {lastHealthCheck?.payload.provider ? ` (${lastHealthCheck.payload.provider})` : ""} (source:
+              {" "}
+              {storageDebugSourceLabel})
+            </p>
+          ) : null}
         </div>
       ) : null}
 
       {error ? <p className="text-sm text-destructive" aria-live="polite">{error}</p> : null}
-      {!error && storageNotice ? (
+      {!error && storageNotice && storageStatus !== "ready" ? (
         <p
           className={`text-sm ${
             storageStatus === "not-configured"
