@@ -7,12 +7,11 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { del as blobDelete, head as blobHead } from "@vercel/blob";
-// @ts-ignore - type definitions are provided by the package but not bundled here.
-import { generateUploadURL } from "@vercel/blob/server";
 
 import { getStorageDiagnostics, getStorageEnv, StorageConfigurationError } from "@/lib/env";
 import type { StorageProviderType } from "@/lib/storage/diagnostics";
 
+let blobModulePromise: Promise<any> | null = null;
 let cachedClient: S3Client | null = null;
 let cachedProvider: ActiveStorage | null = null;
 
@@ -108,7 +107,13 @@ export async function createPresignedUpload(params: {
 
     // generateUploadURL reads the Blob token from the environment. We still
     // provide a pathname so uploaded files remain grouped per deliverable.
-    const blobResult: any = await (generateUploadURL as any)({
+    const { generateUploadURL } = await getBlobModule();
+
+    if (typeof generateUploadURL !== "function") {
+      throw new Error("Blob upload helper is unavailable in the current runtime");
+    }
+
+    const blobResult: any = await generateUploadURL({
       access: "public",
       // ensure deterministic paths for deliverables so we can clean up later.
       pathname: safeKey,
@@ -244,9 +249,18 @@ export async function createPresignedDownload(params: {
   };
 }
 
+async function getBlobModule() {
+  if (!blobModulePromise) {
+    blobModulePromise = import("@vercel/blob");
+  }
+
+  return blobModulePromise;
+}
+
 export function __resetStorageClientForTests() {
   cachedClient = null;
   cachedProvider = null;
+  blobModulePromise = null;
 }
 
 export { StorageConfigurationError };
