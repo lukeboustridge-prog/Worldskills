@@ -32,6 +32,12 @@ const MIME_EXTENSION_FALLBACKS: Record<string, string> = {
   png: "image/png"
 };
 
+const NOT_CONFIGURED_MESSAGE =
+  "Document storage is not configured yet. Please contact the administrator to enable uploads.";
+
+const UNREACHABLE_MESSAGE =
+  "We couldn't confirm document storage is available right now. Try again later or contact the administrator.";
+
 interface UploadHeaders {
   [key: string]: string;
 }
@@ -42,6 +48,7 @@ type StorageHealthSnapshot = {
 };
 
 const STORAGE_DEBUG_ENABLED = process.env.NEXT_PUBLIC_DEBUG_STORAGE === "true";
+const SHOW_READY_HINT = process.env.NODE_ENV !== "production";
 
 async function computeChecksum(file: File) {
   const buffer = await file.arrayBuffer();
@@ -143,6 +150,7 @@ export function DocumentEvidenceManager({
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
 
     async function checkStorage() {
       if (STORAGE_DEBUG_ENABLED) {
@@ -151,7 +159,7 @@ export function DocumentEvidenceManager({
       try {
         const response = await fetch(
           STORAGE_DEBUG_ENABLED ? "/api/storage/health?details=1" : "/api/storage/health",
-          { cache: "no-store" }
+          { cache: "no-store", signal: controller.signal }
         );
         if (!response.ok) {
           throw new Error("Storage health check failed");
@@ -167,33 +175,38 @@ export function DocumentEvidenceManager({
 
         setLastHealthCheck({ payload, receivedAt: Date.now() });
 
-        if (payload.ok) {
+        const blobVerified = payload.diagnostic === "blob_verified";
+        if (payload.ok || blobVerified) {
           setStorageStatus("ready");
           setStorageNotice(null);
-        } else if (
+          return;
+        }
+
+        if (
           payload.reason === "not_configured" ||
           payload.reason === "missing_blob_token"
         ) {
           setStorageStatus("not-configured");
-          setStorageNotice(
-            "Document storage is not configured yet. Please contact the administrator to enable uploads."
-          );
-        } else {
-          setStorageStatus("error");
-          setStorageNotice(
-            "We couldn't confirm document storage is available right now. Try again later or contact the administrator."
-          );
+          setStorageNotice(NOT_CONFIGURED_MESSAGE);
+          return;
         }
+
+        if (payload.reason === "blob_unreachable") {
+          setStorageStatus("error");
+          setStorageNotice(UNREACHABLE_MESSAGE);
+          return;
+        }
+
+        setStorageStatus("error");
+        setStorageNotice(UNREACHABLE_MESSAGE);
       } catch (error) {
-        if (cancelled) {
+        if (cancelled || controller.signal.aborted) {
           return;
         }
 
         console.error("Failed to verify storage configuration", error);
         setStorageStatus("error");
-        setStorageNotice(
-          "We couldn't confirm document storage is available right now. Try again later or contact the administrator."
-        );
+        setStorageNotice(UNREACHABLE_MESSAGE);
         setLastHealthCheck({ payload: { ok: false, reason: "error" }, receivedAt: Date.now() });
         if (STORAGE_DEBUG_ENABLED) {
           console.error("[storage] Document storage health check failed", error);
@@ -205,6 +218,7 @@ export function DocumentEvidenceManager({
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, []);
 
@@ -216,10 +230,7 @@ export function DocumentEvidenceManager({
       setProgress(0);
 
       if (!storageReady) {
-        setError(
-          storageNotice ??
-            "Document storage is not configured yet. Please contact the administrator to enable uploads."
-        );
+        setError(storageNotice ?? NOT_CONFIGURED_MESSAGE);
         return;
       }
 
@@ -271,10 +282,7 @@ export function DocumentEvidenceManager({
           const data = await response.json().catch(() => ({ error: "We couldn't start the upload." }));
           if (response.status === 503) {
             setStorageStatus("not-configured");
-            setStorageNotice(
-              data.error ??
-                "Document storage is not configured yet. Please contact the administrator to enable uploads."
-            );
+            setStorageNotice(data.error ?? NOT_CONFIGURED_MESSAGE);
           }
           throw new Error(data.error ?? "We couldn't start the upload.");
         }
@@ -568,6 +576,11 @@ export function DocumentEvidenceManager({
                 ? "Replace file"
                 : "Upload file"}
           </Button>
+          {SHOW_READY_HINT && storageReady && lastHealthCheck?.payload.provider ? (
+            <p className="text-xs text-muted-foreground" data-storage-status="ready-hint">
+              Storage ready ({lastHealthCheck.payload.provider})
+            </p>
+          ) : null}
           {storageStatus === "checking" ? (
             <p className="flex items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
               <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" /> Checking storage configuration…
