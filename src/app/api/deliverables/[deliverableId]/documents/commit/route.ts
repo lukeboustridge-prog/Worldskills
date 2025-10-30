@@ -21,6 +21,10 @@ import { getStorageDiagnostics } from "@/lib/env";
 import { canManageSkill } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const payloadSchema = z.object({
   skillId: z.string().min(1, "Skill id is required"),
   storageKey: z.string().min(1, "Storage key is required"),

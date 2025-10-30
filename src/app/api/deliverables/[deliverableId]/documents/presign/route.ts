@@ -14,6 +14,10 @@ import { normaliseFileName } from "@/lib/utils";
 import { createPresignedUpload, StorageConfigurationError } from "@/lib/storage/client";
 import { canManageSkill } from "@/lib/permissions";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const payloadSchema = z.object({
   skillId: z.string().min(1, "Skill id is required"),
   fileName: z.string().min(1, "Choose a file to upload"),

@@ -11,6 +11,10 @@ import { canViewSkill } from "@/lib/permissions";
 import { createPresignedDownload, StorageConfigurationError } from "@/lib/storage/client";
 import { normaliseFileName } from "@/lib/utils";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const DOWNLOAD_TTL_SECONDS = Number(process.env.FILE_DOWNLOAD_TTL_SECONDS ?? 120);
 
 export async function GET(request: NextRequest, { params }: { params: { deliverableId: string; evidenceId: string } }) {
