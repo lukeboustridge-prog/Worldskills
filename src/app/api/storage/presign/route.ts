@@ -42,6 +42,92 @@ const payloadSchema = z.object({
     .optional()
 });
 
+type NormalisedPayload = z.infer<typeof payloadSchema>;
+
+type NormalisedResult =
+  | { success: true; data: NormalisedPayload }
+  | { success: false; error: string };
+
+function readStringValue(source: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = source[key];
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed.length > 0) {
+        return trimmed;
+      }
+    }
+  }
+  return undefined;
+}
+
+function readNumericValue(source: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = source[key];
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === "string" && value.trim() !== "") {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) {
+        return parsed;
+      }
+    }
+  }
+  return undefined;
+}
+
+function normalisePayload(body: unknown): NormalisedResult {
+  if (!body || typeof body !== "object") {
+    return {
+      success: false,
+      error: "Deliverable, skill, file name, file size, and type are required to upload."
+    };
+  }
+
+  const source = body as Record<string, unknown>;
+
+  const deliverableId = readStringValue(source, [
+    "deliverableId",
+    "deliverableID",
+    "deliverable_id"
+  ]);
+  const skillId = readStringValue(source, ["skillId", "skillID", "skill_id"]);
+  const filename = readStringValue(source, ["filename", "fileName", "name"]);
+  const contentType = readStringValue(source, [
+    "contentType",
+    "mimeType",
+    "type"
+  ]);
+  const byteSize = readNumericValue(source, ["byteSize", "fileSize", "size"]);
+  const checksum = readStringValue(source, [
+    "checksum",
+    "checksumSha256",
+    "checksumSHA256",
+    "checksum_sha256",
+    "sha256"
+  ]);
+
+  const candidate: Partial<NormalisedPayload> = {
+    deliverableId: deliverableId ?? "",
+    skillId: skillId ?? "",
+    filename: filename ?? "",
+    contentType: contentType ?? "",
+    byteSize: byteSize ?? Number.NaN,
+    checksum: checksum
+  };
+
+  const parsed = payloadSchema.safeParse(candidate);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.errors.map((issue) => issue.message).join(" \u2022 ")
+    };
+  }
+
+  return { success: true, data: parsed.data };
+}
+
 function buildStorageKey(params: { deliverableId: string; skillId: string; filename: string }) {
   const safeName = normaliseFileName(params.filename);
   const slug = `${Date.now()}-${randomUUID().slice(0, 8)}`;
@@ -57,12 +143,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400, headers: NO_STORE_HEADERS });
   }
 
-  const parsed = payloadSchema.safeParse(body);
+  const normalised = normalisePayload(body);
 
-  if (!parsed.success) {
+  if (!normalised.success) {
     return NextResponse.json(
       {
-        error: parsed.error.errors.map((issue) => issue.message).join(" \u2022 ")
+        error: normalised.error
       },
       { status: 400, headers: NO_STORE_HEADERS }
     );
@@ -71,7 +157,7 @@ export async function POST(request: NextRequest) {
   const user = await requireUser();
 
   const deliverable = await prisma.deliverable.findUnique({
-    where: { id: parsed.data.deliverableId },
+    where: { id: normalised.data.deliverableId },
     select: {
       id: true,
       skillId: true,
@@ -88,7 +174,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Deliverable not found." }, { status: 404, headers: NO_STORE_HEADERS });
   }
 
-  if (deliverable.skillId !== parsed.data.skillId) {
+  if (deliverable.skillId !== normalised.data.skillId) {
     return NextResponse.json(
       { error: "Deliverable does not belong to the requested skill." },
       { status: 400, headers: NO_STORE_HEADERS }
@@ -105,8 +191,8 @@ export async function POST(request: NextRequest) {
   try {
     try {
       validateDocumentEvidenceInput({
-        mimeType: parsed.data.contentType,
-        fileSize: parsed.data.byteSize
+        mimeType: normalised.data.contentType,
+        fileSize: normalised.data.byteSize
       });
     } catch (cause) {
       throw new ValidationError(
@@ -119,14 +205,14 @@ export async function POST(request: NextRequest) {
     const storageKey = buildStorageKey({
       deliverableId: deliverable.id,
       skillId: deliverable.skillId,
-      filename: parsed.data.filename
+      filename: normalised.data.filename
     });
 
     const presigned = await createPresignedUpload({
       key: storageKey,
-      contentType: parsed.data.contentType,
-      contentLength: parsed.data.byteSize,
-      checksum: parsed.data.checksum
+      contentType: normalised.data.contentType,
+      contentLength: normalised.data.byteSize,
+      checksum: normalised.data.checksum
     });
 
     return NextResponse.json(

@@ -306,10 +306,13 @@ export function DocumentEvidenceManager({
 
         presigned = await response.json();
         const uploadUrl: string | undefined = presigned?.uploadUrl ?? presigned?.url;
-        if (!uploadUrl || !presigned?.key) {
+        const storageKey: string | undefined =
+          presigned?.key ?? presigned?.storageKey ?? presigned?.pathname;
+        if (!uploadUrl || !storageKey) {
           throw new Error("We couldn't prepare the upload. Please try again shortly.");
         }
         presigned.uploadUrl = uploadUrl;
+        presigned.key = storageKey;
       } catch (cause) {
         setStatus("idle");
         const message =

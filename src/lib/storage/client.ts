@@ -119,7 +119,8 @@ export async function createPresignedUpload(params: {
       pathname: safeKey,
       // cap uploads to the negotiated content length.
       contentType,
-      contentLength
+      contentLength,
+      token: storage.token
     });
 
     const uploadUrl: string = blobResult?.url ?? blobResult?.uploadUrl;
