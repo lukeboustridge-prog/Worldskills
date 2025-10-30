@@ -16,7 +16,8 @@ import {
   createPresignedUpload,
   StorageConfigurationError
 } from "@/lib/storage/client";
-import { ValidationError } from "@/lib/env";
+import type { StorageProviderType } from "@/lib/storage/diagnostics";
+import { ValidationError, getStorageDiagnostics } from "@/lib/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,6 +29,17 @@ const NO_STORE_HEADERS = {
   "CDN-Cache-Control": "no-store",
   "Vercel-CDN-Cache-Control": "no-store"
 };
+
+function resolveProviderHint(current?: StorageProviderType) {
+  if (current) {
+    return current;
+  }
+  try {
+    return getStorageDiagnostics().provider;
+  } catch {
+    return undefined;
+  }
+}
 
 const payloadSchema = z.object({
   deliverableId: z.string().min(1, "Deliverable id is required"),
@@ -136,6 +148,11 @@ function buildStorageKey(params: { deliverableId: string; skillId: string; filen
 
 export async function POST(request: NextRequest) {
   let body: unknown;
+  const env = process.env.VERCEL_ENV ?? "local";
+  const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
+  console.log("[storage/presign] hit", { env, hasBlobToken });
+
+  let providerHint: StorageProviderType | undefined;
 
   try {
     body = await request.json();
@@ -215,6 +232,9 @@ export async function POST(request: NextRequest) {
       checksum: normalised.data.checksum
     });
 
+    providerHint = presigned.provider;
+    console.log("[storage/presign] presign-success", { env, provider: providerHint });
+
     return NextResponse.json(
       {
         uploadUrl: presigned.uploadUrl,
@@ -228,24 +248,50 @@ export async function POST(request: NextRequest) {
       { headers: NO_STORE_HEADERS }
     );
   } catch (error) {
+    const provider = resolveProviderHint(providerHint);
+
     if (error instanceof ValidationError) {
-      return NextResponse.json({ error: error.message }, { status: 400, headers: NO_STORE_HEADERS });
+      return NextResponse.json(
+        {
+          error: "validation_error",
+          message: error.message,
+          provider: provider ?? null,
+          env,
+          details: { hasBlobToken }
+        },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
     }
 
     if (error instanceof StorageConfigurationError) {
       console.error("Document storage is not configured", error);
       return NextResponse.json(
         {
-          error: "Document storage is not configured yet. Please contact the administrator to enable uploads."
+          error: "storage_not_configured",
+          message:
+            "Document storage is not configured yet. Please contact the administrator to enable uploads.",
+          provider: provider ?? null,
+          env,
+          details: { hasBlobToken }
         },
         { status: 503, headers: NO_STORE_HEADERS }
       );
     }
 
     console.error("Failed to create presigned upload", error);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "We couldn't prepare the upload. Please try again shortly.";
     return NextResponse.json(
-      { error: "We couldn't prepare the upload. Please try again shortly." },
-      { status: 500, headers: NO_STORE_HEADERS }
+      {
+        error: "presign_failed",
+        message,
+        provider: provider ?? null,
+        env,
+        details: { hasBlobToken }
+      },
+      { status: 503, headers: NO_STORE_HEADERS }
     );
   }
 }

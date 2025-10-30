@@ -52,6 +52,14 @@ const SHOW_READY_HINT =
   process.env.NODE_ENV !== "production" || STORAGE_DEBUG_ENABLED;
 const SHOW_STATUS_DEBUG =
   process.env.NODE_ENV !== "production" || STORAGE_DEBUG_ENABLED;
+const SHOW_PRESIGN_DEBUG = process.env.NODE_ENV !== "production";
+
+type PresignDebugInfo = {
+  endpoint: string;
+  status: number;
+  statusText: string;
+  body: unknown;
+};
 
 async function computeChecksum(file: File) {
   const buffer = await file.arrayBuffer();
@@ -142,6 +150,7 @@ export function DocumentEvidenceManager({
   const [storageStatusSource, setStorageStatusSource] = useState<"initial" | "health" | "upload">(
     "initial"
   );
+  const [presignDebug, setPresignDebug] = useState<PresignDebugInfo | null>(null);
 
   const disabled = status !== "idle";
   const hasEvidence = Boolean(evidence);
@@ -152,6 +161,7 @@ export function DocumentEvidenceManager({
     setError(null);
     setWarning(null);
     setSuccess(null);
+    setPresignDebug(null);
   };
 
   useEffect(() => {
@@ -285,17 +295,44 @@ export function DocumentEvidenceManager({
           })
         });
 
+        const responseText = await response.text();
+        let responseData: unknown = null;
+
+        if (responseText) {
+          try {
+            responseData = JSON.parse(responseText);
+          } catch (parseError) {
+            console.warn("[document-evidence] Failed to parse presign response", parseError);
+          }
+        }
+
+        const parsedData =
+          responseData && typeof responseData === "object"
+            ? (responseData as Record<string, unknown>)
+            : null;
+
+        const debugPayload: PresignDebugInfo = {
+          endpoint: "/api/storage/presign",
+          status: response.status,
+          statusText: response.statusText,
+          body: parsedData ?? responseText
+        };
+        setPresignDebug(debugPayload);
+
         if (!response.ok) {
-          const data = await response.json().catch(() => ({ error: "Upload service is not available." }));
+          const fallbackError =
+            parsedData && typeof parsedData["error"] === "string"
+              ? (parsedData["error"] as string)
+              : null;
           if (response.status === 503) {
             setStorageStatus("not-configured");
             setStorageStatusSource("upload");
-            setStorageNotice(data.error ?? NOT_CONFIGURED_MESSAGE);
+            setStorageNotice(fallbackError ?? NOT_CONFIGURED_MESSAGE);
           }
           const fallback =
             response.status >= 500
               ? "Upload service is not available. Please try again shortly."
-              : data.error ?? "We couldn't start the upload.";
+              : fallbackError ?? "We couldn't start the upload.";
           if (response.status >= 500) {
             setStorageStatus("error");
             setStorageStatusSource("upload");
@@ -304,7 +341,11 @@ export function DocumentEvidenceManager({
           throw new Error(fallback);
         }
 
-        presigned = await response.json();
+        if (!parsedData) {
+          throw new Error("We couldn't prepare the upload. Please try again shortly.");
+        }
+
+        presigned = parsedData;
         const uploadUrl: string | undefined = presigned?.uploadUrl ?? presigned?.url;
         const storageKey: string | undefined =
           presigned?.key ?? presigned?.storageKey ?? presigned?.pathname;
@@ -320,6 +361,15 @@ export function DocumentEvidenceManager({
             ? cause.message
             : "We couldn't prepare the upload. Check your connection and try again.";
         setError(message);
+
+        if (!presignDebug) {
+          setPresignDebug({
+            endpoint: "/api/storage/presign",
+            status: 0,
+            statusText: "exception",
+            body: cause instanceof Error ? cause.message : cause
+          });
+        }
 
         if (message.includes("not configured")) {
           setStorageStatus("not-configured");
@@ -691,6 +741,14 @@ export function DocumentEvidenceManager({
           <p className="mb-2">Last check: {new Date(lastHealthCheck.receivedAt).toLocaleString()}</p>
           <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] text-muted-foreground">
             {JSON.stringify(lastHealthCheck.payload, null, 2)}
+          </pre>
+        </div>
+      ) : null}
+      {SHOW_PRESIGN_DEBUG && presignDebug ? (
+        <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/10 p-3 text-left text-xs text-muted-foreground">
+          <p className="mb-1 font-semibold text-foreground">Presign debug</p>
+          <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] text-muted-foreground">
+            {JSON.stringify(presignDebug, null, 2)}
           </pre>
         </div>
       ) : null}
