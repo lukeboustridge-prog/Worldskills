@@ -12,7 +12,12 @@ import {
   upsertDocumentEvidenceItem,
   validateDocumentEvidenceInput
 } from "@/lib/deliverables";
-import { deleteStoredObject, headStoredObject } from "@/lib/storage";
+import {
+  deleteStoredObject,
+  headStoredObject,
+  StorageConfigurationError
+} from "@/lib/storage/client";
+import { getStorageDiagnostics } from "@/lib/env";
 import { canManageSkill } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 
@@ -83,17 +88,36 @@ export async function POST(request: NextRequest, { params }: { params: { deliver
     fileSize: parsed.data.fileSize
   });
 
-  try {
-    ensureKeyForDeliverable(parsed.data.storageKey, deliverable.skillId, deliverable.id);
-  } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+  const storageDiagnostics = getStorageDiagnostics();
+  const usingBlobStorage = storageDiagnostics.provider === "vercel-blob" && storageDiagnostics.blobTokenPresent;
+
+  if (!usingBlobStorage) {
+    try {
+      ensureKeyForDeliverable(parsed.data.storageKey, deliverable.skillId, deliverable.id);
+    } catch (error) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+    }
   }
 
   let metadata;
   try {
     metadata = await headStoredObject(parsed.data.storageKey);
   } catch (error) {
-    return NextResponse.json({ error: "We couldn't confirm the uploaded file. Try uploading again." }, { status: 400 });
+    if (error instanceof StorageConfigurationError) {
+      console.error("Document storage is not configured", error);
+      return NextResponse.json(
+        {
+          error:
+            "Document storage is not configured yet. Please contact the administrator to enable uploads."
+        },
+        { status: 503 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "We couldn't confirm the uploaded file. Try uploading again." },
+      { status: 400 }
+    );
   }
 
   if (metadata.ContentLength != null && metadata.ContentLength !== parsed.data.fileSize) {

@@ -11,6 +11,7 @@ import {
 
 import { logActivity } from "@/lib/activity";
 import { prisma } from "@/lib/prisma";
+import { getFileUploadPolicy } from "@/lib/env";
 
 export const DUE_SOON_THRESHOLD_DAYS = 30;
 
@@ -118,34 +119,31 @@ export function computeDueDate(competitionStart: Date, offsetMonths: number) {
   return subMonths(competitionStart, offsetMonths);
 }
 
-export const EVIDENCE_TYPE_VALUES = ["Document", "Image", "Video", "Other"] as const;
+export const EVIDENCE_TYPE_VALUES = ["Document", "Other"] as const;
 
 export type EvidenceType = (typeof EVIDENCE_TYPE_VALUES)[number];
 
 export const EVIDENCE_TYPE_OPTIONS = [
-  { value: EVIDENCE_TYPE_VALUES[0], label: "Document" },
-  { value: EVIDENCE_TYPE_VALUES[1], label: "Image" },
-  { value: EVIDENCE_TYPE_VALUES[2], label: "Video walkthrough" },
-  { value: EVIDENCE_TYPE_VALUES[3], label: "Other reference" }
+  { value: EVIDENCE_TYPE_VALUES[0], label: "Document or image upload" },
+  { value: EVIDENCE_TYPE_VALUES[1], label: "Other reference" }
 ] as const;
+
+const LEGACY_EVIDENCE_TYPES = new Map<string, EvidenceType>([
+  ["Image", "Other"],
+  ["Video", "Other"],
+  ["Video walkthrough", "Other"],
+  ["Link", "Other"]
+]);
 
 const EVIDENCE_TYPE_SET = new Set<string>(EVIDENCE_TYPE_VALUES);
 
-export const DOCUMENT_MIME_TYPES = [
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-powerpoint",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "image/jpeg",
-  "image/png"
-] as const;
+const DOCUMENT_UPLOAD_POLICY = getFileUploadPolicy();
+
+export const DOCUMENT_MIME_TYPES = DOCUMENT_UPLOAD_POLICY.allowedMimeTypes;
 
 export type DocumentMimeType = (typeof DOCUMENT_MIME_TYPES)[number];
 
-export const DOCUMENT_MAX_BYTES = 25 * 1024 * 1024; // 25 MB
+export const DOCUMENT_MAX_BYTES = DOCUMENT_UPLOAD_POLICY.maxBytes;
 
 export const DOCUMENT_STATUS_VALUES = ["available", "processing", "blocked"] as const;
 export type DocumentEvidenceStatus = (typeof DOCUMENT_STATUS_VALUES)[number];
@@ -284,7 +282,7 @@ export function validateDocumentEvidenceInput(params: {
   const { mimeType, fileSize } = params;
 
   if (!DOCUMENT_MIME_TYPES.includes(mimeType as DocumentMimeType)) {
-    throw new Error("That file type isn\'t supported. Upload a PDF, Office document, or image.");
+    throw new Error("That file type isn\'t supported. Upload a PDF, Word document, or image.");
   }
 
   if (!Number.isFinite(fileSize) || fileSize <= 0) {
@@ -292,7 +290,9 @@ export function validateDocumentEvidenceInput(params: {
   }
 
   if (fileSize > DOCUMENT_MAX_BYTES) {
-    throw new Error("The file is larger than the maximum allowed size (25 MB).");
+    throw new Error(
+      `The file is larger than the maximum allowed size (${formatFileSize(DOCUMENT_MAX_BYTES)}).`
+    );
   }
 }
 
@@ -377,8 +377,17 @@ export function serialiseEvidenceItems(
 }
 
 function normaliseEvidenceType(raw: unknown): EvidenceType {
-  const value = typeof raw === "string" ? raw : "Document";
-  return EVIDENCE_TYPE_SET.has(value) ? (value as EvidenceType) : "Document";
+  const value = typeof raw === "string" ? raw : undefined;
+
+  if (value && EVIDENCE_TYPE_SET.has(value)) {
+    return value as EvidenceType;
+  }
+
+  if (value && LEGACY_EVIDENCE_TYPES.has(value)) {
+    return LEGACY_EVIDENCE_TYPES.get(value)!;
+  }
+
+  return "Document";
 }
 
 function normaliseAddedAt(raw: unknown) {
@@ -404,6 +413,7 @@ export function normaliseEvidenceItems(
       const addedAt = normaliseAddedAt(record.addedAt);
       const kindRaw = typeof record.kind === "string" ? record.kind : undefined;
       const kind = kindRaw === "Document" || (kindRaw == null && type === "Document") ? "Document" : "Link";
+      const resolvedType: EvidenceType = kind === "Link" && type === "Document" ? "Other" : type;
 
       if (kind === "Document" && type === "Document") {
         const storageKey = typeof record.storageKey === "string" ? record.storageKey : null;
@@ -444,7 +454,7 @@ export function normaliseEvidenceItems(
         id,
         kind: "Link",
         url,
-        type,
+        type: resolvedType,
         addedAt
       } satisfies DeliverableEvidenceLink;
     })
@@ -459,7 +469,7 @@ export function decorateDeliverable(
 ): DeliverableWithStatus {
   const isFinished = FINISHED_STATES.has(deliverable.state);
   const pastDue = isAfter(now, deliverable.dueDate);
-  const isOverdue = pastDue && !isFinished;
+  const isOverdue = !deliverable.isHidden && pastDue && !isFinished;
   const overdueByDays = isOverdue ? Math.max(0, differenceInCalendarDays(now, deliverable.dueDate)) : 0;
 
   return {
@@ -534,6 +544,7 @@ export async function ensureStandardDeliverablesForSkill(params: {
         data: {
           skillId,
           key: definition.key,
+          templateKey: definition.key,
           label: definition.label,
           cMonthOffset: usingCMonth ? offset : null,
           cMonthLabel: usingCMonth && offset !== null ? buildCMonthLabel(offset) : null,
@@ -703,6 +714,9 @@ export async function applyTemplateUpdateToDeliverables(params: {
 export function classifyDeliverables(deliverables: DeliverableWithStatus[]) {
   return deliverables.reduce(
     (acc, deliverable) => {
+      if (deliverable.isHidden) {
+        return acc;
+      }
       acc.total += 1;
       acc.stateCounts[deliverable.state] = (acc.stateCounts[deliverable.state] ?? 0) + 1;
       if (deliverable.isOverdue) {
@@ -721,19 +735,22 @@ export function classifyDeliverables(deliverables: DeliverableWithStatus[]) {
 export function sortSkillsByRisk<T extends { deliverables: DeliverableWithStatus[] }>(skills: T[]) {
   const now = new Date();
   return skills.sort((a, b) => {
-    const overdueA = a.deliverables.filter((deliverable) => deliverable.isOverdue).length;
-    const overdueB = b.deliverables.filter((deliverable) => deliverable.isOverdue).length;
+    const visibleA = a.deliverables.filter((deliverable) => !deliverable.isHidden);
+    const visibleB = b.deliverables.filter((deliverable) => !deliverable.isHidden);
+
+    const overdueA = visibleA.filter((deliverable) => deliverable.isOverdue).length;
+    const overdueB = visibleB.filter((deliverable) => deliverable.isOverdue).length;
     if (overdueA !== overdueB) {
       return overdueB - overdueA;
     }
 
-    const dueSoonA = a.deliverables.filter(
+    const dueSoonA = visibleA.filter(
       (deliverable) =>
         !deliverable.isOverdue &&
         differenceInCalendarDays(deliverable.dueDate, now) <= DUE_SOON_THRESHOLD_DAYS &&
         differenceInCalendarDays(deliverable.dueDate, now) >= 0
     ).length;
-    const dueSoonB = b.deliverables.filter(
+    const dueSoonB = visibleB.filter(
       (deliverable) =>
         !deliverable.isOverdue &&
         differenceInCalendarDays(deliverable.dueDate, now) <= DUE_SOON_THRESHOLD_DAYS &&
@@ -744,8 +761,8 @@ export function sortSkillsByRisk<T extends { deliverables: DeliverableWithStatus
       return dueSoonB - dueSoonA;
     }
 
-    const nextDueA = Math.min(...a.deliverables.map((deliverable) => deliverable.dueDate.getTime()));
-    const nextDueB = Math.min(...b.deliverables.map((deliverable) => deliverable.dueDate.getTime()));
+    const nextDueA = visibleA.length > 0 ? Math.min(...visibleA.map((deliverable) => deliverable.dueDate.getTime())) : Infinity;
+    const nextDueB = visibleB.length > 0 ? Math.min(...visibleB.map((deliverable) => deliverable.dueDate.getTime())) : Infinity;
     return nextDueA - nextDueB;
   });
 }
@@ -758,7 +775,9 @@ export async function ensureOverdueNotifications(params: {
   const { skillId, deliverables, saId } = params;
   const now = new Date();
 
-  const overdueNeedingMessage = deliverables.filter(
+  const visibleDeliverables = deliverables.filter((deliverable) => !deliverable.isHidden);
+
+  const overdueNeedingMessage = visibleDeliverables.filter(
     (deliverable) =>
       deliverable.isOverdue &&
       (!deliverable.overdueNotifiedAt || deliverable.overdueNotifiedAt < deliverable.dueDate)
