@@ -31,60 +31,48 @@ export async function GET(request: Request) {
     const includeDetails = url.searchParams.get("details") === "1";
     const diagnostics = getStorageDiagnostics();
 
+    // The health endpoint favours Vercel Blob whenever a token is present.
+    // If the blob token verifies we report ready regardless of S3 credentials;
+    // otherwise we fall back to the legacy S3 checks so existing deployments
+    // keep working without Blob.
+    const blobVerification = await verifyBlobAccess();
+
     const environmentName = getEnvironmentName();
     const includeEnvironment = environmentName !== "production";
 
-    let diagnosticCode: StorageHealthDiagnostic | undefined;
-    if (includeEnvironment) {
-      const verification = await verifyBlobAccess();
-      switch (verification.status) {
-        case "verified":
-          diagnosticCode = "blob_verified";
-          break;
-        case "error":
-          diagnosticCode = "blob_unreachable";
-          console.warn("Vercel Blob token could not be verified", verification.message);
-          break;
-        case "missing_token":
-        default:
-          diagnosticCode = "missing_blob_token";
-          break;
-      }
-    }
+    let diagnosticCode: StorageHealthDiagnostic;
+    let body: StorageHealthResponse;
 
-    if (!diagnostics.ok) {
-      if (diagnostics.missing.length > 0) {
-        console.info("Document storage missing environment keys", diagnostics.missing);
-      }
-
-      const body: StorageHealthResponse = {
-        ok: false,
-        reason: "not_configured",
-        provider: diagnostics.provider
-      };
-      if (includeEnvironment) {
-        body.env = environmentName;
-        body.runtime = runtime;
-        if (diagnosticCode) {
-          body.diagnostic = diagnosticCode;
+    if (blobVerification.status === "verified") {
+      diagnosticCode = "blob_verified";
+      body = { ok: true, provider: "vercel-blob" };
+    } else if (blobVerification.status === "error") {
+      diagnosticCode = "blob_unreachable";
+      console.warn("Vercel Blob token could not be verified", blobVerification.message);
+      body = { ok: false, reason: "blob_unreachable", provider: "vercel-blob" };
+    } else {
+      diagnosticCode = "missing_blob_token";
+      if (diagnostics.ok) {
+        body = { ok: true, provider: diagnostics.provider };
+      } else {
+        if (diagnostics.missing.length > 0) {
+          console.info("Document storage missing environment keys", diagnostics.missing);
         }
+        body = {
+          ok: false,
+          reason: "missing_blob_token",
+          provider: diagnostics.provider
+        };
       }
-      if (includeDetails) {
-        const { ok: _ok, ...details } = diagnostics;
-        body.details = { ...details, checkedAt: new Date().toISOString() };
-      }
-
-      return NextResponse.json(body, { headers: NO_STORE_HEADERS });
     }
 
-    const body: StorageHealthResponse = { ok: true, provider: diagnostics.provider };
     if (includeEnvironment) {
       body.env = environmentName;
       body.runtime = runtime;
-      if (diagnosticCode) {
-        body.diagnostic = diagnosticCode;
-      }
+      body.diagnostic = diagnosticCode;
+      body.source = "storage/health";
     }
+
     if (includeDetails) {
       const { ok: _ok, ...details } = diagnostics;
       body.details = { ...details, checkedAt: new Date().toISOString() };
@@ -100,6 +88,7 @@ export async function GET(request: Request) {
       payload.env = environmentName;
       payload.runtime = runtime;
       payload.diagnostic = "exception";
+      payload.source = "storage/health";
     }
     return NextResponse.json(payload, { status: 500, headers: NO_STORE_HEADERS });
   }

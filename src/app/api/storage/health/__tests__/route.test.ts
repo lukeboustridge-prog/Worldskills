@@ -16,6 +16,7 @@ describe("GET /api/storage/health", () => {
     delete process.env.FILE_STORAGE_REGION;
     delete process.env.FILE_STORAGE_ACCESS_KEY_ID;
     delete process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
+    delete process.env.BLOB_READ_WRITE_TOKEN;
     mockVerifyBlobAccess.mockReset();
     mockVerifyBlobAccess.mockResolvedValue({ status: "missing_token" });
   });
@@ -25,6 +26,7 @@ describe("GET /api/storage/health", () => {
     delete process.env.FILE_STORAGE_REGION;
     delete process.env.FILE_STORAGE_ACCESS_KEY_ID;
     delete process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
+    delete process.env.BLOB_READ_WRITE_TOKEN;
   });
 
   it("reports not configured when required variables are missing", async () => {
@@ -34,11 +36,12 @@ describe("GET /api/storage/health", () => {
     const payload = await response.json();
     expect(payload).toEqual({
       ok: false,
-      reason: "not_configured",
+      reason: "missing_blob_token",
       provider: "aws-s3",
       env: "local",
       runtime: "nodejs",
-      diagnostic: "missing_blob_token"
+      diagnostic: "missing_blob_token",
+      source: "storage/health"
     });
   });
 
@@ -47,6 +50,7 @@ describe("GET /api/storage/health", () => {
     process.env.FILE_STORAGE_REGION = "us-east-1";
     process.env.FILE_STORAGE_ACCESS_KEY_ID = "id";
     process.env.FILE_STORAGE_SECRET_ACCESS_KEY = "secret";
+    process.env.BLOB_READ_WRITE_TOKEN = "token";
     mockVerifyBlobAccess.mockResolvedValue({ status: "verified" });
 
     const response = await GET(new Request("http://localhost/api/storage/health"));
@@ -54,10 +58,11 @@ describe("GET /api/storage/health", () => {
     const payload = await response.json();
     expect(payload).toEqual({
       ok: true,
-      provider: "aws-s3",
+      provider: "vercel-blob",
       env: "local",
       runtime: "nodejs",
-      diagnostic: "blob_verified"
+      diagnostic: "blob_verified",
+      source: "storage/health"
     });
   });
 
@@ -66,6 +71,7 @@ describe("GET /api/storage/health", () => {
     process.env.FILE_STORAGE_REGION = "us-east-1";
     process.env.FILE_STORAGE_ACCESS_KEY_ID = "id";
     process.env.FILE_STORAGE_SECRET_ACCESS_KEY = "secret";
+    process.env.BLOB_READ_WRITE_TOKEN = "token";
     mockVerifyBlobAccess.mockResolvedValue({ status: "verified" });
 
     const response = await GET(new Request("http://localhost/api/storage/health?details=1"));
@@ -83,9 +89,10 @@ describe("GET /api/storage/health", () => {
     );
     expect(payload.details.bucket).toBe("bucket");
     expect(payload.details.region).toBe("us-east-1");
-    expect(payload.provider).toBe("aws-s3");
+    expect(payload.provider).toBe("vercel-blob");
     expect(payload.env).toBe("local");
     expect(payload.runtime).toBe("nodejs");
     expect(payload.diagnostic).toBe("blob_verified");
+    expect(payload.source).toBe("storage/health");
   });
 });

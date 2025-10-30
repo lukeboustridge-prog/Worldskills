@@ -170,7 +170,10 @@ export function DocumentEvidenceManager({
         if (payload.ok) {
           setStorageStatus("ready");
           setStorageNotice(null);
-        } else if (payload.reason === "not_configured") {
+        } else if (
+          payload.reason === "not_configured" ||
+          payload.reason === "missing_blob_token"
+        ) {
           setStorageStatus("not-configured");
           setStorageNotice(
             "Document storage is not configured yet. Please contact the administrator to enable uploads."

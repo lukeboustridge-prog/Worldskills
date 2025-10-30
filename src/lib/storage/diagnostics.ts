@@ -1,4 +1,8 @@
-export type StorageHealthReason = "not_configured" | "error";
+export type StorageHealthReason =
+  | "not_configured"
+  | "error"
+  | "missing_blob_token"
+  | "blob_unreachable";
 
 export type StorageProviderType =
   | "aws-s3"
@@ -50,4 +54,5 @@ export interface StorageHealthResponse {
   runtime?: "nodejs" | "edge";
   diagnostic?: StorageHealthDiagnostic;
   details?: StorageHealthDetails;
+  source?: string;
 }
