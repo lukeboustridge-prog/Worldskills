@@ -23,7 +23,7 @@ describe("GET /api/storage/health", () => {
     const response = await GET(new Request("http://localhost/api/storage/health"));
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ ok: false, reason: "not_configured" });
+    expect(payload).toEqual({ ok: false, reason: "not_configured", provider: "aws-s3", env: "local" });
   });
 
   it("reports ok when configuration is present", async () => {
@@ -35,7 +35,7 @@ describe("GET /api/storage/health", () => {
     const response = await GET(new Request("http://localhost/api/storage/health"));
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload).toEqual({ ok: true });
+    expect(payload).toEqual({ ok: true, provider: "aws-s3", env: "local" });
   });
 
   it("can return diagnostic details when requested", async () => {
@@ -59,5 +59,7 @@ describe("GET /api/storage/health", () => {
     );
     expect(payload.details.bucket).toBe("bucket");
     expect(payload.details.region).toBe("us-east-1");
+    expect(payload.provider).toBe("aws-s3");
+    expect(payload.env).toBe("local");
   });
 });

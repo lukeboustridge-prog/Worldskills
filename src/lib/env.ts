@@ -41,7 +41,6 @@ const DEFAULT_MAX_MB = 25;
 const DEFAULT_ALLOWED_MIME =
   "application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,image/jpeg,image/png";
 
-let storageConfigCache: StorageEnvConfig | null = null;
 let uploadPolicyCache: FileUploadPolicy | null = null;
 
 const STORAGE_REQUIREMENTS: Array<{
@@ -191,18 +190,13 @@ export function getFileUploadPolicy(): FileUploadPolicy {
 }
 
 export function getStorageEnv(): StorageEnvConfig {
-  if (storageConfigCache) {
-    return storageConfigCache;
-  }
-
   const { config, errors } = resolveStorageConfig();
 
   if (!config) {
     throw new StorageConfigurationError(errors[0] ?? "Document storage is not configured");
   }
 
-  storageConfigCache = config;
-  return storageConfigCache;
+  return config;
 }
 
 function resolveStorageConfig(): {
@@ -256,6 +250,9 @@ function resolveStorageConfig(): {
 
   const forcePathStyle = parseBoolean(forcePathStyleValue);
 
+  const blobToken = readEnv("BLOB_READ_WRITE_TOKEN");
+  const nextPublicBlobToken = readEnv("NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN");
+
   const config: StorageEnvConfig | null = missing.length
     ? null
     : {
@@ -267,6 +264,8 @@ function resolveStorageConfig(): {
         forcePathStyle
       };
 
+  const provider = blobToken ? "vercel-blob" : detectStorageProvider(endpoint);
+
   return {
     config,
     diagnostics: {
@@ -276,8 +275,10 @@ function resolveStorageConfig(): {
       bucket: resolvedValues.bucket?.value,
       region: resolvedValues.region?.value,
       endpoint,
-      provider: detectStorageProvider(endpoint),
-      forcePathStyle
+      provider,
+      forcePathStyle,
+      blobTokenPresent: Boolean(blobToken),
+      nextPublicBlobTokenPresent: Boolean(nextPublicBlobToken)
     },
     errors
   };
@@ -334,6 +335,5 @@ export function parseJsonEnv<T>(key: string, schema: z.ZodType<T>): T {
 }
 
 export function __resetEnvCachesForTests() {
-  storageConfigCache = null;
   uploadPolicyCache = null;
 }

@@ -5,6 +5,7 @@ export type StorageProviderType =
   | "cloudflare-r2"
   | "minio"
   | "supabase"
+  | "vercel-blob"
   | "custom"
   | "unknown";
 
@@ -25,6 +26,8 @@ export interface StorageDiagnosticsDetails {
   endpoint?: string;
   provider: StorageProviderType;
   forcePathStyle: boolean;
+  blobTokenPresent: boolean;
+  nextPublicBlobTokenPresent: boolean;
 }
 
 export type StorageDiagnosticsSnapshot = StorageDiagnosticsDetails & { ok: boolean };
@@ -36,5 +39,7 @@ export interface StorageHealthDetails extends StorageDiagnosticsDetails {
 export interface StorageHealthResponse {
   ok: boolean;
   reason?: StorageHealthReason;
+  provider?: StorageProviderType;
+  env?: string;
   details?: StorageHealthDetails;
 }

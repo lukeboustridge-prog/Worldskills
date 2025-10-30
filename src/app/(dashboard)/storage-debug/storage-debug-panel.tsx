@@ -22,6 +22,8 @@ function formatProvider(provider: StorageDiagnosticsSnapshot["provider"]) {
       return "MinIO";
     case "supabase":
       return "Supabase Storage";
+    case "vercel-blob":
+      return "Vercel Blob";
     case "custom":
       return "Custom endpoint";
     default:
@@ -115,6 +117,21 @@ export function StorageDebugPanel({ initialDiagnostics }: StorageDebugPanelProps
             <p className="text-xs uppercase text-muted-foreground">Path style</p>
             <p className="text-sm font-medium text-foreground">
               {diagnostics.forcePathStyle ? "Enabled" : "Disabled"}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <p className="text-xs uppercase text-muted-foreground">Blob token</p>
+            <p className="text-sm font-medium text-foreground">
+              {diagnostics.blobTokenPresent ? "Present" : "Missing"}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs uppercase text-muted-foreground">NEXT_PUBLIC blob token</p>
+            <p className="text-sm font-medium text-foreground">
+              {diagnostics.nextPublicBlobTokenPresent ? "Present" : "Missing"}
             </p>
           </div>
         </div>
