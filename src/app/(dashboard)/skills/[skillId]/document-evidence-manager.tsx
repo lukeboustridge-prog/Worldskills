@@ -291,7 +291,13 @@ export function DocumentEvidenceManager({
         [key: string]: unknown;
       };
 
-      let presigned: PresignPayload | null = null;
+      type ResolvedPresign = {
+        uploadUrl: string;
+        key: string;
+        headers?: UploadHeaders;
+      };
+
+      let presigned: ResolvedPresign | null = null;
       try {
         const response = await fetch(`/api/storage/presign`, {
           method: "POST",
@@ -370,7 +376,16 @@ export function DocumentEvidenceManager({
         if (!uploadUrl || !storageKey) {
           throw new Error("We couldn't prepare the upload. Please try again shortly.");
         }
-        presigned = { ...presignPayload, uploadUrl, key: storageKey };
+        const headers: UploadHeaders | undefined =
+          presignPayload.headers && typeof presignPayload.headers === "object"
+            ? (Object.fromEntries(
+                Object.entries(presignPayload.headers as Record<string, unknown>).filter(
+                  (entry): entry is [string, string] => typeof entry[1] === "string"
+                )
+              ) as UploadHeaders)
+            : undefined;
+
+        presigned = { uploadUrl, key: storageKey, headers };
       } catch (cause) {
         setStatus("idle");
         const message =
@@ -396,13 +411,19 @@ export function DocumentEvidenceManager({
         return;
       }
 
+      if (!presigned) {
+        setStatus("idle");
+        setError("We couldn't prepare the upload. Please try again shortly.");
+        return;
+      }
+
       setStatus("uploading");
 
       try {
         await uploadWithProgress({
           url: presigned.uploadUrl,
           file,
-          headers: (presigned.headers as UploadHeaders) ?? { "Content-Type": mimeType },
+          headers: presigned.headers ?? { "Content-Type": mimeType },
           onProgress: setProgress
         });
       } catch (cause) {
