@@ -128,16 +128,26 @@ function getStorageClient() {
   return cachedClient;
 }
 
-export async function createPresignedUpload(params: {
-  key: string;
-  contentType: string;
-  contentLength: number;
-  checksum?: string;
-  expiresIn?: number;
-}) {
-  const storage = resolveActiveStorage();
-  const mode = getStorageMode();
+export async function createPresignedUpload(
+  params: {
+    key: string;
+    contentType: string;
+    contentLength: number;
+    checksum?: string;
+    expiresIn?: number;
+  },
+  options?: { preferS3?: boolean }
+) {
   const { key, contentType, contentLength, checksum, expiresIn = 300 } = params;
+  const { preferS3 = false } = options ?? {};
+  const mode = getStorageMode();
+
+  if (preferS3) {
+    const fallback = useS3ConfigFromEnv();
+    return createS3PresignedUpload({ key, contentType, contentLength, checksum }, fallback, expiresIn);
+  }
+
+  const storage = resolveActiveStorage();
 
   if (storage.kind === "vercel-blob") {
     try {

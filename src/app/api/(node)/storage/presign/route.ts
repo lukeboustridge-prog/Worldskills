@@ -18,6 +18,9 @@ import {
 } from "@/lib/storage/client";
 import type { StorageProviderType } from "@/lib/storage/diagnostics";
 import { ValidationError, getStorageDiagnostics } from "@/lib/env";
+import { getStorageMode } from "@/lib/storage/provider";
+import { verifyVercelBlobSupport } from "@/lib/storage/blob";
+import type { BlobVerificationResult } from "@/lib/storage/blob";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -210,6 +213,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const mode = getStorageMode();
+  const blobVerification: BlobVerificationResult | null =
+    mode === "s3" ? null : await verifyVercelBlobSupport();
+  const preferS3Fallback =
+    mode === "auto" && blobVerification?.status === "error" && blobVerification.code === "runtime_unavailable";
+
   try {
     try {
       validateDocumentEvidenceInput({
@@ -230,12 +239,15 @@ export async function POST(request: NextRequest) {
       filename: normalised.data.filename
     });
 
-    const presigned = await createPresignedUpload({
-      key: storageKey,
-      contentType: normalised.data.contentType,
-      contentLength: normalised.data.byteSize,
-      checksum: normalised.data.checksum
-    });
+    const presigned = await createPresignedUpload(
+      {
+        key: storageKey,
+        contentType: normalised.data.contentType,
+        contentLength: normalised.data.byteSize,
+        checksum: normalised.data.checksum
+      },
+      preferS3Fallback ? { preferS3: true } : undefined
+    );
 
     providerHint = presigned.provider;
     console.log("[storage/presign] presign-success", { env, provider: providerHint });

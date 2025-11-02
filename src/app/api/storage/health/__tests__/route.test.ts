@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockVerifyBlobAccess = vi.fn();
+const mockVerifyBlobSupport = vi.fn();
 
 vi.mock("@/lib/storage/blob", () => ({
-  verifyBlobAccess: mockVerifyBlobAccess
+  verifyVercelBlobSupport: mockVerifyBlobSupport
 }));
 
 const { GET } = await import("../route");
@@ -18,8 +18,8 @@ describe("GET /api/storage/health", () => {
     delete process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
     delete process.env.BLOB_READ_WRITE_TOKEN;
     process.env.NEXT_RUNTIME = "nodejs";
-    mockVerifyBlobAccess.mockReset();
-    mockVerifyBlobAccess.mockResolvedValue({ status: "missing_token" });
+    mockVerifyBlobSupport.mockReset();
+    mockVerifyBlobSupport.mockResolvedValue({ status: "error", code: "missing_token" });
   });
 
   afterEach(() => {
@@ -53,7 +53,7 @@ describe("GET /api/storage/health", () => {
     process.env.FILE_STORAGE_ACCESS_KEY_ID = "id";
     process.env.FILE_STORAGE_SECRET_ACCESS_KEY = "secret";
     process.env.BLOB_READ_WRITE_TOKEN = "token";
-    mockVerifyBlobAccess.mockResolvedValue({ status: "verified" });
+    mockVerifyBlobSupport.mockResolvedValue({ status: "ok", provider: "vercel-blob" });
 
     const response = await GET(new Request("http://localhost/api/storage/health"));
     expect(response.status).toBe(200);
@@ -70,8 +70,9 @@ describe("GET /api/storage/health", () => {
 
   it("reports runtime mismatch when the blob helper is unavailable", async () => {
     process.env.BLOB_READ_WRITE_TOKEN = "token";
-    mockVerifyBlobAccess.mockResolvedValue({
+    mockVerifyBlobSupport.mockResolvedValue({
       status: "error",
+      code: "runtime_unavailable",
       message: "Blob upload helper is unavailable in the current runtime"
     });
 
@@ -95,8 +96,9 @@ describe("GET /api/storage/health", () => {
     process.env.FILE_STORAGE_REGION = "us-east-1";
     process.env.FILE_STORAGE_ACCESS_KEY_ID = "key";
     process.env.FILE_STORAGE_SECRET_ACCESS_KEY = "secret";
-    mockVerifyBlobAccess.mockResolvedValue({
+    mockVerifyBlobSupport.mockResolvedValue({
       status: "error",
+      code: "runtime_unavailable",
       message: "Blob upload helper is unavailable in the current runtime"
     });
 
@@ -137,7 +139,7 @@ describe("GET /api/storage/health", () => {
     process.env.FILE_STORAGE_ACCESS_KEY_ID = "id";
     process.env.FILE_STORAGE_SECRET_ACCESS_KEY = "secret";
     process.env.BLOB_READ_WRITE_TOKEN = "token";
-    mockVerifyBlobAccess.mockResolvedValue({ status: "verified" });
+    mockVerifyBlobSupport.mockResolvedValue({ status: "ok", provider: "vercel-blob" });
 
     const response = await GET(new Request("http://localhost/api/storage/health?details=1"));
     expect(response.status).toBe(200);
