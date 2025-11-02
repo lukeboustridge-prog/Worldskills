@@ -208,6 +208,7 @@ export function DocumentEvidenceManager({
               nextNotice = NOT_CONFIGURED_MESSAGE;
               break;
             case "blob_helper_not_available_in_runtime":
+            case "edge_runtime_inherited":
               nextStatus = "error";
               nextNotice = RUNTIME_UNAVAILABLE_MESSAGE;
               break;

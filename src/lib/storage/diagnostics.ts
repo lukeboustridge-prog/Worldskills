@@ -3,7 +3,8 @@ export type StorageHealthReason =
   | "error"
   | "missing_blob_token"
   | "blob_unreachable"
-  | "blob_helper_not_available_in_runtime";
+  | "blob_helper_not_available_in_runtime"
+  | "edge_runtime_inherited";
 
 export type StorageProviderType =
   | "aws-s3"
@@ -47,6 +48,7 @@ export type StorageHealthDiagnostic =
   | "blob_verified"
   | "blob_unreachable"
   | "blob_helper_runtime"
+  | "edge_runtime"
   | "exception";
 
 export interface StorageHealthResponse {

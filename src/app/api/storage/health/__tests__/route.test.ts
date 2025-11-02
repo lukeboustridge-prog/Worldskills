@@ -17,6 +17,7 @@ describe("GET /api/storage/health", () => {
     delete process.env.FILE_STORAGE_ACCESS_KEY_ID;
     delete process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
     delete process.env.BLOB_READ_WRITE_TOKEN;
+    process.env.NEXT_RUNTIME = "nodejs";
     mockVerifyBlobAccess.mockReset();
     mockVerifyBlobAccess.mockResolvedValue({ status: "missing_token" });
   });
@@ -27,6 +28,7 @@ describe("GET /api/storage/health", () => {
     delete process.env.FILE_STORAGE_ACCESS_KEY_ID;
     delete process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
     delete process.env.BLOB_READ_WRITE_TOKEN;
+    delete process.env.NEXT_RUNTIME;
   });
 
   it("reports not configured when required variables are missing", async () => {
@@ -83,6 +85,23 @@ describe("GET /api/storage/health", () => {
       env: "local",
       runtime: "nodejs",
       diagnostic: "blob_helper_runtime",
+      source: "storage/health"
+    });
+  });
+
+  it("reports edge runtime inheritance when the route is forced to edge", async () => {
+    process.env.NEXT_RUNTIME = "edge";
+
+    const response = await GET(new Request("http://localhost/api/storage/health"));
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload).toEqual({
+      ok: false,
+      reason: "edge_runtime_inherited",
+      provider: "aws-s3",
+      env: "local",
+      runtime: "edge",
+      diagnostic: "edge_runtime",
       source: "storage/health"
     });
   });
