@@ -213,6 +213,7 @@ export function DocumentEvidenceManager({
               nextNotice = RUNTIME_UNAVAILABLE_MESSAGE;
               break;
             case "blob_unreachable":
+            case "storage_not_available":
               nextStatus = "error";
               nextNotice = UNREACHABLE_MESSAGE;
               break;
@@ -729,7 +730,7 @@ export function DocumentEvidenceManager({
             <p className="text-xs text-muted-foreground" data-storage-status-debug>
               Storage status: {storageStatus}
               {lastHealthCheck?.payload.provider
-                ? ` (${lastHealthCheck.payload.provider})`
+                ? ` (${lastHealthCheck.payload.provider}${lastHealthCheck.payload.note ? `, note: ${lastHealthCheck.payload.note}` : ""})`
                 : ""} (from {storageDebugSourceLabel})
             </p>
           ) : null}

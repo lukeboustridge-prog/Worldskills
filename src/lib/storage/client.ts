@@ -10,6 +10,7 @@ import { del as blobDelete, head as blobHead } from "@vercel/blob";
 
 import { getStorageDiagnostics, getStorageEnv, StorageConfigurationError } from "@/lib/env";
 import type { StorageProviderType } from "@/lib/storage/diagnostics";
+import { getStorageMode } from "@/lib/storage/provider";
 
 let blobModulePromise: Promise<any> | null = null;
 let cachedClient: S3Client | null = null;
@@ -68,16 +69,24 @@ function resolveActiveStorage(): ActiveStorage {
     return cachedProvider;
   }
 
+  const mode = getStorageMode();
   const diagnostics = getStorageDiagnostics();
   const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
 
-  if (blobToken) {
+  if (mode !== "s3" && blobToken) {
     cachedProvider = {
       kind: "vercel-blob",
       token: blobToken,
       bucket: diagnostics.bucket
     };
     return cachedProvider;
+  }
+
+  if (mode === "blob" && !blobToken) {
+    throw new StorageConfigurationError(
+      "STORAGE_PROVIDER is set to 'blob' but BLOB_READ_WRITE_TOKEN is missing.",
+      { providerAttempts: ["vercel-blob"] }
+    );
   }
 
   const config = getStorageEnv();
@@ -127,6 +136,7 @@ export async function createPresignedUpload(params: {
   expiresIn?: number;
 }) {
   const storage = resolveActiveStorage();
+  const mode = getStorageMode();
   const { key, contentType, contentLength, checksum, expiresIn = 300 } = params;
 
   if (storage.kind === "vercel-blob") {
@@ -161,7 +171,7 @@ export async function createPresignedUpload(params: {
         headers
       };
     } catch (error) {
-      if (shouldFallbackToS3(error)) {
+      if (mode === "auto" && shouldFallbackToS3(error)) {
         const providerAttempts: StorageProviderType[] = ["vercel-blob"];
 
         try {
@@ -183,6 +193,13 @@ export async function createPresignedUpload(params: {
 
           throw fallbackError;
         }
+      }
+
+      if (mode === "blob" && shouldFallbackToS3(error)) {
+        throw new StorageConfigurationError(
+          "Vercel Blob uploads are required but unavailable in this runtime.",
+          { providerAttempts: ["vercel-blob"] }
+        );
       }
 
       throw error;

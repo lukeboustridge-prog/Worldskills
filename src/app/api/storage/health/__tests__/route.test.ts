@@ -89,6 +89,31 @@ describe("GET /api/storage/health", () => {
     });
   });
 
+  it("falls back to s3 when blob helper is unavailable but s3 is configured", async () => {
+    process.env.BLOB_READ_WRITE_TOKEN = "token";
+    process.env.FILE_STORAGE_BUCKET = "bucket";
+    process.env.FILE_STORAGE_REGION = "us-east-1";
+    process.env.FILE_STORAGE_ACCESS_KEY_ID = "key";
+    process.env.FILE_STORAGE_SECRET_ACCESS_KEY = "secret";
+    mockVerifyBlobAccess.mockResolvedValue({
+      status: "error",
+      message: "Blob upload helper is unavailable in the current runtime"
+    });
+
+    const response = await GET(new Request("http://localhost/api/storage/health"));
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload).toEqual({
+      ok: true,
+      provider: "aws-s3",
+      env: "local",
+      runtime: "nodejs",
+      diagnostic: "blob_runtime_fallback",
+      source: "storage/health",
+      note: "blob_runtime_unavailable_fell_back_to_s3"
+    });
+  });
+
   it("reports edge runtime inheritance when the route is forced to edge", async () => {
     process.env.NEXT_RUNTIME = "edge";
 

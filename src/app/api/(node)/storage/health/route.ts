@@ -5,6 +5,7 @@ import type {
   StorageHealthDiagnostic,
   StorageHealthResponse
 } from "@/lib/storage/diagnostics";
+import { getStorageMode } from "@/lib/storage/provider";
 import { verifyBlobAccess } from "@/lib/storage/blob";
 
 export const runtime = "nodejs";
@@ -30,6 +31,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const includeDetails = url.searchParams.get("details") === "1";
     const diagnostics = getStorageDiagnostics();
+    const mode = getStorageMode();
 
     const runtimeEnvironment = (process.env.NEXT_RUNTIME ?? "nodejs").toLowerCase();
     const runtimeLabel: "nodejs" | "edge" = runtimeEnvironment === "edge" ? "edge" : "nodejs";
@@ -63,7 +65,7 @@ export async function GET(request: Request) {
       return NextResponse.json(payload, { headers: NO_STORE_HEADERS });
     }
 
-    const blobVerification = await verifyBlobAccess();
+    const blobVerification = mode === "s3" ? { status: "missing_token" } : await verifyBlobAccess();
 
     const environmentName = getEnvironmentName();
     const includeEnvironment = environmentName !== "production";
@@ -71,7 +73,22 @@ export async function GET(request: Request) {
     let diagnosticCode: StorageHealthDiagnostic;
     let body: StorageHealthResponse;
 
-    if (blobVerification.status === "verified") {
+    if (mode === "s3") {
+      if (diagnostics.ok) {
+        diagnosticCode = "missing_blob_token";
+        body = { ok: true, provider: diagnostics.provider };
+      } else {
+        if (diagnostics.missing.length > 0) {
+          console.info("Document storage missing environment keys", diagnostics.missing);
+        }
+        diagnosticCode = "missing_blob_token";
+        body = {
+          ok: false,
+          reason: "not_configured",
+          provider: diagnostics.provider
+        };
+      }
+    } else if (blobVerification.status === "verified") {
       diagnosticCode = "blob_verified";
       body = { ok: true, provider: "vercel-blob" };
     } else if (blobVerification.status === "error") {
@@ -81,17 +98,29 @@ export async function GET(request: Request) {
         message.toLowerCase().includes("blob upload helper is unavailable");
 
       if (runtimeMismatch) {
-        diagnosticCode = "blob_helper_runtime";
+        diagnosticCode = diagnostics.ok ? "blob_runtime_fallback" : "blob_helper_runtime";
         console.warn("Vercel Blob helper unavailable in this runtime", message);
-        body = {
-          ok: false,
-          reason: "blob_helper_not_available_in_runtime",
-          provider: "vercel-blob"
-        };
+        if (diagnostics.ok) {
+          body = {
+            ok: true,
+            provider: diagnostics.provider,
+            note: "blob_runtime_unavailable_fell_back_to_s3"
+          };
+        } else {
+          body = {
+            ok: false,
+            reason: "blob_helper_not_available_in_runtime",
+            provider: "vercel-blob"
+          };
+        }
       } else {
         diagnosticCode = "blob_unreachable";
         console.warn("Vercel Blob token could not be verified", message);
-        body = { ok: false, reason: "blob_unreachable", provider: "vercel-blob" };
+        if (diagnostics.ok) {
+          body = { ok: true, provider: diagnostics.provider, note: "blob_unreachable_fell_back_to_s3" };
+        } else {
+          body = { ok: false, reason: "blob_unreachable", provider: "vercel-blob" };
+        }
       }
     } else {
       diagnosticCode = "missing_blob_token";
@@ -111,7 +140,7 @@ export async function GET(request: Request) {
 
     if (includeEnvironment) {
       body.env = environmentName;
-      body.runtime = runtime;
+      body.runtime = runtimeLabel;
       body.diagnostic = diagnosticCode;
       body.source = "storage/health";
     }
@@ -129,7 +158,7 @@ export async function GET(request: Request) {
     const payload: StorageHealthResponse = { ok: false, reason: "error" };
     if (includeEnvironment) {
       payload.env = environmentName;
-      payload.runtime = runtime;
+      payload.runtime = (process.env.NEXT_RUNTIME ?? "nodejs").toLowerCase() === "edge" ? "edge" : "nodejs";
       payload.diagnostic = "exception";
       payload.source = "storage/health";
     }
