@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import {
   formatFileSize,
   isRetryableDocumentUploadError
 } from "@/lib/deliverables";
+import type { StorageHealthResponse } from "@/lib/storage/diagnostics";
 
 interface DocumentEvidenceManagerProps {
   deliverableId: string;
@@ -25,18 +27,28 @@ const MIME_EXTENSION_FALLBACKS: Record<string, string> = {
   pdf: "application/pdf",
   doc: "application/msword",
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  xls: "application/vnd.ms-excel",
-  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ppt: "application/vnd.ms-powerpoint",
-  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
   png: "image/png"
 };
 
+const NOT_CONFIGURED_MESSAGE =
+  "Document storage is not configured yet. Please contact the administrator to enable uploads.";
+
+const UNREACHABLE_MESSAGE =
+  "We couldn't confirm document storage is available right now. Try again later or contact the administrator.";
+
 interface UploadHeaders {
   [key: string]: string;
 }
+
+type StorageHealthSnapshot = {
+  payload: StorageHealthResponse;
+  receivedAt: number;
+};
+
+const STORAGE_DEBUG_ENABLED = process.env.NEXT_PUBLIC_DEBUG_STORAGE === "true";
+const SHOW_READY_HINT = process.env.NODE_ENV !== "production";
 
 async function computeChecksum(file: File) {
   const buffer = await file.arrayBuffer();
@@ -86,7 +98,7 @@ async function uploadWithProgress(params: {
     };
 
     request.onerror = () => {
-      reject(new Error("Network error while uploading the document."));
+      reject(new Error("Network error while uploading the file."));
     };
 
     request.onload = () => {
@@ -119,10 +131,16 @@ export function DocumentEvidenceManager({
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [storageStatus, setStorageStatus] = useState<"checking" | "ready" | "not-configured" | "error">(
+    "checking"
+  );
+  const [storageNotice, setStorageNotice] = useState<string | null>(null);
+  const [lastHealthCheck, setLastHealthCheck] = useState<StorageHealthSnapshot | null>(null);
 
   const disabled = status !== "idle";
   const hasEvidence = Boolean(evidence);
   const shouldRender = hasEvidence || showUploader || !canEdit;
+  const uploadDisabled = disabled || storageStatus !== "ready";
 
   const resetNotices = () => {
     setError(null);
@@ -130,24 +148,107 @@ export function DocumentEvidenceManager({
     setSuccess(null);
   };
 
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+
+    async function checkStorage() {
+      if (STORAGE_DEBUG_ENABLED) {
+        console.info("[storage] Starting document storage health check");
+      }
+      try {
+        const response = await fetch(
+          STORAGE_DEBUG_ENABLED ? "/api/storage/health?details=1" : "/api/storage/health",
+          { cache: "no-store", signal: controller.signal }
+        );
+        if (!response.ok) {
+          throw new Error("Storage health check failed");
+        }
+
+        const payload: StorageHealthResponse = await response.json();
+        if (STORAGE_DEBUG_ENABLED) {
+          console.info("[storage] Document storage health response", payload);
+        }
+        if (cancelled) {
+          return;
+        }
+
+        setLastHealthCheck({ payload, receivedAt: Date.now() });
+
+        const blobVerified = payload.diagnostic === "blob_verified";
+        if (payload.ok || blobVerified) {
+          setStorageStatus("ready");
+          setStorageNotice(null);
+          return;
+        }
+
+        if (
+          payload.reason === "not_configured" ||
+          payload.reason === "missing_blob_token"
+        ) {
+          setStorageStatus("not-configured");
+          setStorageNotice(NOT_CONFIGURED_MESSAGE);
+          return;
+        }
+
+        if (payload.reason === "blob_unreachable") {
+          setStorageStatus("error");
+          setStorageNotice(UNREACHABLE_MESSAGE);
+          return;
+        }
+
+        setStorageStatus("error");
+        setStorageNotice(UNREACHABLE_MESSAGE);
+      } catch (error) {
+        if (cancelled || controller.signal.aborted) {
+          return;
+        }
+
+        console.error("Failed to verify storage configuration", error);
+        setStorageStatus("error");
+        setStorageNotice(UNREACHABLE_MESSAGE);
+        setLastHealthCheck({ payload: { ok: false, reason: "error" }, receivedAt: Date.now() });
+        if (STORAGE_DEBUG_ENABLED) {
+          console.error("[storage] Document storage health check failed", error);
+        }
+      }
+    }
+
+    checkStorage();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, []);
+
+  const storageReady = storageStatus === "ready";
+
   const handleUpload = useCallback(
     async (file: File, replaceId?: string | null) => {
       resetNotices();
       setProgress(0);
 
+      if (!storageReady) {
+        setError(storageNotice ?? NOT_CONFIGURED_MESSAGE);
+        return;
+      }
+
       const mimeType = resolveMimeType(file);
       if (!mimeType) {
-        setError("We couldn't determine the file type. Please upload a supported document.");
+        setError("We couldn't determine the file type. Please upload a supported document or image.");
         return;
       }
 
       if (!DOCUMENT_MIME_TYPES.includes(mimeType as (typeof DOCUMENT_MIME_TYPES)[number])) {
-        setError("That file type isn't supported. Upload a PDF, Office document, or image.");
+        setError("That file type isn't supported. Upload a PDF, Word document, or image.");
         return;
       }
 
       if (file.size > DOCUMENT_MAX_BYTES) {
-        setError("The document is larger than the 25 MB limit. Choose a smaller file.");
+        setError(
+          `The file is larger than the ${formatFileSize(DOCUMENT_MAX_BYTES)} limit. Choose a smaller upload.`
+        );
         return;
       }
 
@@ -158,37 +259,50 @@ export function DocumentEvidenceManager({
         checksum = await computeChecksum(file);
       } catch (cause) {
         setStatus("idle");
-        setError("We couldn't read the file. Try again or choose a different document.");
+        setError("We couldn't read the file. Try again or choose a different document or image.");
         return;
       }
 
       let presigned;
       try {
-        const response = await fetch(`/api/deliverables/${deliverableId}/documents/presign`, {
+        const response = await fetch(`/api/storage/presign`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            deliverableId,
             skillId,
-            fileName: file.name,
-            mimeType,
-            fileSize: file.size,
+            filename: file.name,
+            contentType: mimeType,
+            byteSize: file.size,
             checksum
           })
         });
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({ error: "We couldn't start the upload." }));
+          if (response.status === 503) {
+            setStorageStatus("not-configured");
+            setStorageNotice(data.error ?? NOT_CONFIGURED_MESSAGE);
+          }
           throw new Error(data.error ?? "We couldn't start the upload.");
         }
 
         presigned = await response.json();
+        if (!presigned?.url || !presigned?.key) {
+          throw new Error("We couldn't prepare the upload. Please try again shortly.");
+        }
       } catch (cause) {
         setStatus("idle");
-        setError(
+        const message =
           cause instanceof Error
             ? cause.message
-            : "We couldn't prepare the upload. Check your connection and try again."
-        );
+            : "We couldn't prepare the upload. Check your connection and try again.";
+        setError(message);
+
+        if (message.includes("not configured")) {
+          setStorageStatus("not-configured");
+          setStorageNotice(message);
+        }
         return;
       }
 
@@ -196,7 +310,7 @@ export function DocumentEvidenceManager({
 
       try {
         await uploadWithProgress({
-          url: presigned.uploadUrl,
+          url: presigned.url,
           file,
           headers: presigned.headers as UploadHeaders,
           onProgress: setProgress
@@ -222,7 +336,7 @@ export function DocumentEvidenceManager({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             skillId,
-            storageKey: presigned.storageKey,
+            storageKey: presigned.key,
             fileName: file.name,
             mimeType,
             fileSize: file.size,
@@ -232,8 +346,8 @@ export function DocumentEvidenceManager({
         });
 
         if (!response.ok) {
-          const data = await response.json().catch(() => ({ error: "We couldn't save the document." }));
-          throw new Error(data.error ?? "We couldn't save the document.");
+          const data = await response.json().catch(() => ({ error: "We couldn't save the file." }));
+          throw new Error(data.error ?? "We couldn't save the file.");
         }
 
         const result = await response.json();
@@ -241,13 +355,11 @@ export function DocumentEvidenceManager({
           setWarning(result.warning as string);
         }
 
-        setSuccess("Document uploaded successfully.");
+        setSuccess("Document or image uploaded successfully.");
         router.refresh();
       } catch (cause) {
         setError(
-          cause instanceof Error
-            ? cause.message
-            : "We couldn't save the document. Please try again."
+          cause instanceof Error ? cause.message : "We couldn't save the file. Please try again."
         );
         setStatus("idle");
         return;
@@ -255,7 +367,7 @@ export function DocumentEvidenceManager({
 
       setStatus("idle");
     },
-    [deliverableId, router, skillId]
+    [deliverableId, router, skillId, storageNotice, storageReady]
   );
 
   const onFileSelected = useCallback(
@@ -306,7 +418,7 @@ export function DocumentEvidenceManager({
       return;
     }
 
-    if (!window.confirm("Remove the document from this deliverable?")) {
+    if (!window.confirm("Remove the uploaded file from this deliverable?")) {
       return;
     }
 
@@ -320,8 +432,8 @@ export function DocumentEvidenceManager({
       );
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: "We couldn't remove the document." }));
-        throw new Error(data.error ?? "We couldn't remove the document.");
+        const data = await response.json().catch(() => ({ error: "We couldn't remove the file." }));
+        throw new Error(data.error ?? "We couldn't remove the file.");
       }
 
       const data = await response.json();
@@ -329,20 +441,18 @@ export function DocumentEvidenceManager({
         setWarning(data.warning as string);
       }
 
-      setSuccess("Document removed.");
+      setSuccess("Document or image removed.");
       router.refresh();
     } catch (cause) {
       setError(
-        cause instanceof Error
-          ? cause.message
-          : "Something went wrong while removing the document."
+        cause instanceof Error ? cause.message : "Something went wrong while removing the file."
       );
     } finally {
       setStatus("idle");
     }
   };
 
-  const dropHandlers = showUploader && canEdit
+  const dropHandlers = showUploader && canEdit && storageReady
     ? {
         onDragOver: (event: React.DragEvent<HTMLDivElement>) => {
           event.preventDefault();
@@ -366,7 +476,7 @@ export function DocumentEvidenceManager({
     <div className="space-y-3 rounded-md border border-dashed border-muted-foreground/40 p-4">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm font-medium">Document evidence</p>
+          <p className="text-sm font-medium">Document or image evidence</p>
           {evidence ? (
             <>
               <p className="text-sm text-muted-foreground">
@@ -374,14 +484,14 @@ export function DocumentEvidenceManager({
                 {format(new Date(evidence.addedAt), "d MMM yyyy 'at' HH:mm")}
               </p>
               {evidence.status === "processing" ? (
-                <p className="text-xs text-muted-foreground">Scanning in progress. The document will be available shortly.</p>
+                <p className="text-xs text-muted-foreground">Scanning in progress. The file will be available shortly.</p>
               ) : null}
               {evidence.status === "blocked" ? (
-                <p className="text-xs text-destructive">Download is temporarily disabled while we investigate a potential issue with this document.</p>
+                <p className="text-xs text-destructive">Download is temporarily disabled while we investigate a potential issue with this file.</p>
               ) : null}
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">No document uploaded yet.</p>
+            <p className="text-sm text-muted-foreground">No document or image uploaded yet.</p>
           )}
         </div>
         {canEdit && evidence ? (
@@ -391,7 +501,7 @@ export function DocumentEvidenceManager({
               variant="outline"
               size="sm"
               asChild
-              aria-label="Download document"
+              aria-label="Download file"
               disabled={evidence.status === "blocked"}
             >
               <a href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download`}>
@@ -404,7 +514,7 @@ export function DocumentEvidenceManager({
               size="sm"
               onClick={onReplaceClick}
               disabled={disabled}
-              aria-label="Replace document"
+              aria-label="Replace file"
             >
               {status === "uploading" || status === "committing" ? "Replacing…" : "Replace"}
             </Button>
@@ -414,7 +524,7 @@ export function DocumentEvidenceManager({
               size="sm"
               onClick={onRemove}
               disabled={disabled}
-              aria-label="Remove document"
+              aria-label="Remove file"
             >
               Remove
             </Button>
@@ -426,7 +536,7 @@ export function DocumentEvidenceManager({
               variant="outline"
               size="sm"
               asChild
-              aria-label="Download document"
+              aria-label="Download file"
               disabled={evidence.status === "blocked"}
             >
               <a href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download`}>
@@ -447,25 +557,53 @@ export function DocumentEvidenceManager({
           }`}
         >
           <p className="text-sm font-medium">
-            {hasEvidence ? "Drop a file to replace the document" : "Drop a file to upload"}
+            {hasEvidence ? "Drop a file to replace the upload" : "Drop a document or image to upload"}
           </p>
           <p className="text-xs text-muted-foreground">
-            Supported types: PDF, Office documents, JPEG, PNG · Max size {formatFileSize(DOCUMENT_MAX_BYTES)}
+            Supported types: PDF, Word documents, JPEG, PNG · Max size {formatFileSize(DOCUMENT_MAX_BYTES)}
           </p>
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={onUploadClick}
-            disabled={disabled}
-            aria-label={hasEvidence ? "Replace document" : "Upload document"}
+            disabled={uploadDisabled}
+            aria-label={hasEvidence ? "Replace file" : "Upload file"}
           >
-            {hasEvidence ? "Replace document" : "Upload document"}
+            {storageStatus === "checking"
+              ? "Checking storage…"
+              : hasEvidence
+                ? "Replace file"
+                : "Upload file"}
           </Button>
+          {SHOW_READY_HINT && storageReady && lastHealthCheck?.payload.provider ? (
+            <p className="text-xs text-muted-foreground" data-storage-status="ready-hint">
+              Storage ready ({lastHealthCheck.payload.provider})
+            </p>
+          ) : null}
+          {storageStatus === "checking" ? (
+            <p className="flex items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
+              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" /> Checking storage configuration…
+            </p>
+          ) : null}
         </div>
       ) : null}
 
       {error ? <p className="text-sm text-destructive" aria-live="polite">{error}</p> : null}
+      {!error && storageNotice ? (
+        <p
+          className={`text-sm ${
+            storageStatus === "not-configured"
+              ? "text-amber-600"
+              : storageStatus === "error"
+                ? "text-destructive"
+                : "text-muted-foreground"
+          }`}
+          aria-live="polite"
+        >
+          {storageNotice}
+        </p>
+      ) : null}
       {warning ? <p className="text-sm text-amber-600" aria-live="polite">{warning}</p> : null}
       {success ? <p className="text-sm text-emerald-600" aria-live="polite">{success}</p> : null}
 
@@ -490,7 +628,7 @@ export function DocumentEvidenceManager({
 
       {status === "preparing" || status === "committing" ? (
         <p className="text-xs text-muted-foreground" aria-live="polite">
-          {status === "preparing" ? "Preparing upload…" : "Saving document…"}
+          {status === "preparing" ? "Preparing upload…" : "Saving file…"}
         </p>
       ) : null}
 
@@ -500,7 +638,18 @@ export function DocumentEvidenceManager({
         accept={DOCUMENT_MIME_TYPES.join(",")}
         className="sr-only"
         onChange={onFileSelected}
+        disabled={uploadDisabled}
       />
+
+      {STORAGE_DEBUG_ENABLED && lastHealthCheck ? (
+        <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/10 p-3 text-left text-xs text-muted-foreground">
+          <p className="mb-1 font-semibold text-foreground">Storage diagnostics</p>
+          <p className="mb-2">Last check: {new Date(lastHealthCheck.receivedAt).toLocaleString()}</p>
+          <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] text-muted-foreground">
+            {JSON.stringify(lastHealthCheck.payload, null, 2)}
+          </pre>
+        </div>
+      ) : null}
     </div>
   );
 }
