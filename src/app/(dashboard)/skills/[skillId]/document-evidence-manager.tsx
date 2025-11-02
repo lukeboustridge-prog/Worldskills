@@ -38,6 +38,9 @@ const NOT_CONFIGURED_MESSAGE =
 const UNREACHABLE_MESSAGE =
   "We couldn't confirm document storage is available right now. Try again later or contact the administrator.";
 
+const RUNTIME_UNAVAILABLE_MESSAGE =
+  "Document uploads are disabled in this deployment environment. Redeploy the app with the Node.js runtime or contact the administrator.";
+
 interface UploadHeaders {
   [key: string]: string;
 }
@@ -192,23 +195,34 @@ export function DocumentEvidenceManager({
         setLastHealthCheck({ payload, receivedAt: Date.now() });
         setStorageStatusSource("health");
 
-        const nextStatus: typeof storageStatus = payload.ok
-          ? "ready"
-          : payload.reason === "missing_blob_token" ||
-              payload.reason === "not_configured"
-            ? "not-configured"
-            : payload.reason === "blob_unreachable"
-              ? "error"
-              : "error";
+        let nextStatus: typeof storageStatus;
+        let nextNotice: string | null = null;
+
+        if (payload.ok) {
+          nextStatus = "ready";
+        } else {
+          switch (payload.reason) {
+            case "missing_blob_token":
+            case "not_configured":
+              nextStatus = "not-configured";
+              nextNotice = NOT_CONFIGURED_MESSAGE;
+              break;
+            case "blob_helper_not_available_in_runtime":
+              nextStatus = "error";
+              nextNotice = RUNTIME_UNAVAILABLE_MESSAGE;
+              break;
+            case "blob_unreachable":
+              nextStatus = "error";
+              nextNotice = UNREACHABLE_MESSAGE;
+              break;
+            default:
+              nextStatus = "error";
+              nextNotice = UNREACHABLE_MESSAGE;
+          }
+        }
 
         setStorageStatus(nextStatus);
-        setStorageNotice(
-          nextStatus === "ready"
-            ? null
-            : nextStatus === "not-configured"
-              ? NOT_CONFIGURED_MESSAGE
-              : UNREACHABLE_MESSAGE
-        );
+        setStorageNotice(nextNotice);
       } catch (error) {
         if (cancelled || controller.signal.aborted) {
           return;

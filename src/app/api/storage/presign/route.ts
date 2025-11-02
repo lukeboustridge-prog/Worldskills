@@ -275,7 +275,8 @@ export async function POST(request: NextRequest) {
         provider,
         env,
         hasBlobToken,
-        hasFileStorageBucket
+        hasFileStorageBucket,
+        providerAttempts: error.providerAttempts
       });
       return NextResponse.json(
         {
@@ -284,7 +285,7 @@ export async function POST(request: NextRequest) {
             "Document storage is not configured yet. Please contact the administrator to enable uploads.",
           provider: provider ?? null,
           env,
-          details: { hasBlobToken }
+          details: { hasBlobToken, providerAttempts: error.providerAttempts ?? [] }
         },
         { status: 503, headers: NO_STORE_HEADERS }
       );

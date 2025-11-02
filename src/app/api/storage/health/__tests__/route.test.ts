@@ -66,6 +66,27 @@ describe("GET /api/storage/health", () => {
     });
   });
 
+  it("reports runtime mismatch when the blob helper is unavailable", async () => {
+    process.env.BLOB_READ_WRITE_TOKEN = "token";
+    mockVerifyBlobAccess.mockResolvedValue({
+      status: "error",
+      message: "Blob upload helper is unavailable in the current runtime"
+    });
+
+    const response = await GET(new Request("http://localhost/api/storage/health"));
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload).toEqual({
+      ok: false,
+      reason: "blob_helper_not_available_in_runtime",
+      provider: "vercel-blob",
+      env: "local",
+      runtime: "nodejs",
+      diagnostic: "blob_helper_runtime",
+      source: "storage/health"
+    });
+  });
+
   it("can return diagnostic details when requested", async () => {
     process.env.FILE_STORAGE_BUCKET = "bucket";
     process.env.FILE_STORAGE_REGION = "us-east-1";

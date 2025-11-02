@@ -10,9 +10,14 @@ import type {
 const TRUE_VALUES = new Set(["1", "true", "TRUE", "True"]);
 
 export class StorageConfigurationError extends Error {
-  constructor(message: string) {
+  providerAttempts?: StorageProviderType[];
+
+  constructor(message: string, options?: { providerAttempts?: StorageProviderType[] }) {
     super(message);
     this.name = "StorageConfigurationError";
+    if (options?.providerAttempts?.length) {
+      this.providerAttempts = options.providerAttempts;
+    }
   }
 }
 
@@ -254,6 +259,15 @@ function resolveStorageConfig(): {
   const blobToken = readEnv("BLOB_READ_WRITE_TOKEN");
   const nextPublicBlobToken = readEnv("NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN");
 
+  const bucketValue = resolvedValues.bucket?.value;
+  const regionValue = resolvedValues.region?.value;
+  const accessKeyIdValue = resolvedValues.accessKeyId?.value;
+  const secretAccessKeyValue = resolvedValues.secretAccessKey?.value;
+
+  const hasCompleteS3Config = Boolean(
+    bucketValue && regionValue && accessKeyIdValue && secretAccessKeyValue
+  );
+
   const provider = blobToken ? "vercel-blob" : detectStorageProvider(endpoint);
 
   if (blobToken) {
@@ -270,12 +284,12 @@ function resolveStorageConfig(): {
   }
 
   let config: StorageEnvConfig | null = null;
-  if (!blobToken && missing.length === 0) {
+  if (hasCompleteS3Config) {
     config = {
-      bucket: resolvedValues.bucket!.value,
-      region: resolvedValues.region!.value,
-      accessKeyId: resolvedValues.accessKeyId!.value,
-      secretAccessKey: resolvedValues.secretAccessKey!.value,
+      bucket: bucketValue!,
+      region: regionValue!,
+      accessKeyId: accessKeyIdValue!,
+      secretAccessKey: secretAccessKeyValue!,
       endpoint,
       forcePathStyle
     };

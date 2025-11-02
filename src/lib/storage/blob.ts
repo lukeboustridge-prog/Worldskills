@@ -1,5 +1,7 @@
 import { list } from "@vercel/blob";
 
+import { probeBlobUploadHelper } from "./client";
+
 export type BlobVerificationStatus =
   | { status: "missing_token" }
   | { status: "verified" }
@@ -13,6 +15,16 @@ export async function verifyBlobAccess(): Promise<BlobVerificationStatus> {
   }
 
   try {
+    const helperProbe = await probeBlobUploadHelper();
+
+    if (!helperProbe.ok) {
+      const message =
+        helperProbe.error instanceof Error
+          ? helperProbe.error.message
+          : "Blob upload helper is unavailable";
+      return { status: "error", message };
+    }
+
     await list({ token, limit: 1 });
     return { status: "verified" };
   } catch (error) {

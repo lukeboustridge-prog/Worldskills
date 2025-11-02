@@ -27,6 +27,34 @@ type ActiveStorage =
       config: ReturnType<typeof getStorageEnv>;
     };
 
+type BlobUploadHelper = (params: Record<string, unknown>) => Promise<any>;
+
+function detectProviderFromEndpoint(endpoint?: string): StorageProviderType {
+  if (!endpoint) {
+    return "aws-s3";
+  }
+
+  const normalised = endpoint.toLowerCase();
+
+  if (normalised.includes("amazonaws")) {
+    return "aws-s3";
+  }
+
+  if (normalised.includes("r2.cloudflarestorage") || normalised.includes("cloudflare")) {
+    return "cloudflare-r2";
+  }
+
+  if (normalised.includes("supabase")) {
+    return "supabase";
+  }
+
+  if (normalised.includes("minio")) {
+    return "minio";
+  }
+
+  return "custom";
+}
+
 function sanitiseKey(key: string) {
   const trimmed = key.replace(/^\/+/, "");
   if (trimmed.includes("..")) {
@@ -102,76 +130,66 @@ export async function createPresignedUpload(params: {
   const { key, contentType, contentLength, checksum, expiresIn = 300 } = params;
 
   if (storage.kind === "vercel-blob") {
-    const safeKey = sanitiseKey(key);
-    const headers: Record<string, string> = { "Content-Type": contentType };
+    try {
+      const safeKey = sanitiseKey(key);
+      const headers: Record<string, string> = { "Content-Type": contentType };
+      const helper = await resolveBlobUploadHelper();
 
-    // generateUploadURL reads the Blob token from the environment. We still
-    // provide a pathname so uploaded files remain grouped per deliverable.
-    const { generateUploadURL } = await getBlobModule();
+      const blobResult: any = await helper({
+        access: "public",
+        pathname: safeKey,
+        contentType,
+        contentLength,
+        checksum,
+        token: storage.token
+      });
 
-    if (typeof generateUploadURL !== "function") {
-      throw new Error("Blob upload helper is unavailable in the current runtime");
+      const uploadUrl: string = blobResult?.url ?? blobResult?.uploadUrl;
+      const pathname: string = blobResult?.pathname ?? safeKey;
+      const expiresAt: string =
+        blobResult?.expiration ?? blobResult?.expiresAt ?? new Date(Date.now() + expiresIn * 1000).toISOString();
+
+      if (!uploadUrl || !pathname) {
+        throw new Error("Blob upload URL was not returned by the storage provider");
+      }
+
+      return {
+        provider: "vercel-blob" as StorageProviderType,
+        uploadUrl,
+        key: pathname,
+        expiresAt,
+        headers
+      };
+    } catch (error) {
+      if (shouldFallbackToS3(error)) {
+        const providerAttempts: StorageProviderType[] = ["vercel-blob"];
+
+        try {
+          const fallback = useS3ConfigFromEnv();
+          providerAttempts.push(fallback.provider);
+          return await createS3PresignedUpload(
+            { key, contentType, contentLength, checksum },
+            fallback,
+            expiresIn
+          );
+        } catch (fallbackError) {
+          if (!providerAttempts.includes("aws-s3")) {
+            providerAttempts.push("aws-s3");
+          }
+
+          if (fallbackError instanceof StorageConfigurationError) {
+            throw new StorageConfigurationError(fallbackError.message, { providerAttempts });
+          }
+
+          throw fallbackError;
+        }
+      }
+
+      throw error;
     }
-
-    const blobResult: any = await generateUploadURL({
-      access: "public",
-      // ensure deterministic paths for deliverables so we can clean up later.
-      pathname: safeKey,
-      // cap uploads to the negotiated content length.
-      contentType,
-      contentLength,
-      token: storage.token
-    });
-
-    const uploadUrl: string = blobResult?.url ?? blobResult?.uploadUrl;
-    const pathname: string = blobResult?.pathname ?? safeKey;
-    const expiresAt: string =
-      blobResult?.expiration ?? blobResult?.expiresAt ?? new Date(Date.now() + expiresIn * 1000).toISOString();
-
-    if (!uploadUrl || !pathname) {
-      throw new Error("Blob upload URL was not returned by the storage provider");
-    }
-
-    return {
-      provider: "vercel-blob" as StorageProviderType,
-      uploadUrl,
-      key: pathname,
-      expiresAt,
-      headers
-    };
   }
 
-  const client = getStorageClient();
-  const { bucket } = storage.config;
-
-  const normalisedKey = sanitiseKey(key);
-
-  const command = new PutObjectCommand({
-    Bucket: bucket,
-    Key: normalisedKey,
-    ContentType: contentType,
-    ContentLength: contentLength,
-    ChecksumSHA256: checksum
-  });
-
-  const url = await getSignedUrl(client, command, { expiresIn });
-  const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
-
-  const headers: Record<string, string> = {
-    "Content-Type": contentType
-  };
-
-  if (checksum) {
-    headers["x-amz-checksum-sha256"] = checksum;
-  }
-
-  return {
-    provider: storage.provider,
-    uploadUrl: url,
-    key: normalisedKey,
-    expiresAt,
-    headers
-  };
+  return createS3PresignedUpload({ key, contentType, contentLength, checksum }, storage, expiresIn);
 }
 
 export async function headStoredObject(key: string) {
@@ -256,6 +274,112 @@ async function getBlobModule() {
   }
 
   return blobModulePromise;
+}
+
+function shouldFallbackToS3(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("blob upload helper is unavailable in the current runtime") ||
+    message.includes("cannot find module '@vercel/blob'")
+  );
+}
+
+async function resolveBlobUploadHelper(): Promise<BlobUploadHelper> {
+  const module: any = await getBlobModule();
+  const candidates = [
+    module.generateUploadURL,
+    module.generateUploadUrl,
+    module.createUploadURL,
+    module.createUploadUrl,
+    module.default?.generateUploadURL,
+    module.default?.generateUploadUrl,
+    module.default?.createUploadURL,
+    module.default?.createUploadUrl
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "function") {
+      return candidate as BlobUploadHelper;
+    }
+  }
+
+  throw new Error("Blob upload helper is unavailable in the current runtime");
+}
+
+function useS3ConfigFromEnv(): Extract<ActiveStorage, { kind: "s3" }> {
+  const config = getStorageEnv();
+  const provider = detectProviderFromEndpoint(config.endpoint);
+
+  const active: Extract<ActiveStorage, { kind: "s3" }> = {
+    kind: "s3",
+    provider,
+    config
+  };
+
+  cachedProvider = active;
+  cachedClient = null;
+
+  return active;
+}
+
+async function createS3PresignedUpload(
+  params: {
+    key: string;
+    contentType: string;
+    contentLength: number;
+    checksum?: string;
+  },
+  storage: Extract<ActiveStorage, { kind: "s3" }>,
+  expiresIn: number
+) {
+  const { key, contentType, contentLength, checksum } = params;
+  const client = getStorageClient();
+  const { bucket } = storage.config;
+
+  const normalisedKey = sanitiseKey(key);
+
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: normalisedKey,
+    ContentType: contentType,
+    ContentLength: contentLength,
+    ChecksumSHA256: checksum
+  });
+
+  const url = await getSignedUrl(client, command, { expiresIn });
+  const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
+
+  const headers: Record<string, string> = {
+    "Content-Type": contentType
+  };
+
+  if (checksum) {
+    headers["x-amz-checksum-sha256"] = checksum;
+  }
+
+  return {
+    provider: storage.provider,
+    uploadUrl: url,
+    key: normalisedKey,
+    expiresAt,
+    headers
+  };
+}
+
+export async function probeBlobUploadHelper() {
+  try {
+    await resolveBlobUploadHelper();
+    return { ok: true as const };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: error instanceof Error ? error : new Error(String(error))
+    };
+  }
 }
 
 export function __resetStorageClientForTests() {

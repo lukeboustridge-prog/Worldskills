@@ -47,9 +47,24 @@ export async function GET(request: Request) {
       diagnosticCode = "blob_verified";
       body = { ok: true, provider: "vercel-blob" };
     } else if (blobVerification.status === "error") {
-      diagnosticCode = "blob_unreachable";
-      console.warn("Vercel Blob token could not be verified", blobVerification.message);
-      body = { ok: false, reason: "blob_unreachable", provider: "vercel-blob" };
+      const message = blobVerification.message ?? "Unknown blob verification error";
+      const runtimeMismatch =
+        message.toLowerCase().includes("current runtime") ||
+        message.toLowerCase().includes("blob upload helper is unavailable");
+
+      if (runtimeMismatch) {
+        diagnosticCode = "blob_helper_runtime";
+        console.warn("Vercel Blob helper unavailable in this runtime", message);
+        body = {
+          ok: false,
+          reason: "blob_helper_not_available_in_runtime",
+          provider: "vercel-blob"
+        };
+      } else {
+        diagnosticCode = "blob_unreachable";
+        console.warn("Vercel Blob token could not be verified", message);
+        body = { ok: false, reason: "blob_unreachable", provider: "vercel-blob" };
+      }
     } else {
       diagnosticCode = "missing_blob_token";
       if (diagnostics.ok) {
