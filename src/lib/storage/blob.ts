@@ -15,6 +15,19 @@ export type BlobVerificationError = Extract<
   { status: "error" }
 >;
 
+function normaliseBlobError(message: string): BlobVerificationError {
+  const normalised = message.toLowerCase();
+
+  if (
+    normalised.includes("unavailable in the current runtime") ||
+    normalised.includes("blob upload helper is unavailable")
+  ) {
+    return { status: "error", code: "runtime_unavailable", message };
+  }
+
+  return { status: "error", code: "other", message };
+}
+
 export async function verifyVercelBlobSupport(): Promise<BlobVerificationResult> {
   const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
 
@@ -26,18 +39,10 @@ export async function verifyVercelBlobSupport(): Promise<BlobVerificationResult>
     await attemptMinimalBlobOp(token);
     return { status: "ok", provider: "vercel-blob" };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown blob verification error";
-    const normalised = message.toLowerCase();
+    const message =
+      error instanceof Error ? error.message : "Unknown blob verification error";
 
-    let code: BlobVerificationResult["code"] = "other";
-    if (
-      normalised.includes("unavailable in the current runtime") ||
-      normalised.includes("blob upload helper is unavailable")
-    ) {
-      code = "runtime_unavailable";
-    }
-
-    return { status: "error", code, message };
+    return normaliseBlobError(message);
   }
 }
 
