@@ -6,6 +6,7 @@ import { DeliverableScheduleType, GateScheduleType, Role } from "@prisma/client"
 import { type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +17,9 @@ import { getAppSettings } from "@/lib/settings";
 import { hasGateTemplateCatalogSupport, hasInvitationTable } from "@/lib/schema-info";
 import {
   createDeliverableTemplateAction,
+  deleteDeliverableTemplateAction,
   createGateTemplateAction,
+  deleteGateTemplateAction,
   createInvitationAction,
   createMissingDeliverablesAction,
   saveCompetitionSettingsAction,
@@ -44,6 +47,31 @@ function parseCountParam(value: string | undefined) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
 }
+
+const DEFAULT_APP_URL = "https://worldskillsskilladvisors.vercel.app";
+
+function resolveAppBaseUrl() {
+  const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+
+    try {
+      const withProtocol = candidate.startsWith("http") ? candidate : `https://${candidate}`;
+      return new URL(withProtocol).origin;
+    } catch {
+      // Ignore invalid candidate and continue to the next fallback.
+    }
+  }
+
+  return DEFAULT_APP_URL;
+}
+
+const appBaseUrl = resolveAppBaseUrl();
 
 interface CollapsibleSectionProps {
   title: string;
@@ -95,25 +123,42 @@ export default async function SettingsPage({
   );
   const templateCreatedKey = typeof searchParams?.templateCreated === "string" ? searchParams.templateCreated : null;
   const templateUpdatedKey = typeof searchParams?.templateUpdated === "string" ? searchParams.templateUpdated : null;
+  const templateDeletedKey = typeof searchParams?.templateDeleted === "string" ? searchParams.templateDeleted : null;
+  const templateDeletedLabel =
+    typeof searchParams?.templateLabel === "string" ? searchParams.templateLabel : null;
   const addedCount = parseCountParam(
     typeof searchParams?.added === "string" ? searchParams.added : undefined
+  );
+  const removedCount = parseCountParam(
+    typeof searchParams?.removed === "string" ? searchParams.removed : undefined
   );
   const gateTemplateCreatedKey =
     typeof searchParams?.gateTemplateCreated === "string" ? searchParams.gateTemplateCreated : null;
   const gateTemplateUpdatedKey =
     typeof searchParams?.gateTemplateUpdated === "string" ? searchParams.gateTemplateUpdated : null;
+  const gateTemplateDeletedKey =
+    typeof searchParams?.gateTemplateDeleted === "string" ? searchParams.gateTemplateDeleted : null;
   const gatesAddedCount = parseCountParam(
     typeof searchParams?.gatesAdded === "string" ? searchParams.gatesAdded : undefined
   );
   const gatesCreatedCount = parseCountParam(
     typeof searchParams?.gatesCreated === "string" ? searchParams.gatesCreated : undefined
   );
+  const gatesRemovedCount = parseCountParam(
+    typeof searchParams?.gatesRemoved === "string" ? searchParams.gatesRemoved : undefined
+  );
   const userUpdated = typeof searchParams?.userUpdated === "string";
   const userQuery = typeof searchParams?.userQuery === "string" ? searchParams.userQuery.trim() : "";
   const inviteCreated = typeof searchParams?.inviteCreated === "string";
   const inviteToken = typeof searchParams?.inviteToken === "string" ? searchParams.inviteToken : null;
   const inviteEmail = typeof searchParams?.inviteEmail === "string" ? searchParams.inviteEmail : null;
-  const inviteLink = inviteToken ? `/register?token=${inviteToken}` : null;
+  const inviteLink = inviteToken ? new URL(`/register?token=${inviteToken}`, appBaseUrl).toString() : null;
+  const inviteError = typeof searchParams?.inviteError === "string" ? searchParams.inviteError : null;
+  const userErrorMessage = typeof searchParams?.userError === "string" ? searchParams.userError : null;
+  const errorMessages = [
+    inviteError ? { id: "invite-error", message: inviteError } : null,
+    userErrorMessage ? { id: "user-error", message: userErrorMessage } : null
+  ].filter((entry): entry is { id: string; message: string } => entry !== null);
 
   const gateTemplateSupportPromise = hasGateTemplateCatalogSupport();
   const invitationSupportPromise = hasInvitationTable();
@@ -141,8 +186,10 @@ export default async function SettingsPage({
   const registeredUsers = users.filter((record) => record.isAdmin || record.role !== Role.Pending);
 
   const renderUserCard = (record: (typeof users)[number]) => {
-    const isPending = !record.isAdmin && record.role === Role.Pending;
-    const statusLabel = record.isAdmin ? "Admin · Skill Advisor" : ROLE_LABELS[record.role];
+    const isPending = record.role === Role.Pending;
+    const statusLabel = record.isAdmin
+      ? `Administrator · ${ROLE_LABELS[record.role]}`
+      : ROLE_LABELS[record.role];
     const statusClasses = isPending
       ? "rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
       : "rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground";
@@ -171,7 +218,7 @@ export default async function SettingsPage({
             <select
               id={`role-${record.id}`}
               name="role"
-              defaultValue={record.isAdmin ? Role.SA : record.role}
+              defaultValue={record.role}
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
               {Object.values(Role).map((role) => (
@@ -222,12 +269,15 @@ export default async function SettingsPage({
   const updatedTemplate = templateUpdatedKey
     ? templates.find((template) => template.key === templateUpdatedKey)
     : null;
+  const deletedTemplateLabel = templateDeletedLabel ?? templateDeletedKey;
   const createdGateTemplate = gateTemplateCreatedKey
     ? gateTemplates.find((template) => template.key === gateTemplateCreatedKey)
     : null;
   const updatedGateTemplate = gateTemplateUpdatedKey
     ? gateTemplates.find((template) => template.key === gateTemplateUpdatedKey)
     : null;
+  const deletedGateTemplateLabel =
+    typeof searchParams?.gateTemplateName === "string" ? searchParams.gateTemplateName : gateTemplateDeletedKey;
 
   return (
     <div className="space-y-6">
@@ -239,6 +289,14 @@ export default async function SettingsPage({
       </div>
 
       <div className="space-y-4">
+        {errorMessages.map((error) => (
+          <div
+            key={error.id}
+            className="rounded-md border border-destructive/60 bg-destructive/10 p-4 text-sm text-destructive"
+          >
+            {error.message}
+          </div>
+        ))}
         {updated ? (
           <div className="rounded-md border border-green-400 bg-green-50 p-4 text-sm text-green-900">
             Competition settings saved successfully.{" "}
@@ -262,6 +320,12 @@ export default async function SettingsPage({
             {updatedTemplate ? `${updatedTemplate.label}` : templateUpdatedKey} updated. Due dates and labels were refreshed for all skills.
           </div>
         ) : null}
+        {templateDeletedKey ? (
+          <div className="rounded-md border border-red-400 bg-red-50 p-4 text-sm text-red-900">
+            Removed {deletedTemplateLabel ?? templateDeletedKey} from the catalog.
+            {removedCount > 0 ? ` Deleted ${removedCount} seeded deliverables from existing skills.` : ""}
+          </div>
+        ) : null}
         {gateTemplatesSupported && gateTemplateCreatedKey ? (
           <div className="rounded-md border border-orange-400 bg-orange-50 p-4 text-sm text-orange-900">
             {createdGateTemplate ? `Added ${createdGateTemplate.name}` : `Added ${gateTemplateCreatedKey}`} to the gate
@@ -275,10 +339,23 @@ export default async function SettingsPage({
             reflect the new schedule.
           </div>
         ) : null}
+        {gateTemplatesSupported && gateTemplateDeletedKey ? (
+          <div className="rounded-md border border-red-400 bg-red-50 p-4 text-sm text-red-900">
+            Removed {deletedGateTemplateLabel ?? gateTemplateDeletedKey} from the gate catalog.
+            {gatesRemovedCount > 0 ? ` Deleted ${gatesRemovedCount} seeded gates from existing skills.` : ""}
+          </div>
+        ) : null}
         {invitationsSupported && inviteCreated && inviteLink ? (
           <div className="rounded-md border border-emerald-400 bg-emerald-50 p-4 text-sm text-emerald-900">
             Invitation ready for {inviteEmail ?? "the recipient"}. Share {" "}
-            <code className="rounded bg-emerald-100 px-1 py-0.5 font-mono text-xs">{inviteLink}</code>
+            <a
+              href={inviteLink}
+              className="rounded bg-emerald-100 px-1 py-0.5 font-mono text-xs underline underline-offset-2"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {inviteLink}
+            </a>
             {" "}with them to complete registration within 7 days.
           </div>
         ) : null}
@@ -358,13 +435,13 @@ export default async function SettingsPage({
       <CollapsibleSection
         title="Standard deliverable catalog"
         description="Every skill is seeded with these deliverables. Adjust labels, offsets, and ordering to match the latest guidance."
-        defaultOpen={Boolean(templateCreatedKey || templateUpdatedKey)}
+        defaultOpen={Boolean(templateCreatedKey || templateUpdatedKey || templateDeletedKey)}
       >
         <form
           action={createDeliverableTemplateAction}
-          className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
+          className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-2 xl:grid-cols-6 xl:items-end"
         >
-          <div className="space-y-2">
+          <div className="space-y-2 md:col-span-2 xl:col-span-2">
             <Label htmlFor="new-label">New deliverable label</Label>
             <Input id="new-label" name="label" placeholder="WorldSkills Orientation" required />
           </div>
@@ -386,18 +463,20 @@ export default async function SettingsPage({
           </div>
           <div className="space-y-2">
             <Label htmlFor="new-calendar-date">Calendar due date</Label>
-            <Input id="new-calendar-date" name="calendarDueDate" type="date" />
+            <DatePicker id="new-calendar-date" name="calendarDueDate" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="new-position">Position</Label>
             <Input id="new-position" name="position" type="number" min={1} placeholder={`${templates.length + 1}`} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 md:col-span-2 xl:col-span-2">
             <Label htmlFor="new-key">Key (optional)</Label>
             <Input id="new-key" name="key" placeholder="OrientationWorkshop" />
           </div>
-          <div className="flex items-end">
-            <Button type="submit">Add deliverable</Button>
+          <div className="flex items-end md:col-span-2 xl:col-span-1 xl:justify-end">
+            <Button type="submit" className="w-full xl:w-auto">
+              Add deliverable
+            </Button>
           </div>
         </form>
 
@@ -406,10 +485,10 @@ export default async function SettingsPage({
             <div key={template.key} className="rounded-md border p-4">
               <form
                 action={updateDeliverableTemplateAction}
-                className="grid gap-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
+                className="grid gap-4 md:grid-cols-2 xl:grid-cols-6 xl:items-end"
               >
                 <input type="hidden" name="key" value={template.key} />
-                <div className="space-y-2">
+                <div className="space-y-2 md:col-span-2 xl:col-span-2">
                   <Label htmlFor={`label-${template.key}`}>Label</Label>
                   <Input id={`label-${template.key}`} name="label" defaultValue={template.label} required />
                 </div>
@@ -440,10 +519,9 @@ export default async function SettingsPage({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor={`calendar-${template.key}`}>Calendar due date</Label>
-                  <Input
+                  <DatePicker
                     id={`calendar-${template.key}`}
                     name="calendarDueDate"
-                    type="date"
                     defaultValue={formatDateInput(template.calendarDueDate)}
                   />
                 </div>
@@ -458,20 +536,28 @@ export default async function SettingsPage({
                     required
                   />
                 </div>
-                <div className="flex items-end">
-                  <Button type="submit" variant="outline">
+                <div className="flex items-end md:col-span-2 xl:col-span-1 xl:justify-end">
+                  <Button type="submit" variant="outline" className="w-full xl:w-auto">
                     Save
                   </Button>
                 </div>
               </form>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Key: <span className="font-mono">{template.key}</span> ·{' '}
-                {template.scheduleType === DeliverableScheduleType.CMonth && template.offsetMonths != null
-                  ? buildCMonthLabel(template.offsetMonths)
-                  : template.calendarDueDate
-                    ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`
-                    : "Schedule pending"}
-              </p>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  Key: <span className="font-mono">{template.key}</span> ·{' '}
+                  {template.scheduleType === DeliverableScheduleType.CMonth && template.offsetMonths != null
+                    ? buildCMonthLabel(template.offsetMonths)
+                    : template.calendarDueDate
+                      ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`
+                      : "Schedule pending"}
+                </p>
+                <form action={deleteDeliverableTemplateAction} className="flex">
+                  <input type="hidden" name="key" value={template.key} />
+                  <Button type="submit" variant="destructive" size="sm">
+                    Delete
+                  </Button>
+                </form>
+              </div>
             </div>
           ))}
         </div>
@@ -480,15 +566,17 @@ export default async function SettingsPage({
       <CollapsibleSection
         title="Gate templates"
         description="Define the standard gates that are created for every skill."
-        defaultOpen={Boolean(gateTemplateCreatedKey || gateTemplateUpdatedKey) || !gateTemplatesSupported}
+        defaultOpen={
+          Boolean(gateTemplateCreatedKey || gateTemplateUpdatedKey || gateTemplateDeletedKey) || !gateTemplatesSupported
+        }
       >
         {gateTemplatesSupported ? (
           <>
             <form
               action={createGateTemplateAction}
-              className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
+              className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-2 xl:grid-cols-6 xl:items-end"
             >
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2 xl:col-span-2">
                 <Label htmlFor="gate-name">New gate name</Label>
                 <Input id="gate-name" name="name" placeholder="Validation workshop" required />
               </div>
@@ -522,29 +610,31 @@ export default async function SettingsPage({
                   placeholder={`${gateTemplates.length + 1}`}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2 xl:col-span-2">
                 <Label htmlFor="gate-key">Key (optional)</Label>
                 <Input id="gate-key" name="key" placeholder="ValidationGate" />
               </div>
-              <div className="flex items-end">
-                <Button type="submit">Add gate</Button>
+              <div className="flex items-end md:col-span-2 xl:col-span-1 xl:justify-end">
+                <Button type="submit" className="w-full xl:w-auto">
+                  Add gate
+                </Button>
               </div>
             </form>
 
-              <div className="space-y-4">
-                {gateTemplates.map((template) => (
-                  <div key={template.key} className="rounded-md border p-4">
-                    <form
-                      action={updateGateTemplateAction}
-                      className="grid gap-4 md:grid-cols-[2fr_repeat(3,minmax(0,1fr))_auto]"
-                    >
-                      <input type="hidden" name="key" value={template.key} />
-                      <div className="space-y-2">
-                        <Label htmlFor={`gate-name-${template.key}`}>Name</Label>
-                        <Input id={`gate-name-${template.key}`} name="name" defaultValue={template.name} required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`gate-schedule-${template.key}`}>Schedule type</Label>
+            <div className="space-y-4">
+              {gateTemplates.map((template) => (
+                <div key={template.key} className="rounded-md border p-4">
+                  <form
+                    action={updateGateTemplateAction}
+                    className="grid gap-4 md:grid-cols-2 xl:grid-cols-6 xl:items-end"
+                  >
+                    <input type="hidden" name="key" value={template.key} />
+                    <div className="space-y-2 md:col-span-2 xl:col-span-2">
+                      <Label htmlFor={`gate-name-${template.key}`}>Name</Label>
+                      <Input id={`gate-name-${template.key}`} name="name" defaultValue={template.name} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`gate-schedule-${template.key}`}>Schedule type</Label>
                         <select
                           id={`gate-schedule-${template.key}`}
                           name="scheduleType"
@@ -577,31 +667,39 @@ export default async function SettingsPage({
                           defaultValue={formatDateInput(template.calendarDueDate)}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`gate-position-${template.key}`}>Position</Label>
-                        <Input
-                          id={`gate-position-${template.key}`}
-                          name="position"
+                    <div className="space-y-2">
+                      <Label htmlFor={`gate-position-${template.key}`}>Position</Label>
+                      <Input
+                        id={`gate-position-${template.key}`}
+                        name="position"
                         type="number"
                         min={1}
                         defaultValue={template.position}
                         required
                       />
                     </div>
-                    <div className="flex items-end">
-                      <Button type="submit" variant="outline">
+                    <div className="flex items-end md:col-span-2 xl:col-span-1 xl:justify-end">
+                      <Button type="submit" variant="outline" className="w-full xl:w-auto">
                         Save
                       </Button>
                     </div>
                   </form>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Key: <span className="font-mono">{template.key}</span> ·{' '}
-                    {template.scheduleType === GateScheduleType.CMonth && template.offsetMonths != null
-                      ? buildCMonthLabel(template.offsetMonths)
-                      : template.calendarDueDate
-                        ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`
-                        : "Schedule pending"}
-                  </p>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">
+                      Key: <span className="font-mono">{template.key}</span> ·{' '}
+                      {template.scheduleType === GateScheduleType.CMonth && template.offsetMonths != null
+                        ? buildCMonthLabel(template.offsetMonths)
+                        : template.calendarDueDate
+                          ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`
+                          : "Schedule pending"}
+                    </p>
+                    <form action={deleteGateTemplateAction} className="flex">
+                      <input type="hidden" name="key" value={template.key} />
+                      <Button type="submit" variant="destructive" size="sm">
+                        Delete
+                      </Button>
+                    </form>
+                  </div>
                 </div>
               ))}
             </div>
@@ -732,7 +830,7 @@ export default async function SettingsPage({
                 {invitations.map((invitation) => {
                   const expires = new Date(invitation.expiresAt);
                   const isExpired = expires.getTime() < Date.now();
-                  const invitePath = `/register?token=${invitation.token}`;
+                  const inviteUrl = new URL(`/register?token=${invitation.token}`, appBaseUrl).toString();
                   return (
                     <div key={invitation.id} className="rounded-md border p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -754,7 +852,14 @@ export default async function SettingsPage({
                         </div>
                         <div className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
                           Link:
-                          <code className="ml-2 inline-block rounded bg-muted px-2 py-0.5 text-xs">{invitePath}</code>
+                          <a
+                            href={inviteUrl}
+                            className="ml-2 inline-block rounded bg-muted px-2 py-0.5 font-mono text-xs underline underline-offset-2"
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {inviteUrl}
+                          </a>
                         </div>
                       </div>
                     </div>

@@ -11,8 +11,15 @@ import {
   DOCUMENT_MIME_TYPES
 } from "@/lib/deliverables";
 import { normaliseFileName } from "@/lib/utils";
-import { createPresignedUpload } from "@/lib/storage";
+import { createPresignedUpload, StorageConfigurationError } from "@/lib/storage/client";
 import { canManageSkill } from "@/lib/permissions";
+import { getStorageMode } from "@/lib/storage/provider";
+import { verifyVercelBlobSupport } from "@/lib/storage/blob";
+import type { BlobVerificationResult } from "@/lib/storage/blob";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const payloadSchema = z.object({
   skillId: z.string().min(1, "Skill id is required"),
@@ -69,7 +76,7 @@ export async function POST(request: NextRequest, { params }: { params: { deliver
   }
 
   if (!canManageSkill(user, { saId: deliverable.skill.saId, scmId: deliverable.skill.scmId })) {
-    return NextResponse.json({ error: "You do not have permission to upload documents for this skill." }, { status: 403 });
+    return NextResponse.json({ error: "You do not have permission to upload documents or images for this skill." }, { status: 403 });
   }
 
   validateDocumentEvidenceInput({
@@ -83,18 +90,48 @@ export async function POST(request: NextRequest, { params }: { params: { deliver
     fileName: parsed.data.fileName
   });
 
-  const upload = await createPresignedUpload({
-    key: storageKey,
-    contentType: parsed.data.mimeType,
-    contentLength: parsed.data.fileSize,
-    checksum: parsed.data.checksum
-  });
+  const mode = getStorageMode();
+  const blobVerification: BlobVerificationResult | null =
+    mode === "s3" ? null : await verifyVercelBlobSupport();
+  const preferS3Fallback =
+    mode === "auto" && blobVerification?.status === "error" && blobVerification.code === "runtime_unavailable";
+
+  let upload;
+  try {
+    upload = await createPresignedUpload(
+      {
+        key: storageKey,
+        contentType: parsed.data.mimeType,
+        contentLength: parsed.data.fileSize,
+        checksum: parsed.data.checksum
+      },
+      preferS3Fallback ? { preferS3: true } : undefined
+    );
+  } catch (error) {
+    if (error instanceof StorageConfigurationError) {
+      console.error("Document storage is not configured", error);
+      return NextResponse.json(
+        {
+          error:
+            "Document storage is not configured yet. Please contact the administrator to enable uploads."
+        },
+        { status: 503 }
+      );
+    }
+
+    console.error("Failed to create presigned upload", error);
+    return NextResponse.json(
+      { error: "We couldn't prepare the upload. Please try again shortly." },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({
     uploadUrl: upload.uploadUrl,
     headers: upload.headers,
     expiresAt: upload.expiresAt,
-    storageKey,
+    storageKey: upload.key,
+    provider: upload.provider,
     maxBytes: DOCUMENT_MAX_BYTES,
     allowedMimeTypes: DOCUMENT_MIME_TYPES
   });
