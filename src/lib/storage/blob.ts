@@ -4,7 +4,16 @@ import { probeBlobUploadHelper } from "./client";
 
 export type BlobVerificationResult =
   | { status: "ok"; provider: "vercel-blob" }
-  | { status: "error"; code: "runtime_unavailable" | "missing_token" | "other"; message?: string };
+  | {
+      status: "error";
+      code: "runtime_unavailable" | "missing_token" | "other";
+      message?: string;
+    };
+
+export type BlobVerificationError = Extract<
+  BlobVerificationResult,
+  { status: "error" }
+>;
 
 export async function verifyVercelBlobSupport(): Promise<BlobVerificationResult> {
   const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();

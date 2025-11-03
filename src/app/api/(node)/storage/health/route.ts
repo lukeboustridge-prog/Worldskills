@@ -7,7 +7,7 @@ import type {
   StorageHealthResponse
 } from "@/lib/storage/diagnostics";
 import { getStorageMode } from "@/lib/storage/provider";
-import type { BlobVerificationResult } from "@/lib/storage/blob";
+import type { BlobVerificationError, BlobVerificationResult } from "@/lib/storage/blob";
 import { verifyVercelBlobSupport } from "@/lib/storage/blob";
 
 export const runtime = "nodejs";
@@ -28,8 +28,10 @@ function getEnvironmentName() {
   return "local";
 }
 
-function mapBlobErrorToReason(code: BlobVerificationResult["code"]): StorageHealthReason {
-  switch (code) {
+type BlobErrorResult = BlobVerificationError;
+
+function mapBlobErrorToReason(result: BlobErrorResult): StorageHealthReason {
+  switch (result.code) {
     case "missing_token":
       return "missing_blob_token";
     case "runtime_unavailable":
@@ -39,8 +41,8 @@ function mapBlobErrorToReason(code: BlobVerificationResult["code"]): StorageHeal
   }
 }
 
-function mapBlobErrorToDiagnostic(code: BlobVerificationResult["code"]): StorageHealthDiagnostic {
-  switch (code) {
+function mapBlobErrorToDiagnostic(result: BlobErrorResult): StorageHealthDiagnostic {
+  switch (result.code) {
     case "missing_token":
       return "missing_blob_token";
     case "runtime_unavailable":
@@ -50,8 +52,8 @@ function mapBlobErrorToDiagnostic(code: BlobVerificationResult["code"]): Storage
   }
 }
 
-function mapBlobErrorToFallbackNote(code: BlobVerificationResult["code"]): string | undefined {
-  switch (code) {
+function mapBlobErrorToFallbackNote(result: BlobErrorResult): string | undefined {
+  switch (result.code) {
     case "runtime_unavailable":
       return "blob_runtime_unavailable_fell_back_to_s3";
     case "other":
@@ -130,8 +132,8 @@ export async function GET(request: Request) {
       diagnosticCode = "blob_verified";
       body = { ok: true, provider: "vercel-blob" };
     } else {
-      const reason = mapBlobErrorToReason(blobVerification.code);
-      const failureDiagnostic = mapBlobErrorToDiagnostic(blobVerification.code);
+      const reason = mapBlobErrorToReason(blobVerification);
+      const failureDiagnostic = mapBlobErrorToDiagnostic(blobVerification);
 
       if (blobVerification.code === "missing_token" && diagnostics.missing.length > 0) {
         console.info("Document storage missing environment keys", diagnostics.missing);
@@ -167,7 +169,7 @@ export async function GET(request: Request) {
           provider: diagnostics.provider
         };
 
-        const note = mapBlobErrorToFallbackNote(blobVerification.code);
+        const note = mapBlobErrorToFallbackNote(blobVerification);
         if (note) {
           body.note = note;
         }
