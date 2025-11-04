@@ -8,8 +8,12 @@ import {
   type DeliverableEvidenceDocument
 } from "@/lib/deliverables";
 import { canViewSkill } from "@/lib/permissions";
-import { createPresignedDownload } from "@/lib/storage";
+import { createPresignedDownload, StorageConfigurationError } from "@/lib/storage/client";
 import { normaliseFileName } from "@/lib/utils";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const DOWNLOAD_TTL_SECONDS = Number(process.env.FILE_DOWNLOAD_TTL_SECONDS ?? 120);
 
@@ -60,11 +64,31 @@ export async function GET(request: NextRequest, { params }: { params: { delivera
 
   const fileName = normaliseFileName(document.fileName || deliverable.label);
 
-  const download = await createPresignedDownload({
-    key: document.storageKey,
-    expiresIn: DOWNLOAD_TTL_SECONDS,
-    fileName
-  });
+  let download;
+  try {
+    download = await createPresignedDownload({
+      key: document.storageKey,
+      expiresIn: DOWNLOAD_TTL_SECONDS,
+      fileName
+    });
+  } catch (error) {
+    if (error instanceof StorageConfigurationError) {
+      console.error("Document storage is not configured", error);
+      return NextResponse.json(
+        {
+          error:
+            "Document storage is not configured yet. Please contact the administrator to enable downloads."
+        },
+        { status: 503 }
+      );
+    }
+
+    console.error("Failed to create document download link", error);
+    return NextResponse.json(
+      { error: "We couldn't fetch the document right now. Please try again shortly." },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.redirect(download.downloadUrl, {
     headers: {

@@ -136,7 +136,7 @@ export async function POST(request: Request) {
         );
       }
 
-      role = invitation.isAdmin ? Role.SA : invitation.role;
+      role = invitation.role;
       isAdmin = invitation.isAdmin;
     }
 
