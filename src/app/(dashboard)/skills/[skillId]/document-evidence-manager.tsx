@@ -315,17 +315,20 @@ export function DocumentEvidenceManager({
 
       let presigned: ResolvedPresign | null = null;
       try {
+        const payloadContentType = mimeType || file.type || "application/octet-stream";
+        const presignRequestPayload = {
+          deliverableId,
+          skillId,
+          filename: file.name,
+          contentType: payloadContentType,
+          byteSize: file.size,
+          checksum
+        };
+
         const response = await fetch(`/api/storage/presign`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            deliverableId,
-            skillId,
-            filename: file.name,
-            contentType: mimeType,
-            byteSize: file.size,
-            checksum
-          })
+          body: JSON.stringify(presignRequestPayload)
         });
 
         const responseText = await response.text();

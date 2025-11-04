@@ -185,16 +185,24 @@ export async function POST(request: NextRequest) {
 
   const maxMb = Number(process.env.FILE_MAX_MB ?? 25);
   const maxBytes = maxMb * 1024 * 1024;
-  const numericByteSize =
-    typeof byteSize === "number"
-      ? byteSize
-      : typeof byteSize === "string" && byteSize.trim() !== ""
-        ? Number(byteSize)
-        : Number.NaN;
 
-  if (!Number.isFinite(numericByteSize)) {
+  let numericByteSize: number | null = null;
+  if (typeof byteSize === "number" && Number.isFinite(byteSize)) {
+    numericByteSize = byteSize;
+  } else if (typeof byteSize === "string" && byteSize.trim() !== "") {
+    const parsed = Number(byteSize);
+    if (Number.isFinite(parsed)) {
+      numericByteSize = parsed;
+    }
+  }
+
+  if (numericByteSize === null) {
     return NextResponse.json(
-      { error: "invalid_size", message: "Client did not send a valid file size." },
+      {
+        error: "invalid_size",
+        message: "Server did not receive a valid file size from the browser.",
+        receivedByteSize: byteSize ?? null
+      },
       { status: 400, headers: NO_STORE_HEADERS }
     );
   }
@@ -203,8 +211,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "file_too_large",
-        message: `File is too large. Max is ${maxMb} MB.`,
-        receivedBytes: numericByteSize,
+        message: `File is too large. Max allowed is ${maxMb} MB.`,
+        receivedByteSize: numericByteSize,
         maxBytes
       },
       { status: 400, headers: NO_STORE_HEADERS }
