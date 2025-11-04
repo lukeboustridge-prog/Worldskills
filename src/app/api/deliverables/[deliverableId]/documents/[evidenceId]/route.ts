@@ -10,7 +10,7 @@ import {
   removeDocumentEvidenceItem,
   serialiseEvidenceItems
 } from "@/lib/deliverables";
-import { deleteStoredObject } from "@/lib/storage";
+import { deleteStoredObject } from "@/lib/storage/client";
 import { canManageSkill } from "@/lib/permissions";
 import { logActivity } from "@/lib/activity";
 

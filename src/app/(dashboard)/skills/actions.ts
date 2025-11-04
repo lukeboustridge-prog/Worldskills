@@ -2,6 +2,7 @@
 
 import { Prisma, Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { logActivity } from "@/lib/activity";
@@ -138,6 +139,21 @@ export async function updateSkillAction(formData: FormData) {
     throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
   }
 
+  const existingSkill = await prisma.skill.findUnique({
+    where: { id: parsed.data.skillId },
+    select: { saId: true }
+  });
+
+  if (!existingSkill) {
+    throw new Error("Skill not found");
+  }
+
+  if (!user.isAdmin) {
+    if (user.role !== Role.SA || existingSkill.saId !== user.id) {
+      throw new Error("You do not have permission to update this skill");
+    }
+  }
+
   const updates: Record<string, unknown> = {};
 
   if (parsed.data.saId) {
@@ -177,8 +193,8 @@ export async function updateSkillAction(formData: FormData) {
 
 export async function deleteSkillAction(formData: FormData) {
   const user = await requireUser();
-  if (user.role !== Role.SA && !user.isAdmin) {
-    throw new Error("Only Skill Advisors or Admin can delete skills");
+  if (!user.isAdmin) {
+    throw new Error("Only administrators can delete skills");
   }
 
   const skillId = formData.get("skillId");
@@ -194,4 +210,56 @@ export async function deleteSkillAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/skills");
+}
+
+const broadcastMessageSchema = z.object({
+  body: z.string().trim().min(2, "Message cannot be empty")
+});
+
+export async function messageAllSkillsAction(formData: FormData) {
+  const user = await requireUser();
+
+  if (!user.isAdmin && user.role !== Role.Secretariat) {
+    throw new Error("Only administrators or Secretariat can send broadcast messages");
+  }
+
+  const parsed = broadcastMessageSchema.safeParse({
+    body: formData.get("body")
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const skills = await prisma.skill.findMany({ select: { id: true } });
+
+  if (skills.length === 0) {
+    revalidatePath("/skills");
+    redirect("/skills?broadcast=none");
+  }
+
+  const body = parsed.data.body;
+  const preview = body.length > 140 ? body.slice(0, 140) : body;
+
+  for (const skill of skills) {
+    await prisma.message.create({
+      data: {
+        skillId: skill.id,
+        authorId: user.id,
+        body
+      }
+    });
+
+    await logActivity({
+      skillId: skill.id,
+      userId: user.id,
+      action: "MessagePosted",
+      payload: { body: preview }
+    });
+
+    revalidatePath(`/skills/${skill.id}`);
+  }
+
+  revalidatePath("/skills");
+  redirect("/skills?broadcast=sent");
 }
