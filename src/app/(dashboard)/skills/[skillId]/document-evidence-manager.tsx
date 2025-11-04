@@ -303,6 +303,7 @@ export function DocumentEvidenceManager({
         storageKey?: unknown;
         pathname?: unknown;
         headers?: unknown;
+        requiredHeaders?: unknown;
         provider?: unknown;
         [key: string]: unknown;
       };
@@ -395,14 +396,20 @@ export function DocumentEvidenceManager({
         if (!uploadUrl || !storageKey) {
           throw new Error("We couldn't prepare the upload. Please try again shortly.");
         }
-        const headers: UploadHeaders | undefined =
-          presignPayload.headers && typeof presignPayload.headers === "object"
-            ? (Object.fromEntries(
-                Object.entries(presignPayload.headers as Record<string, unknown>).filter(
-                  (entry): entry is [string, string] => typeof entry[1] === "string"
-                )
-              ) as UploadHeaders)
-            : undefined;
+        const headerSource =
+          presignPayload.requiredHeaders && typeof presignPayload.requiredHeaders === "object"
+            ? (presignPayload.requiredHeaders as Record<string, unknown>)
+            : presignPayload.headers && typeof presignPayload.headers === "object"
+              ? (presignPayload.headers as Record<string, unknown>)
+              : null;
+
+        const headers: UploadHeaders | undefined = headerSource
+          ? (Object.fromEntries(
+              Object.entries(headerSource).filter(
+                (entry): entry is [string, string] => typeof entry[1] === "string"
+              )
+            ) as UploadHeaders)
+          : undefined;
 
         presigned = { uploadUrl, key: storageKey, headers };
       } catch (cause) {

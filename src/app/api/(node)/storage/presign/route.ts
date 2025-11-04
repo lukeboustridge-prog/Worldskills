@@ -306,12 +306,18 @@ export async function POST(request: NextRequest) {
     providerHint = presigned.provider;
     console.log("[storage/presign] presign-success", { env, provider: providerHint });
 
+    const requiredHeaders =
+      presigned.headers && typeof presigned.headers === "object"
+        ? presigned.headers
+        : undefined;
+
     return NextResponse.json(
       {
         uploadUrl: presigned.uploadUrl,
         key: presigned.key,
         expiresAt: presigned.expiresAt,
         headers: presigned.headers,
+        requiredHeaders,
         provider: presigned.provider,
         maxBytes: DOCUMENT_MAX_BYTES,
         allowedMimeTypes: DOCUMENT_MIME_TYPES
