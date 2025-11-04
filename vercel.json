@@ -7,7 +7,7 @@
       "runtime": "vercel-blob@latest"
     },
     "api/(node)/storage/**": {
-      "runtime": "vercel-blob@latest"
+      "runtime": "nodejs20.x"
     }
   }
 }
