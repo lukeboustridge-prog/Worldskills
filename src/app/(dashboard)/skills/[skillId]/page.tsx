@@ -65,8 +65,9 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
   }
 
   const canEditSkill = user.isAdmin || user.id === skill.saId || user.id === skill.scmId;
-  const isAdvisor = user.isAdmin || (user.role === Role.SA && skill.saId === user.id);
-  const canPostMessage = isAdmin || user.id === skill.saId || user.id === skill.scmId;
+  const canValidateDeliverables = user.isAdmin || user.id === skill.saId;
+  const canPostMessage =
+    isAdmin || isSecretariat || user.id === skill.saId || user.id === skill.scmId;
   const advisorLabel = getUserDisplayName(skill.sa);
   const managerLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
 
@@ -79,6 +80,9 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     });
   }
 
+  const visibleDeliverables = decoratedDeliverables.filter((deliverable) => !deliverable.isHidden);
+  const hiddenDeliverablesCount = decoratedDeliverables.length - visibleDeliverables.length;
+
   const summary = classifyDeliverables(decoratedDeliverables);
   const completedDeliverablesCount =
     (summary.stateCounts[DeliverableState.Finalised] ?? 0) +
@@ -87,6 +91,8 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
 
   const deliverablesForClient: DeliverableRow[] = decoratedDeliverables.map((deliverable) => ({
     id: deliverable.id,
+    key: deliverable.key,
+    templateKey: deliverable.templateKey ?? null,
     label: deliverable.label,
     cMonthLabel: deliverable.cMonthLabel,
     cMonthOffset: deliverable.cMonthOffset,
@@ -95,7 +101,8 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     state: deliverable.state,
     evidence: deliverable.evidenceItems,
     isOverdue: deliverable.isOverdue,
-    overdueByDays: deliverable.overdueByDays
+    overdueByDays: deliverable.overdueByDays,
+    isHidden: deliverable.isHidden
   }));
 
   return (
@@ -117,7 +124,12 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
           <Card className="min-w-[160px]">
             <CardHeader className="p-4 pb-0">
               <CardDescription>Total deliverables</CardDescription>
-              <CardTitle>{decoratedDeliverables.length}</CardTitle>
+              <CardTitle>{summary.total}</CardTitle>
+              {hiddenDeliverablesCount > 0 ? (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {hiddenDeliverablesCount} hidden
+                </p>
+              ) : null}
             </CardHeader>
           </Card>
           <Card className="min-w-[160px]">
@@ -147,13 +159,18 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {decoratedDeliverables.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No deliverables recorded yet.</p>
+              {visibleDeliverables.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {decoratedDeliverables.length === 0
+                    ? "No deliverables recorded yet."
+                    : "All deliverables for this skill are currently hidden. Unhide deliverables to track progress."}
+                </p>
               ) : (
                 <DeliverablesTable
                   deliverables={deliverablesForClient}
                   skillId={skill.id}
                   canEdit={canEditSkill}
+                  canValidate={canValidateDeliverables}
                   overdueCount={summary.overdue}
                   stateCounts={summary.stateCounts}
                   dueSoonThresholdDays={DUE_SOON_THRESHOLD_DAYS}
@@ -272,7 +289,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                 </form>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Secretariat viewers can read the latest messages for awareness.
+                  You can read previous messages but do not have permission to post in this conversation.
                 </p>
               )}
               <div className="space-y-4">

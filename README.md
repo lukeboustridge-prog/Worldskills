@@ -66,7 +66,7 @@ pnpm prisma:generate
 pnpm prisma:migrate
 ```
 
-When deploying to Vercel, the default build script automatically runs `prisma migrate deploy` after generating the client, so your production database stays in sync with the schema.
+When deploying to Vercel, make sure you run `pnpm prisma:deploy` (or `prisma migrate deploy`) from a trusted environment before or after the deployment. The hosted build no longer applies migrations automatically—this avoids intermittent Neon advisory lock timeouts that previously caused builds to fail.
 
 ### 4. (Optional) Seed sample data
 
@@ -109,16 +109,16 @@ pnpm lint
    - `HOST_EMAIL`
    - Optional: `HOST_NAME` (display name for the host Skill Advisor)
    - Optional: `HOST_INITIAL_PASSWORD` (if you want to set the host password during seeding)
-4. Trigger a deployment. The build pipeline runs `pnpm build`, which in turn executes `prisma generate`, `prisma migrate deploy`, and `next build` so your Neon database is migrated during the build step.
+4. Trigger a deployment. The build pipeline runs `pnpm build`, which now skips Prisma migrations when it detects the Vercel/CI environment to prevent advisory lock timeouts against Neon. Ensure migrations are applied manually (for example, `pnpm prisma:deploy`) before or immediately after the deployment.
    - Vercel detects the pinned pnpm version from `package.json`/`packageManager` and runs `pnpm install` on its Node.js 22 runtime, matching the local toolchain without extra Corepack steps.
-5. For additional safety you can also run `pnpm prisma:deploy` locally or via CI prior to the first deploy.
+5. Keep running `pnpm prisma:deploy` locally or via CI prior to the first deploy, and whenever the Prisma schema changes, before initiating a Vercel build.
 
 ## Scripts
 
 | Command | Description |
 | --- | --- |
 | `pnpm dev` | Start the Next.js dev server. |
-| `pnpm build` | Generate Prisma client and create an optimized production build. |
+| `pnpm build` | Environment-aware build: always runs `prisma generate` and `next build`; runs `prisma migrate deploy` only outside CI/Vercel. |
 | `pnpm start` | Start the production server. |
 | `pnpm lint` | Run ESLint using Next.js configuration. |
 | `pnpm prisma:generate` | Regenerate the Prisma client. |
