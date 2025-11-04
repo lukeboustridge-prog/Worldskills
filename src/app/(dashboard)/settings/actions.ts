@@ -342,6 +342,134 @@ export async function updateDeliverableTemplateAction(formData: FormData) {
   redirect(`/settings?${params.toString()}`);
 }
 
+const deliverableDeletionSchema = z.object({
+  key: z.string().min(1, "Missing deliverable key")
+});
+
+export async function deleteDeliverableTemplateAction(formData: FormData) {
+  const user = await requireAdminUser();
+  const parsed = deliverableDeletionSchema.parse({ key: formData.get("key") });
+
+  const template = await prisma.deliverableTemplate.findUnique({
+    where: { key: parsed.key }
+  });
+
+  if (!template) {
+    throw new Error("Deliverable template not found.");
+  }
+
+  const deliverables = await prisma.deliverable.findMany({
+    where: { key: parsed.key },
+    select: { skillId: true }
+  });
+
+  const uniqueSkillIds = Array.from(new Set(deliverables.map((entry) => entry.skillId)));
+  const operations: Prisma.PrismaPromise<unknown>[] = [
+    prisma.deliverable.deleteMany({ where: { key: parsed.key } }),
+    prisma.deliverableTemplate.delete({ where: { key: parsed.key } })
+  ];
+
+  if (uniqueSkillIds.length > 0) {
+    const now = new Date();
+    operations.push(
+      prisma.activityLog.createMany({
+        data: uniqueSkillIds.map((skillId) => ({
+          skillId,
+          userId: user.id,
+          action: "DeliverableTemplateDeleted",
+          payload: {
+            templateKey: template.key,
+            templateLabel: template.label,
+            deletedAt: now.toISOString()
+          }
+        }))
+      })
+    );
+  }
+
+  const results = await prisma.$transaction(operations);
+  const deliverableDeletionResult = results[0] as Prisma.BatchPayload;
+  const removedCount = deliverableDeletionResult.count;
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  revalidatePath("/skills");
+
+  const params = new URLSearchParams({
+    templateDeleted: template.key,
+    removed: String(removedCount)
+  });
+  params.set("templateLabel", template.label);
+
+  redirect(`/settings?${params.toString()}`);
+}
+
+const gateTemplateDeletionSchema = z.object({
+  key: z.string().min(1, "Missing gate key")
+});
+
+export async function deleteGateTemplateAction(formData: FormData) {
+  const user = await requireAdminUser();
+
+  const supportsCatalog = await hasGateTemplateCatalogSupport();
+  if (!supportsCatalog) {
+    throw new Error("Gate template catalog is not available.");
+  }
+
+  const parsed = gateTemplateDeletionSchema.parse({ key: formData.get("key") });
+
+  const template = await prisma.gateTemplate.findUnique({
+    where: { key: parsed.key }
+  });
+
+  if (!template) {
+    throw new Error("Gate template not found.");
+  }
+
+  const gates = await prisma.gate.findMany({
+    where: { templateKey: parsed.key },
+    select: { skillId: true }
+  });
+
+  const uniqueSkillIds = Array.from(new Set(gates.map((entry) => entry.skillId)));
+  const operations: Prisma.PrismaPromise<unknown>[] = [
+    prisma.gate.deleteMany({ where: { templateKey: parsed.key } }),
+    prisma.gateTemplate.delete({ where: { key: parsed.key } })
+  ];
+
+  if (uniqueSkillIds.length > 0) {
+    const now = new Date();
+    operations.push(
+      prisma.activityLog.createMany({
+        data: uniqueSkillIds.map((skillId) => ({
+          skillId,
+          userId: user.id,
+          action: "GateTemplateDeleted",
+          payload: {
+            templateKey: template.key,
+            templateName: template.name,
+            deletedAt: now.toISOString()
+          }
+        }))
+      })
+    );
+  }
+
+  const results = await prisma.$transaction(operations);
+  const gateDeletionResult = results[0] as Prisma.BatchPayload;
+  const removedCount = gateDeletionResult.count;
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  revalidatePath("/skills");
+
+  const params = new URLSearchParams({ gateTemplateDeleted: template.key });
+  params.set("gateTemplateName", template.name);
+  params.set("gatesRemoved", String(removedCount));
+
+  redirect(`/settings?${params.toString()}`);
+}
+
 const gateTemplateSchema = z.discriminatedUnion("scheduleType", [
   z.object({
     scheduleType: z.literal("calendar"),
@@ -517,29 +645,44 @@ const userUpdateSchema = z.object({
 
 export async function updateUserRoleAction(formData: FormData) {
   await requireAdminUser();
-  const parsed = userUpdateSchema.parse({
+
+  const rawIsAdmin = formData.get("isAdmin");
+  const parsedResult = userUpdateSchema.safeParse({
     userId: formData.get("userId"),
     role: formData.get("role"),
-    isAdmin: formData.get("isAdmin")
+    isAdmin: rawIsAdmin === null ? undefined : rawIsAdmin
   });
 
+  if (!parsedResult.success) {
+    const firstError = parsedResult.error.errors[0]?.message ?? "Unable to update the user.";
+    const params = new URLSearchParams({ userError: firstError });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  const parsed = parsedResult.data;
   const isAdmin = parsed.isAdmin === "on";
-  const role = isAdmin ? Role.SA : parsed.role;
+  const role = parsed.role;
 
-  await prisma.user.update({
-    where: { id: parsed.userId },
-    data: {
-      role,
-      isAdmin
-    }
-  });
+  try {
+    await prisma.user.update({
+      where: { id: parsed.userId },
+      data: {
+        role,
+        isAdmin
+      }
+    });
+  } catch (error) {
+    console.error("Failed to update user role", error);
+    const params = new URLSearchParams({ userError: "Unable to update the user. Please try again." });
+    return redirect(`/settings?${params.toString()}`);
+  }
 
   revalidatePath("/settings");
   revalidatePath("/skills");
   revalidatePath("/dashboard");
 
   const params = new URLSearchParams({ userUpdated: "1" });
-  redirect(`/settings?${params.toString()}`);
+  return redirect(`/settings?${params.toString()}`);
 }
 
 const invitationSchema = z.object({
@@ -553,44 +696,62 @@ const invitationSchema = z.object({
 
 export async function createInvitationAction(formData: FormData) {
   const user = await requireAdminUser();
-  const parsed = invitationSchema.parse({
+
+  const rawIsAdmin = formData.get("isAdmin");
+  const parsedResult = invitationSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     role: formData.get("role"),
-    isAdmin: formData.get("isAdmin")
+    isAdmin: rawIsAdmin === null ? undefined : rawIsAdmin
   });
+
+  if (!parsedResult.success) {
+    const firstError = parsedResult.error.errors[0]?.message ?? "Please review the invitation details.";
+    const params = new URLSearchParams({ inviteError: firstError });
+    return redirect(`/settings?${params.toString()}`);
+  }
 
   const invitationsSupported = await hasInvitationTable();
   if (!invitationsSupported) {
-    throw new Error("Invitations will be available once the database migration has completed.");
+    const params = new URLSearchParams({
+      inviteError: "Invitations will be available once the database migration has completed."
+    });
+    return redirect(`/settings?${params.toString()}`);
   }
 
+  const parsed = parsedResult.data;
   const normalizedEmail = parsed.email.toLowerCase();
   const isAdmin = parsed.isAdmin === "on";
   const token = randomUUID();
   const expiresAt = addDays(new Date(), 7);
 
-  await prisma.invitation.deleteMany({
-    where: {
-      email: normalizedEmail,
-      acceptedAt: null
-    }
-  });
+  try {
+    await prisma.invitation.deleteMany({
+      where: {
+        email: normalizedEmail,
+        acceptedAt: null
+      }
+    });
 
-  await prisma.invitation.create({
-    data: {
-      name: parsed.name.trim(),
-      email: normalizedEmail,
-      role: isAdmin ? Role.SA : parsed.role,
-      isAdmin,
-      token,
-      expiresAt,
-      createdBy: user.id
-    }
-  });
+    await prisma.invitation.create({
+      data: {
+        name: parsed.name.trim(),
+        email: normalizedEmail,
+        role: parsed.role,
+        isAdmin,
+        token,
+        expiresAt,
+        createdBy: user.id
+      }
+    });
+  } catch (error) {
+    console.error("Failed to create invitation", error);
+    const params = new URLSearchParams({ inviteError: "Unable to create the invitation. Please try again." });
+    return redirect(`/settings?${params.toString()}`);
+  }
 
   revalidatePath("/settings");
 
   const params = new URLSearchParams({ inviteCreated: "1", inviteToken: token, inviteEmail: normalizedEmail });
-  redirect(`/settings?${params.toString()}`);
+  return redirect(`/settings?${params.toString()}`);
 }
