@@ -1,3 +1,5 @@
+// src/lib/storage/diagnostics.ts
+
 export type StorageProviderType =
   | "vercel-blob"
   | "aws-s3"
@@ -14,14 +16,15 @@ export type StorageDiagnostics = {
 };
 
 /**
- * This matches what the dashboard's document-evidence-manager.tsx
- * was importing as StorageHealthResponse.
+ * This is what the UI uses when it pings /api/storage/health
+ * and also what our API can return.
  *
- * Keep it broad so the API can add fields without breaking the app.
+ * provider is optional because some client code creates a synthetic
+ * “error” payload like { ok: false, reason: "error" }.
  */
 export type StorageHealthResponse = {
   ok: boolean;
-  provider?: StorageProviderType; // <-- now optional
+  provider?: StorageProviderType;
   reason?: string;
   note?: string;
   env?: string;
@@ -29,23 +32,32 @@ export type StorageHealthResponse = {
   source?: string;
   diagnostic?: string;
   bucket?: string;
-  // allow extra fields
   [key: string]: unknown;
+};
+
+/**
+ * The admin / storage debug view wanted this shape.
+ * It’s basically “what we last checked” + a timestamp.
+ */
+export type StorageDiagnosticsSnapshot = {
+  payload: StorageHealthResponse;
+  receivedAt: number;
 };
 
 export function getStorageDiagnostics(): StorageDiagnostics {
   const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN?.trim();
 
+  // if a Vercel Blob token exists, report that as the active provider
   if (hasBlobToken) {
     return {
       ok: true,
       provider: "vercel-blob",
-      // some projects surface the blob bucket name here; reuse the existing var if present
+      // if you want to surface the blob bucket name, reuse this var
       bucket: process.env.FILE_STORAGE_BUCKET || undefined
     };
   }
 
-  // infer S3-like provider
+  // otherwise, try to infer S3-like provider
   const bucket = process.env.FILE_STORAGE_BUCKET;
   const endpoint = process.env.FILE_STORAGE_ENDPOINT?.toLowerCase();
   let provider: StorageProviderType = "aws-s3";
@@ -74,3 +86,4 @@ export function getStorageDiagnostics(): StorageDiagnostics {
     bucket
   };
 }
+
