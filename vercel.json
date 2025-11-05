@@ -1,13 +1,5 @@
 {
   "framework": "nextjs",
   "buildCommand": "pnpm build",
-  "outputDirectory": ".next",
-  "functions": {
-    "api/storage/**": {
-      "runtime": "vercel-blob@latest"
-    },
-    "api/(node)/storage/**": {
-      "runtime": "vercel-blob@latest"
-    }
-  }
+  "outputDirectory": ".next"
 }
