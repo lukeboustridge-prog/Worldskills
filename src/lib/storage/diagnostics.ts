@@ -16,11 +16,8 @@ export type StorageDiagnostics = {
 };
 
 /**
- * This is what the UI uses when it pings /api/storage/health
- * and also what our API can return.
- *
- * provider is optional because some client code creates a synthetic
- * “error” payload like { ok: false, reason: "error" }.
+ * Response shape the UI consumes from /api/storage/health.
+ * provider is optional because some client code fabricates an error object.
  */
 export type StorageHealthResponse = {
   ok: boolean;
@@ -36,10 +33,15 @@ export type StorageHealthResponse = {
 };
 
 /**
- * The admin / storage debug view wanted this shape.
- * It’s basically “what we last checked” + a timestamp.
+ * What the storage debug panel wants:
+ * - top-level provider (for formatProvider(...))
+ * - top-level ok
+ * - a payload with the original response
+ * - receivedAt timestamp
  */
 export type StorageDiagnosticsSnapshot = {
+  provider?: StorageProviderType;
+  ok?: boolean;
   payload: StorageHealthResponse;
   receivedAt: number;
 };
@@ -47,19 +49,18 @@ export type StorageDiagnosticsSnapshot = {
 export function getStorageDiagnostics(): StorageDiagnostics {
   const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN?.trim();
 
-  // if a Vercel Blob token exists, report that as the active provider
   if (hasBlobToken) {
     return {
       ok: true,
       provider: "vercel-blob",
-      // if you want to surface the blob bucket name, reuse this var
+      // if you store the blob bucket name in env, surface it
       bucket: process.env.FILE_STORAGE_BUCKET || undefined
     };
   }
 
-  // otherwise, try to infer S3-like provider
   const bucket = process.env.FILE_STORAGE_BUCKET;
   const endpoint = process.env.FILE_STORAGE_ENDPOINT?.toLowerCase();
+
   let provider: StorageProviderType = "aws-s3";
 
   if (endpoint?.includes("r2.cloudflarestorage") || endpoint?.includes("cloudflare")) {
@@ -86,4 +87,3 @@ export function getStorageDiagnostics(): StorageDiagnostics {
     bucket
   };
 }
-
