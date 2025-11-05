@@ -8,16 +8,23 @@ export type StorageProviderType =
   | "minio"
   | "custom";
 
+export type StorageRequirement = {
+  key: string;
+  label: string;
+  present: boolean;
+  optional?: boolean;
+};
+
 export type StorageDiagnostics = {
   ok: boolean;
   provider: StorageProviderType;
   bucket?: string;
   reason?: string;
+  requirements?: StorageRequirement[];
 };
 
 /**
  * Response shape the UI consumes from /api/storage/health.
- * provider is optional because some client code fabricates an error object.
  */
 export type StorageHealthResponse = {
   ok: boolean;
@@ -29,40 +36,58 @@ export type StorageHealthResponse = {
   source?: string;
   diagnostic?: string;
   bucket?: string;
+  requirements?: StorageRequirement[];
   [key: string]: unknown;
 };
 
 /**
  * What the storage debug panel wants:
- * - top-level provider (for formatProvider(...))
+ * - top-level provider
  * - top-level ok
- * - a payload with the original response
- * - receivedAt timestamp
+ * - requirements array
+ * - payload + receivedAt
  */
 export type StorageDiagnosticsSnapshot = {
   provider?: StorageProviderType;
   ok?: boolean;
+  requirements?: StorageRequirement[];
   payload: StorageHealthResponse;
   receivedAt: number;
 };
 
 export function getStorageDiagnostics(): StorageDiagnostics {
   const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  const bucket = process.env.FILE_STORAGE_BUCKET;
+  const endpoint = process.env.FILE_STORAGE_ENDPOINT?.toLowerCase();
 
+  const requirements: StorageRequirement[] = [
+    {
+      key: "blob_token",
+      label: "Vercel Blob token (BLOB_READ_WRITE_TOKEN)",
+      present: hasBlobToken,
+      optional: false
+    },
+    {
+      key: "s3_bucket",
+      label: "S3 / compatible bucket (FILE_STORAGE_BUCKET)",
+      present: !!bucket,
+      // optional because we prefer Blob now
+      optional: true
+    }
+  ];
+
+  // if we have a blob token, Blob wins
   if (hasBlobToken) {
     return {
       ok: true,
       provider: "vercel-blob",
-      // if you store the blob bucket name in env, surface it
-      bucket: process.env.FILE_STORAGE_BUCKET || undefined
+      bucket: bucket || undefined,
+      requirements
     };
   }
 
-  const bucket = process.env.FILE_STORAGE_BUCKET;
-  const endpoint = process.env.FILE_STORAGE_ENDPOINT?.toLowerCase();
-
+  // otherwise infer S3-ish
   let provider: StorageProviderType = "aws-s3";
-
   if (endpoint?.includes("r2.cloudflarestorage") || endpoint?.includes("cloudflare")) {
     provider = "cloudflare-r2";
   } else if (endpoint?.includes("supabase")) {
@@ -77,13 +102,15 @@ export function getStorageDiagnostics(): StorageDiagnostics {
     return {
       ok: false,
       provider,
-      reason: "No Blob token and no FILE_STORAGE_BUCKET was set."
+      reason: "No Blob token and no FILE_STORAGE_BUCKET was set.",
+      requirements
     };
   }
 
   return {
     ok: true,
     provider,
-    bucket
+    bucket,
+    requirements
   };
 }
