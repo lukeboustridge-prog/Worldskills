@@ -31,57 +31,36 @@ type ActiveStorage =
 type BlobUploadHelper = (params: Record<string, unknown>) => Promise<any>;
 
 function detectProviderFromEndpoint(endpoint?: string): StorageProviderType {
-  if (!endpoint) {
-    return "aws-s3";
-  }
-
+  if (!endpoint) return "aws-s3";
   const normalised = endpoint.toLowerCase();
-
-  if (normalised.includes("amazonaws")) {
-    return "aws-s3";
-  }
-
-  if (normalised.includes("r2.cloudflarestorage") || normalised.includes("cloudflare")) {
+  if (normalised.includes("amazonaws")) return "aws-s3";
+  if (normalised.includes("r2.cloudflarestorage") || normalised.includes("cloudflare"))
     return "cloudflare-r2";
-  }
-
-  if (normalised.includes("supabase")) {
-    return "supabase";
-  }
-
-  if (normalised.includes("minio")) {
-    return "minio";
-  }
-
+  if (normalised.includes("supabase")) return "supabase";
+  if (normalised.includes("minio")) return "minio";
   return "custom";
 }
 
 function sanitiseKey(key: string) {
   const trimmed = key.replace(/^\/+/, "");
-  if (trimmed.includes("..")) {
-    throw new Error("Storage keys must not contain relative path segments.");
-  }
+  if (trimmed.includes("..")) throw new Error("Storage keys must not contain relative path segments.");
   return trimmed;
 }
 
 function resolveActiveStorage(): ActiveStorage {
-  if (cachedProvider) {
-    return cachedProvider;
-  }
+  if (cachedProvider) return cachedProvider;
 
   const mode = getStorageMode();
   const diagnostics = getStorageDiagnostics();
   const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
 
+  // prefer Blob when we have a token and we are not explicitly in s3 mode
   if (mode !== "s3" && blobToken) {
-    cachedProvider = {
-      kind: "vercel-blob",
-      token: blobToken,
-      bucket: diagnostics.bucket
-    };
+    cachedProvider = { kind: "vercel-blob", token: blobToken, bucket: diagnostics.bucket };
     return cachedProvider;
   }
 
+  // explicit blob but no token → error
   if (mode === "blob" && !blobToken) {
     throw new StorageConfigurationError(
       "STORAGE_PROVIDER is set to 'blob' but BLOB_READ_WRITE_TOKEN is missing.",
@@ -89,6 +68,7 @@ function resolveActiveStorage(): ActiveStorage {
     );
   }
 
+  // otherwise S3/compatible
   const config = getStorageEnv();
   cachedProvider = {
     kind: "s3",
@@ -99,16 +79,13 @@ function resolveActiveStorage(): ActiveStorage {
 }
 
 function getBlobPublicBase(bucket?: string) {
-  if (bucket) {
-    return `https://${bucket}.public.blob.vercel-storage.com`;
-  }
-  return "https://blob.vercel-storage.com";
+  return bucket
+    ? `https://${bucket}.public.blob.vercel-storage.com`
+    : "https://blob.vercel-storage.com";
 }
 
 function getStorageClient() {
-  if (cachedClient) {
-    return cachedClient;
-  }
+  if (cachedClient) return cachedClient;
 
   const storage = resolveActiveStorage();
   if (storage.kind !== "s3") {
@@ -142,13 +119,15 @@ export async function createPresignedUpload(
   const { preferS3 = false } = options ?? {};
   const mode = getStorageMode();
 
-  if (preferS3) {
+  // explicit S3
+  if (preferS3 || mode === "s3") {
     const fallback = useS3ConfigFromEnv();
     return createS3PresignedUpload({ key, contentType, contentLength, checksum }, fallback, expiresIn);
   }
 
   const storage = resolveActiveStorage();
 
+  // Blob path
   if (storage.kind === "vercel-blob") {
     try {
       const safeKey = sanitiseKey(key);
@@ -167,7 +146,9 @@ export async function createPresignedUpload(
       const uploadUrl: string = blobResult?.url ?? blobResult?.uploadUrl;
       const pathname: string = blobResult?.pathname ?? safeKey;
       const expiresAt: string =
-        blobResult?.expiration ?? blobResult?.expiresAt ?? new Date(Date.now() + expiresIn * 1000).toISOString();
+        blobResult?.expiration ??
+        blobResult?.expiresAt ??
+        new Date(Date.now() + expiresIn * 1000).toISOString();
 
       if (!uploadUrl || !pathname) {
         throw new Error("Blob upload URL was not returned by the storage provider");
@@ -181,7 +162,11 @@ export async function createPresignedUpload(
         headers
       };
     } catch (error) {
-      if (mode === "auto" && shouldFallbackToS3(error)) {
+      const haveBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN?.trim();
+
+      // old behaviour: auto-fallback → S3
+      // new behaviour: only fallback if we REALLY don't have a blob token
+      if (!haveBlobToken && mode === "auto" && shouldFallbackToS3(error)) {
         const providerAttempts: StorageProviderType[] = ["vercel-blob"];
 
         try {
@@ -216,6 +201,7 @@ export async function createPresignedUpload(
     }
   }
 
+  // S3 path
   return createS3PresignedUpload({ key, contentType, contentLength, checksum }, storage, expiresIn);
 }
 
@@ -263,7 +249,8 @@ export async function createPresignedDownload(params: {
   if (storage.kind === "vercel-blob") {
     const safeKey = sanitiseKey(key);
     const info: any = await blobHead(safeKey, { token: storage.token });
-    const baseUrl = info?.downloadUrl ?? info?.url ?? `${getBlobPublicBase(storage.bucket)}/${safeKey}`;
+    const baseUrl =
+      info?.downloadUrl ?? info?.url ?? `${getBlobPublicBase(storage.bucket)}/${safeKey}`;
     const downloadUrl = new URL(baseUrl);
     if (fileName) {
       downloadUrl.searchParams.set("download", fileName);
@@ -282,7 +269,9 @@ export async function createPresignedDownload(params: {
     Bucket: bucket,
     Key: sanitiseKey(key),
     ResponseContentDisposition: fileName
-      ? `attachment; filename="${fileName.replace(/"/g, "")}"; filename*=UTF-8''${encodeURIComponent(fileName)}`
+      ? `attachment; filename="${fileName.replace(/"/g, "")}"; filename*=UTF-8''${encodeURIComponent(
+          fileName
+        )}`
       : undefined
   });
 
@@ -299,12 +288,14 @@ async function getBlobModule() {
   if (!blobModulePromise) {
     blobModulePromise = import("@vercel/blob");
   }
-
   return blobModulePromise;
 }
 
 function shouldFallbackToS3(error: unknown) {
-  if (!(error instanceof Error)) {
+  if (!(error instanceof Error)) return false;
+
+  // if we actually have a blob token, we don't want to silently fall back
+  if (process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
     return false;
   }
 
