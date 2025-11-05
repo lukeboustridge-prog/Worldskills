@@ -20,7 +20,8 @@ export type StorageDiagnostics = {
   provider: StorageProviderType;
   bucket?: string;
   reason?: string;
-  requirements?: StorageRequirement[];
+  // always present
+  requirements: StorageRequirement[];
 };
 
 /**
@@ -36,7 +37,8 @@ export type StorageHealthResponse = {
   source?: string;
   diagnostic?: string;
   bucket?: string;
-  requirements?: StorageRequirement[];
+  // always present for the dashboard
+  requirements: StorageRequirement[];
   [key: string]: unknown;
 };
 
@@ -50,7 +52,7 @@ export type StorageHealthResponse = {
 export type StorageDiagnosticsSnapshot = {
   provider?: StorageProviderType;
   ok?: boolean;
-  requirements?: StorageRequirement[];
+  requirements: StorageRequirement[];
   payload: StorageHealthResponse;
   receivedAt: number;
 };
@@ -76,7 +78,6 @@ export function getStorageDiagnostics(): StorageDiagnostics {
     }
   ];
 
-  // if we have a blob token, Blob wins
   if (hasBlobToken) {
     return {
       ok: true,
@@ -86,7 +87,6 @@ export function getStorageDiagnostics(): StorageDiagnostics {
     };
   }
 
-  // otherwise infer S3-ish
   let provider: StorageProviderType = "aws-s3";
   if (endpoint?.includes("r2.cloudflarestorage") || endpoint?.includes("cloudflare")) {
     provider = "cloudflare-r2";
