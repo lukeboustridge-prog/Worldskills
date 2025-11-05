@@ -1,5 +1,3 @@
-// lib/storage/blob.ts
-
 export type BlobVerificationResult =
   | {
       status: "ok";
@@ -12,12 +10,6 @@ export type BlobVerificationResult =
       message?: string;
     };
 
-/**
- * Lightweight verification for Vercel Blob.
- * We intentionally do NOT try to call the actual helper here, because some
- * Vercel runtimes complain even though the token is present.
- * If the token is present, we treat Blob as available.
- */
 export async function verifyVercelBlobSupport(): Promise<BlobVerificationResult> {
   const hasToken = !!process.env.BLOB_READ_WRITE_TOKEN?.trim();
 
