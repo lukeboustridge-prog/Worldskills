@@ -1,5 +1,3 @@
-// lib/storage/diagnostics.ts
-
 export type StorageProviderType =
   | "vercel-blob"
   | "aws-s3"
@@ -16,23 +14,37 @@ export type StorageDiagnostics = {
 };
 
 /**
- * Report what storage we THINK is active based on env.
- * This is used only for surfacing messages to the UI / logs.
+ * This matches what the dashboard's document-evidence-manager.tsx
+ * was importing as StorageHealthResponse.
+ *
+ * Keep it broad so the API can add fields without breaking the app.
  */
+export type StorageHealthResponse = {
+  ok: boolean;
+  provider: StorageProviderType;
+  note?: string;
+  env?: string;
+  runtime?: string;
+  source?: string;
+  diagnostic?: string;
+  bucket?: string;
+  // allow extra fields
+  [key: string]: unknown;
+};
+
 export function getStorageDiagnostics(): StorageDiagnostics {
   const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN?.trim();
 
-  // if we have a blob token, prefer that
   if (hasBlobToken) {
     return {
       ok: true,
       provider: "vercel-blob",
-      // some projects store blob bucket name here; if you have one, add it:
+      // some projects surface the blob bucket name here; reuse the existing var if present
       bucket: process.env.FILE_STORAGE_BUCKET || undefined
     };
   }
 
-  // else, try to infer S3-ish provider from env
+  // infer S3-like provider
   const bucket = process.env.FILE_STORAGE_BUCKET;
   const endpoint = process.env.FILE_STORAGE_ENDPOINT?.toLowerCase();
   let provider: StorageProviderType = "aws-s3";
