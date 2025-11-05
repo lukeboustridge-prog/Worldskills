@@ -21,7 +21,8 @@ export type StorageDiagnostics = {
  */
 export type StorageHealthResponse = {
   ok: boolean;
-  provider: StorageProviderType;
+  provider?: StorageProviderType; // <-- now optional
+  reason?: string;
   note?: string;
   env?: string;
   runtime?: string;
