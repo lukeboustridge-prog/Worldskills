@@ -20,12 +20,12 @@ export type StorageDiagnostics = {
   provider: StorageProviderType;
   bucket?: string;
   reason?: string;
-  // always present
+  // we always return this from getStorageDiagnostics()
   requirements: StorageRequirement[];
 };
 
 /**
- * Response shape the UI consumes from /api/storage/health.
+ * Looser shape – used in uploads UI, sometimes they only send { ok: false, reason: '...' }
  */
 export type StorageHealthResponse = {
   ok: boolean;
@@ -37,17 +37,14 @@ export type StorageHealthResponse = {
   source?: string;
   diagnostic?: string;
   bucket?: string;
-  // always present for the dashboard
-  requirements: StorageRequirement[];
+  // make this OPTIONAL here so document-evidence-manager's fallback object compiles
+  requirements?: StorageRequirement[];
   [key: string]: unknown;
 };
 
 /**
- * What the storage debug panel wants:
- * - top-level provider
- * - top-level ok
- * - requirements array
- * - payload + receivedAt
+ * Debug panel shape – this is what the dashboard screen imports.
+ * We make requirements non-optional here so the panel can do `.some(...)`.
  */
 export type StorageDiagnosticsSnapshot = {
   provider?: StorageProviderType;
@@ -73,7 +70,7 @@ export function getStorageDiagnostics(): StorageDiagnostics {
       key: "s3_bucket",
       label: "S3 / compatible bucket (FILE_STORAGE_BUCKET)",
       present: !!bucket,
-      // optional because we prefer Blob now
+      // optional because we're preferring Blob now
       optional: true
     }
   ];
