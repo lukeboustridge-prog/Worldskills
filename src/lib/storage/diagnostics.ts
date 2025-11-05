@@ -37,21 +37,23 @@ export type StorageHealthResponse = {
   source?: string;
   diagnostic?: string;
   bucket?: string;
-  // make this OPTIONAL here so document-evidence-manager's fallback object compiles
+  // uploads UI might omit this
   requirements?: StorageRequirement[];
   [key: string]: unknown;
 };
 
 /**
- * Debug panel shape – this is what the dashboard screen imports.
- * We make requirements non-optional here so the panel can do `.some(...)`.
+ * Debug panel shape – make it VERY permissive because the panel sometimes does:
+ * setDiagnostics({ ...payload.details, ok: payload.ok })
+ * which can be as small as { ok: true }.
  */
 export type StorageDiagnosticsSnapshot = {
   provider?: StorageProviderType;
   ok?: boolean;
-  requirements: StorageRequirement[];
-  payload: StorageHealthResponse;
-  receivedAt: number;
+  requirements?: StorageRequirement[];
+  payload?: StorageHealthResponse;
+  receivedAt?: number;
+  [key: string]: unknown;
 };
 
 export function getStorageDiagnostics(): StorageDiagnostics {
@@ -70,8 +72,7 @@ export function getStorageDiagnostics(): StorageDiagnostics {
       key: "s3_bucket",
       label: "S3 / compatible bucket (FILE_STORAGE_BUCKET)",
       present: !!bucket,
-      // optional because we're preferring Blob now
-      optional: true
+      optional: true // because we prefer Blob now
     }
   ];
 
