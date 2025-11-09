@@ -41,10 +41,6 @@ const UNREACHABLE_MESSAGE =
 const RUNTIME_UNAVAILABLE_MESSAGE =
   "Document uploads are disabled in this deployment environment. Redeploy the app with the Node.js runtime or contact the administrator.";
 
-interface UploadHeaders {
-  [key: string]: string;
-}
-
 type StorageHealthSnapshot = {
   payload: StorageHealthResponse;
   receivedAt: number;
@@ -55,9 +51,9 @@ const SHOW_READY_HINT =
   process.env.NODE_ENV !== "production" || STORAGE_DEBUG_ENABLED;
 const SHOW_STATUS_DEBUG =
   process.env.NODE_ENV !== "production" || STORAGE_DEBUG_ENABLED;
-const SHOW_PRESIGN_DEBUG = process.env.NODE_ENV !== "production";
+const SHOW_UPLOAD_DEBUG = process.env.NODE_ENV !== "production";
 
-type PresignDebugInfo = {
+type UploadDebugInfo = {
   endpoint: string;
   status: number;
   statusText: string;
@@ -88,35 +84,6 @@ function resolveMimeType(file: File) {
   return MIME_EXTENSION_FALLBACKS[extension] ?? "";
 }
 
-async function uploadWithProgress(params: {
-  url: string;
-  file: File;
-  headers: UploadHeaders;
-  onProgress: (value: number) => void;
-}) {
-  const { url, file, headers, onProgress } = params;
-
-  onProgress(0);
-
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      method: "PUT",
-      headers,
-      body: file
-    });
-  } catch (cause) {
-    console.error("Document upload network failure", cause);
-    throw new Error("Network error while uploading the file.");
-  }
-
-  if (!response.ok) {
-    throw new Error(`Upload failed with status ${response.status}.`);
-  }
-
-  onProgress(100);
-}
-
 export function DocumentEvidenceManager({
   deliverableId,
   skillId,
@@ -142,7 +109,7 @@ export function DocumentEvidenceManager({
   const [storageStatusSource, setStorageStatusSource] = useState<"initial" | "health" | "upload">(
     "initial"
   );
-  const [presignDebug, setPresignDebug] = useState<PresignDebugInfo | null>(null);
+  const [uploadDebug, setUploadDebug] = useState<UploadDebugInfo | null>(null);
 
   const disabled = status !== "idle";
   const hasEvidence = Boolean(evidence);
@@ -153,7 +120,7 @@ export function DocumentEvidenceManager({
     setError(null);
     setWarning(null);
     setSuccess(null);
-    setPresignDebug(null);
+    setUploadDebug(null);
   };
 
   useEffect(() => {
@@ -281,40 +248,19 @@ export function DocumentEvidenceManager({
         return;
       }
 
-      type PresignPayload = {
-        uploadUrl?: unknown;
-        url?: unknown;
-        key?: unknown;
-        storageKey?: unknown;
-        pathname?: unknown;
-        headers?: unknown;
-        requiredHeaders?: unknown;
-        provider?: unknown;
-        [key: string]: unknown;
-      };
-
-      type ResolvedPresign = {
-        uploadUrl: string;
-        key: string;
-        headers?: UploadHeaders;
-      };
-
-      let presigned: ResolvedPresign | null = null;
+      let uploadedKey: string | null = null;
       try {
-        const payloadContentType = mimeType || file.type || "application/octet-stream";
-        const presignRequestPayload = {
-          deliverableId,
-          skillId,
-          filename: file.name,
-          contentType: payloadContentType,
-          byteSize: file.size,
-          checksum
-        };
+        setStatus("uploading");
+        setProgress(0);
 
-        const response = await fetch(`/api/storage/presign`, {
+        const formData = new FormData();
+        formData.set("deliverableId", deliverableId);
+        formData.set("skillId", skillId);
+        formData.set("file", file);
+
+        const response = await fetch(`/api/storage/upload`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(presignRequestPayload)
+          body: formData
         });
 
         const responseText = await response.text();
@@ -324,7 +270,7 @@ export function DocumentEvidenceManager({
           try {
             responseData = JSON.parse(responseText);
           } catch (parseError) {
-            console.warn("[document-evidence] Failed to parse presign response", parseError);
+            console.warn("[document-evidence] Failed to parse upload response", parseError);
           }
         }
 
@@ -333,81 +279,61 @@ export function DocumentEvidenceManager({
             ? (responseData as Record<string, unknown>)
             : null;
 
-        const debugPayload: PresignDebugInfo = {
-          endpoint: "/api/storage/presign",
+        const debugPayload: UploadDebugInfo = {
+          endpoint: "/api/storage/upload",
           status: response.status,
           statusText: response.statusText,
           body: parsedData ?? responseText
         };
-        setPresignDebug(debugPayload);
+        setUploadDebug(debugPayload);
 
         if (!response.ok) {
           const fallbackError =
             parsedData && typeof parsedData["error"] === "string"
               ? (parsedData["error"] as string)
               : null;
+
+          let fallback: string;
           if (response.status === 503) {
+            fallback = fallbackError ?? NOT_CONFIGURED_MESSAGE;
             setStorageStatus("not-configured");
             setStorageStatusSource("upload");
-            setStorageNotice(fallbackError ?? NOT_CONFIGURED_MESSAGE);
-          }
-          const fallback =
-            response.status >= 500
-              ? "Upload service is not available. Please try again shortly."
-              : fallbackError ?? "We couldn't start the upload.";
-          if (response.status >= 500) {
+            setStorageNotice(fallback);
+          } else if (response.status >= 500) {
+            fallback = fallbackError ?? "Upload service is not available. Please try again shortly.";
             setStorageStatus("error");
             setStorageStatusSource("upload");
             setStorageNotice(fallback);
+          } else {
+            fallback = fallbackError ?? "We couldn't upload the file.";
           }
+
           throw new Error(fallback);
         }
 
         if (!parsedData) {
-          throw new Error("We couldn't prepare the upload. Please try again shortly.");
+          throw new Error("We couldn't upload the file. Please try again shortly.");
         }
 
-        const presignPayload = parsedData as PresignPayload;
-
-        const readString = (value: unknown) =>
-          typeof value === "string" && value.length > 0 ? value : undefined;
-
-        const uploadUrl: string | undefined =
-          readString(presignPayload.uploadUrl) ?? readString(presignPayload.url);
-        const storageKey: string | undefined =
-          readString(presignPayload.key) ??
-          readString(presignPayload.storageKey) ??
-          readString(presignPayload.pathname);
-        if (!uploadUrl || !storageKey) {
-          throw new Error("We couldn't prepare the upload. Please try again shortly.");
+        const keyValue = parsedData["key"];
+        if (typeof keyValue !== "string" || keyValue.length === 0) {
+          throw new Error("We couldn't confirm the uploaded file. Please try again shortly.");
         }
-        const headerSource =
-          presignPayload.requiredHeaders && typeof presignPayload.requiredHeaders === "object"
-            ? (presignPayload.requiredHeaders as Record<string, unknown>)
-            : presignPayload.headers && typeof presignPayload.headers === "object"
-              ? (presignPayload.headers as Record<string, unknown>)
-              : null;
 
-        const headers: UploadHeaders | undefined = headerSource
-          ? (Object.fromEntries(
-              Object.entries(headerSource).filter(
-                (entry): entry is [string, string] => typeof entry[1] === "string"
-              )
-            ) as UploadHeaders)
-          : undefined;
-
-        presigned = { uploadUrl, key: storageKey, headers };
+        uploadedKey = keyValue;
+        setProgress(100);
       } catch (cause) {
         setStatus("idle");
+        console.error("Document upload failed", cause);
         const message =
           cause instanceof Error
             ? cause.message
-            : "We couldn't prepare the upload. Check your connection and try again.";
+            : "We couldn't upload the file. Check your connection and try again.";
         setError(message);
 
-        if (!presignDebug) {
-          setPresignDebug({
-            endpoint: "/api/storage/presign",
+        if (!uploadDebug) {
+          setUploadDebug({
+            endpoint: "/api/storage/upload",
             status: 0,
             statusText: "exception",
             body: cause instanceof Error ? cause.message : cause
@@ -419,31 +345,17 @@ export function DocumentEvidenceManager({
           setStorageStatusSource("upload");
           setStorageNotice(message);
         }
-        return;
-      }
 
-      if (!presigned) {
-        setStatus("idle");
-        setError("We couldn't prepare the upload. Please try again shortly.");
-        return;
-      }
-
-      setStatus("uploading");
-
-      try {
-        await uploadWithProgress({
-          url: presigned.uploadUrl,
-          file,
-          headers: presigned.headers ?? { "Content-Type": mimeType },
-          onProgress: setProgress
-        });
-      } catch (cause) {
-        setStatus("idle");
-        console.error("Document upload failed", cause);
-        setError("Could not upload the file. Check the file size and try again.");
         if (isRetryableDocumentUploadError(cause)) {
           setWarning("The connection dropped during upload. You can retry without losing progress.");
         }
+
+        return;
+      }
+
+      if (!uploadedKey) {
+        setStatus("idle");
+        setError("We couldn't confirm the uploaded file. Please try again shortly.");
         return;
       }
 
@@ -455,7 +367,7 @@ export function DocumentEvidenceManager({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             skillId,
-            storageKey: presigned.key,
+            storageKey: uploadedKey,
             fileName: file.name,
             mimeType,
             fileSize: file.size,
@@ -793,11 +705,11 @@ export function DocumentEvidenceManager({
           </pre>
         </div>
       ) : null}
-      {SHOW_PRESIGN_DEBUG && presignDebug ? (
+      {SHOW_UPLOAD_DEBUG && uploadDebug ? (
         <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/10 p-3 text-left text-xs text-muted-foreground">
-          <p className="mb-1 font-semibold text-foreground">Presign debug</p>
+          <p className="mb-1 font-semibold text-foreground">Upload debug</p>
           <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] text-muted-foreground">
-            {JSON.stringify(presignDebug, null, 2)}
+            {JSON.stringify(uploadDebug, null, 2)}
           </pre>
         </div>
       ) : null}
