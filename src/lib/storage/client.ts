@@ -51,7 +51,7 @@ function getClient() {
   const config = getStorageEnv();
 
   if (!cachedClient) {
-    cachedClient = new S3Client({
+    const client = new S3Client({
       region: config.region,
       endpoint: config.endpoint,
       forcePathStyle: config.forcePathStyle,
@@ -60,6 +60,21 @@ function getClient() {
         secretAccessKey: config.secretAccessKey,
       },
     });
+
+    // AWS SDK v3 adds a flexible checksum middleware by default.
+    // R2 does not like the extra checksum query params, so remove it.
+    try {
+      client.middlewareStack.remove("flexibleChecksumsMiddleware");
+    } catch {
+      // ignore if not present
+    }
+    try {
+      client.middlewareStack.remove("flexibleChecksumsMiddlewareOptions");
+    } catch {
+      // ignore if not present
+    }
+
+    cachedClient = client;
     cachedProvider = detectProviderFromEndpoint(config.endpoint);
   }
 
@@ -74,7 +89,7 @@ export async function createPresignedUpload(params: {
   key: string;
   contentType: string;
   contentLength: number;
-  checksum?: string; // accepted but ignored for R2
+  checksum?: string; // ignored for R2
   expiresIn?: number;
 }) {
   const { key, contentType, contentLength, expiresIn = 300 } = params;
