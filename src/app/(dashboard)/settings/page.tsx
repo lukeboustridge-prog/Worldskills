@@ -18,13 +18,13 @@ import { hasGateTemplateCatalogSupport, hasInvitationTable } from "@/lib/schema-
 import {
   createDeliverableTemplateAction,
   deleteDeliverableTemplateAction,
-  createGateTemplateAction,
-  deleteGateTemplateAction,
+  createMilestoneTemplateAction,
+  deleteMilestoneTemplateAction,
   createInvitationAction,
   createMissingDeliverablesAction,
   saveCompetitionSettingsAction,
   updateDeliverableTemplateAction,
-  updateGateTemplateAction,
+  updateMilestoneTemplateAction,
   updateUserRoleAction
 } from "./actions";
 import { prisma } from "@/lib/prisma";
@@ -132,20 +132,30 @@ export default async function SettingsPage({
   const removedCount = parseCountParam(
     typeof searchParams?.removed === "string" ? searchParams.removed : undefined
   );
-  const gateTemplateCreatedKey =
-    typeof searchParams?.gateTemplateCreated === "string" ? searchParams.gateTemplateCreated : null;
-  const gateTemplateUpdatedKey =
-    typeof searchParams?.gateTemplateUpdated === "string" ? searchParams.gateTemplateUpdated : null;
-  const gateTemplateDeletedKey =
-    typeof searchParams?.gateTemplateDeleted === "string" ? searchParams.gateTemplateDeleted : null;
-  const gatesAddedCount = parseCountParam(
-    typeof searchParams?.gatesAdded === "string" ? searchParams.gatesAdded : undefined
+  const milestoneTemplateCreatedKey =
+    typeof searchParams?.milestoneTemplateCreated === "string"
+      ? searchParams.milestoneTemplateCreated
+      : null;
+  const milestoneTemplateUpdatedKey =
+    typeof searchParams?.milestoneTemplateUpdated === "string"
+      ? searchParams.milestoneTemplateUpdated
+      : null;
+  const milestoneTemplateDeletedKey =
+    typeof searchParams?.milestoneTemplateDeleted === "string"
+      ? searchParams.milestoneTemplateDeleted
+      : null;
+  const milestonesAddedCount = parseCountParam(
+    typeof searchParams?.milestonesAdded === "string" ? searchParams.milestonesAdded : undefined
   );
-  const gatesCreatedCount = parseCountParam(
-    typeof searchParams?.gatesCreated === "string" ? searchParams.gatesCreated : undefined
+  const milestonesCreatedCount = parseCountParam(
+    typeof searchParams?.milestonesCreated === "string"
+      ? searchParams.milestonesCreated
+      : undefined
   );
-  const gatesRemovedCount = parseCountParam(
-    typeof searchParams?.gatesRemoved === "string" ? searchParams.gatesRemoved : undefined
+  const milestonesRemovedCount = parseCountParam(
+    typeof searchParams?.milestonesRemoved === "string"
+      ? searchParams.milestonesRemoved
+      : undefined
   );
   const userUpdated = typeof searchParams?.userUpdated === "string";
   const userQuery = typeof searchParams?.userQuery === "string" ? searchParams.userQuery.trim() : "";
@@ -160,10 +170,10 @@ export default async function SettingsPage({
     userErrorMessage ? { id: "user-error", message: userErrorMessage } : null
   ].filter((entry): entry is { id: string; message: string } => entry !== null);
 
-  const gateTemplateSupportPromise = hasGateTemplateCatalogSupport();
+  const milestoneTemplateSupportPromise = hasGateTemplateCatalogSupport();
   const invitationSupportPromise = hasInvitationTable();
 
-  const [templates, gateTemplates, users, invitationsSupported] = await Promise.all([
+  const [templates, milestoneTemplates, users, invitationsSupported] = await Promise.all([
     getDeliverableTemplates(),
     getGateTemplates(),
     prisma.user.findMany({
@@ -180,7 +190,7 @@ export default async function SettingsPage({
     invitationSupportPromise
   ]);
 
-  const gateTemplatesSupported = await gateTemplateSupportPromise;
+  const milestoneTemplatesSupported = await milestoneTemplateSupportPromise;
 
   const pendingUsers = users.filter((record) => !record.isAdmin && record.role === Role.Pending);
   const registeredUsers = users.filter((record) => record.isAdmin || record.role !== Role.Pending);
@@ -270,21 +280,23 @@ export default async function SettingsPage({
     ? templates.find((template) => template.key === templateUpdatedKey)
     : null;
   const deletedTemplateLabel = templateDeletedLabel ?? templateDeletedKey;
-  const createdGateTemplate = gateTemplateCreatedKey
-    ? gateTemplates.find((template) => template.key === gateTemplateCreatedKey)
+  const createdMilestoneTemplate = milestoneTemplateCreatedKey
+    ? milestoneTemplates.find((template) => template.key === milestoneTemplateCreatedKey)
     : null;
-  const updatedGateTemplate = gateTemplateUpdatedKey
-    ? gateTemplates.find((template) => template.key === gateTemplateUpdatedKey)
+  const updatedMilestoneTemplate = milestoneTemplateUpdatedKey
+    ? milestoneTemplates.find((template) => template.key === milestoneTemplateUpdatedKey)
     : null;
-  const deletedGateTemplateLabel =
-    typeof searchParams?.gateTemplateName === "string" ? searchParams.gateTemplateName : gateTemplateDeletedKey;
+  const deletedMilestoneTemplateLabel =
+    typeof searchParams?.milestoneTemplateName === "string"
+      ? searchParams.milestoneTemplateName
+      : milestoneTemplateDeletedKey;
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Admin Settings</h1>
         <p className="text-muted-foreground">
-          Manage competition dates, standard deliverables and gates, user access, and invitations.
+          Manage competition dates, standard deliverables and milestones, user access, and invitations.
         </p>
       </div>
 
@@ -305,8 +317,8 @@ export default async function SettingsPage({
         ) : null}
         {backfilled ? (
           <div className="rounded-md border border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
-            Missing deliverables{gatesCreatedCount > 0 ? " and gates" : ""} have been created for all skills. {createdCount} new deliverables were added.
-            {gatesCreatedCount > 0 ? ` ${gatesCreatedCount} gates were added.` : ""}
+            Missing deliverables{milestonesCreatedCount > 0 ? " and milestones" : ""} have been created for all skills. {createdCount} new deliverables were added.
+            {milestonesCreatedCount > 0 ? ` ${milestonesCreatedCount} milestones were added.` : ""}
           </div>
         ) : null}
         {templateCreatedKey ? (
@@ -326,23 +338,21 @@ export default async function SettingsPage({
             {removedCount > 0 ? ` Deleted ${removedCount} seeded deliverables from existing skills.` : ""}
           </div>
         ) : null}
-        {gateTemplatesSupported && gateTemplateCreatedKey ? (
+        {milestoneTemplatesSupported && milestoneTemplateCreatedKey ? (
           <div className="rounded-md border border-orange-400 bg-orange-50 p-4 text-sm text-orange-900">
-            {createdGateTemplate ? `Added ${createdGateTemplate.name}` : `Added ${gateTemplateCreatedKey}`} to the gate
-            catalog.{" "}
-            {gatesAddedCount > 0 ? `Created ${gatesAddedCount} gates across existing skills.` : ""}
+            {createdMilestoneTemplate ? `Added ${createdMilestoneTemplate.name}` : `Added ${milestoneTemplateCreatedKey}`} to the milestone catalog.{" "}
+            {milestonesAddedCount > 0 ? `Created ${milestonesAddedCount} milestones across existing skills.` : ""}
           </div>
         ) : null}
-        {gateTemplatesSupported && gateTemplateUpdatedKey ? (
+        {milestoneTemplatesSupported && milestoneTemplateUpdatedKey ? (
           <div className="rounded-md border border-rose-400 bg-rose-50 p-4 text-sm text-rose-900">
-            Gate template {updatedGateTemplate ? updatedGateTemplate.name : gateTemplateUpdatedKey} updated. Existing gates now
-            reflect the new schedule.
+            Milestone template {updatedMilestoneTemplate ? updatedMilestoneTemplate.name : milestoneTemplateUpdatedKey} updated. Existing milestones now reflect the new schedule.
           </div>
         ) : null}
-        {gateTemplatesSupported && gateTemplateDeletedKey ? (
+        {milestoneTemplatesSupported && milestoneTemplateDeletedKey ? (
           <div className="rounded-md border border-red-400 bg-red-50 p-4 text-sm text-red-900">
-            Removed {deletedGateTemplateLabel ?? gateTemplateDeletedKey} from the gate catalog.
-            {gatesRemovedCount > 0 ? ` Deleted ${gatesRemovedCount} seeded gates from existing skills.` : ""}
+            Removed {deletedMilestoneTemplateLabel ?? milestoneTemplateDeletedKey} from the milestone catalog.
+            {milestonesRemovedCount > 0 ? ` Deleted ${milestonesRemovedCount} seeded milestones from existing skills.` : ""}
           </div>
         ) : null}
         {invitationsSupported && inviteCreated && inviteLink ? (
@@ -564,26 +574,28 @@ export default async function SettingsPage({
       </CollapsibleSection>
 
       <CollapsibleSection
-        title="Gate templates"
-        description="Define the standard gates that are created for every skill."
+        title="Milestone templates"
+        description="Define the standard milestones that are created for every skill."
         defaultOpen={
-          Boolean(gateTemplateCreatedKey || gateTemplateUpdatedKey || gateTemplateDeletedKey) || !gateTemplatesSupported
+          Boolean(
+            milestoneTemplateCreatedKey || milestoneTemplateUpdatedKey || milestoneTemplateDeletedKey
+          ) || !milestoneTemplatesSupported
         }
       >
-        {gateTemplatesSupported ? (
+        {milestoneTemplatesSupported ? (
           <>
             <form
-              action={createGateTemplateAction}
+              action={createMilestoneTemplateAction}
               className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-2 xl:grid-cols-6 xl:items-end"
             >
               <div className="space-y-2 md:col-span-2 xl:col-span-2">
-                <Label htmlFor="gate-name">New gate name</Label>
-                <Input id="gate-name" name="name" placeholder="Validation workshop" required />
+                <Label htmlFor="milestone-name">New milestone name</Label>
+                <Input id="milestone-name" name="name" placeholder="Validation workshop" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gate-schedule">Schedule type</Label>
+                <Label htmlFor="milestone-schedule">Schedule type</Label>
                 <select
-                  id="gate-schedule"
+                  id="milestone-schedule"
                   name="scheduleType"
                   defaultValue="cmonth"
                   className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
@@ -593,50 +605,50 @@ export default async function SettingsPage({
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gate-offset">Months before C1</Label>
-                <Input id="gate-offset" name="offsetMonths" type="number" min={0} max={48} />
+                <Label htmlFor="milestone-offset">Months before C1</Label>
+                <Input id="milestone-offset" name="offsetMonths" type="number" min={0} max={48} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gate-calendar">Calendar due date</Label>
-                <Input id="gate-calendar" name="calendarDueDate" type="date" />
+                <Label htmlFor="milestone-calendar">Calendar due date</Label>
+                <Input id="milestone-calendar" name="calendarDueDate" type="date" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gate-position">Position</Label>
+                <Label htmlFor="milestone-position">Position</Label>
                 <Input
-                  id="gate-position"
+                  id="milestone-position"
                   name="position"
                   type="number"
                   min={1}
-                  placeholder={`${gateTemplates.length + 1}`}
+                  placeholder={`${milestoneTemplates.length + 1}`}
                 />
               </div>
               <div className="space-y-2 md:col-span-2 xl:col-span-2">
-                <Label htmlFor="gate-key">Key (optional)</Label>
-                <Input id="gate-key" name="key" placeholder="ValidationGate" />
+                <Label htmlFor="milestone-key">Key (optional)</Label>
+                <Input id="milestone-key" name="key" placeholder="ValidationMilestone" />
               </div>
               <div className="flex items-end md:col-span-2 xl:col-span-1 xl:justify-end">
                 <Button type="submit" className="w-full xl:w-auto">
-                  Add gate
+                  Add milestone
                 </Button>
               </div>
             </form>
 
             <div className="space-y-4">
-              {gateTemplates.map((template) => (
+              {milestoneTemplates.map((template) => (
                 <div key={template.key} className="rounded-md border p-4">
                   <form
-                    action={updateGateTemplateAction}
+                    action={updateMilestoneTemplateAction}
                     className="grid gap-4 md:grid-cols-2 xl:grid-cols-6 xl:items-end"
                   >
                     <input type="hidden" name="key" value={template.key} />
                     <div className="space-y-2 md:col-span-2 xl:col-span-2">
-                      <Label htmlFor={`gate-name-${template.key}`}>Name</Label>
-                      <Input id={`gate-name-${template.key}`} name="name" defaultValue={template.name} required />
+                      <Label htmlFor={`milestone-name-${template.key}`}>Name</Label>
+                      <Input id={`milestone-name-${template.key}`} name="name" defaultValue={template.name} required />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor={`gate-schedule-${template.key}`}>Schedule type</Label>
+                      <Label htmlFor={`milestone-schedule-${template.key}`}>Schedule type</Label>
                         <select
-                          id={`gate-schedule-${template.key}`}
+                          id={`milestone-schedule-${template.key}`}
                           name="scheduleType"
                           defaultValue={
                             template.scheduleType === GateScheduleType.Calendar ? "calendar" : "cmonth"
@@ -648,9 +660,9 @@ export default async function SettingsPage({
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor={`gate-offset-${template.key}`}>Months before C1</Label>
+                        <Label htmlFor={`milestone-offset-${template.key}`}>Months before C1</Label>
                         <Input
-                          id={`gate-offset-${template.key}`}
+                          id={`milestone-offset-${template.key}`}
                           name="offsetMonths"
                           type="number"
                           min={0}
@@ -659,18 +671,18 @@ export default async function SettingsPage({
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor={`gate-calendar-${template.key}`}>Calendar due date</Label>
+                        <Label htmlFor={`milestone-calendar-${template.key}`}>Calendar due date</Label>
                         <Input
-                          id={`gate-calendar-${template.key}`}
+                          id={`milestone-calendar-${template.key}`}
                           name="calendarDueDate"
                           type="date"
                           defaultValue={formatDateInput(template.calendarDueDate)}
                         />
                       </div>
                     <div className="space-y-2">
-                      <Label htmlFor={`gate-position-${template.key}`}>Position</Label>
+                      <Label htmlFor={`milestone-position-${template.key}`}>Position</Label>
                       <Input
-                        id={`gate-position-${template.key}`}
+                        id={`milestone-position-${template.key}`}
                         name="position"
                         type="number"
                         min={1}
@@ -693,7 +705,7 @@ export default async function SettingsPage({
                           ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`
                           : "Schedule pending"}
                     </p>
-                    <form action={deleteGateTemplateAction} className="flex">
+                    <form action={deleteMilestoneTemplateAction} className="flex">
                       <input type="hidden" name="key" value={template.key} />
                       <Button type="submit" variant="destructive" size="sm">
                         Delete
@@ -706,7 +718,7 @@ export default async function SettingsPage({
           </>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Gate templates will be available once the latest database migration has completed. Existing gates continue to use
+            Milestone templates will be available once the latest database migration has completed. Existing milestones continue to use
             the default schedule in the meantime.
           </p>
         )}
@@ -877,12 +889,12 @@ export default async function SettingsPage({
 
       <CollapsibleSection
         title="Maintenance tools"
-        description="Recreate any missing deliverables or gates for existing skills."
+        description="Recreate any missing deliverables or milestones for existing skills."
         defaultOpen={backfilled}
       >
         <form action={createMissingDeliverablesAction} className="inline">
           <Button type="submit" variant="outline">
-            Create missing deliverables and gates
+            Create missing deliverables and milestones
           </Button>
         </form>
         <p className="text-xs text-muted-foreground">

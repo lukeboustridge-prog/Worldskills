@@ -127,13 +127,13 @@ export async function createMissingDeliverablesAction() {
 
   const settings = await requireAppSettings();
   const skills = await prisma.skill.findMany({ select: { id: true } });
-  const [templates, gateTemplates] = await Promise.all([
+  const [templates, milestoneTemplates] = await Promise.all([
     getDeliverableTemplates(),
     getGateTemplates()
   ]);
 
   let totalCreated = 0;
-  let totalGates = 0;
+  let totalMilestones = 0;
   for (const skill of skills) {
     const created = await ensureStandardDeliverablesForSkill({
       skillId: skill.id,
@@ -143,13 +143,13 @@ export async function createMissingDeliverablesAction() {
     });
     totalCreated += created.length;
 
-    const createdGates = await ensureStandardGatesForSkill({
+    const createdMilestones = await ensureStandardGatesForSkill({
       skillId: skill.id,
       settings,
       actorId: user.id,
-      templates: gateTemplates
+      templates: milestoneTemplates
     });
-    totalGates += createdGates.length;
+    totalMilestones += createdMilestones.length;
   }
 
   revalidatePath("/settings");
@@ -157,8 +157,8 @@ export async function createMissingDeliverablesAction() {
   revalidatePath("/skills");
 
   const params = new URLSearchParams({ backfilled: "1", created: String(totalCreated) });
-  if (totalGates > 0) {
-    params.set("gatesCreated", String(totalGates));
+  if (totalMilestones > 0) {
+    params.set("milestonesCreated", String(totalMilestones));
   }
   redirect(`/settings?${params.toString()}`);
 }
@@ -229,7 +229,7 @@ export async function createDeliverableTemplateAction(formData: FormData) {
     throw new Error("A deliverable with that key already exists.");
   }
 
-  const maxPosition = templates.reduce((max, template) => Math.max(max, template.position), 0);
+  const maxPosition = milestoneTemplates.reduce((max, template) => Math.max(max, template.position), 0);
   const position = parsed.position ?? maxPosition + 1;
   const settings = await requireAppSettings();
 
@@ -404,26 +404,26 @@ export async function deleteDeliverableTemplateAction(formData: FormData) {
   redirect(`/settings?${params.toString()}`);
 }
 
-const gateTemplateDeletionSchema = z.object({
-  key: z.string().min(1, "Missing gate key")
+const milestoneTemplateDeletionSchema = z.object({
+  key: z.string().min(1, "Missing milestone key")
 });
 
-export async function deleteGateTemplateAction(formData: FormData) {
+export async function deleteMilestoneTemplateAction(formData: FormData) {
   const user = await requireAdminUser();
 
   const supportsCatalog = await hasGateTemplateCatalogSupport();
   if (!supportsCatalog) {
-    throw new Error("Gate template catalog is not available.");
+    throw new Error("Milestone template catalog is not available.");
   }
 
-  const parsed = gateTemplateDeletionSchema.parse({ key: formData.get("key") });
+  const parsed = milestoneTemplateDeletionSchema.parse({ key: formData.get("key") });
 
   const template = await prisma.gateTemplate.findUnique({
     where: { key: parsed.key }
   });
 
   if (!template) {
-    throw new Error("Gate template not found.");
+    throw new Error("Milestone template not found.");
   }
 
   const gates = await prisma.gate.findMany({
@@ -456,24 +456,24 @@ export async function deleteGateTemplateAction(formData: FormData) {
   }
 
   const results = await prisma.$transaction(operations);
-  const gateDeletionResult = results[0] as Prisma.BatchPayload;
-  const removedCount = gateDeletionResult.count;
+  const milestoneDeletionResult = results[0] as Prisma.BatchPayload;
+  const removedCount = milestoneDeletionResult.count;
 
   revalidatePath("/settings");
   revalidatePath("/dashboard");
   revalidatePath("/skills");
 
-  const params = new URLSearchParams({ gateTemplateDeleted: template.key });
-  params.set("gateTemplateName", template.name);
-  params.set("gatesRemoved", String(removedCount));
+  const params = new URLSearchParams({ milestoneTemplateDeleted: template.key });
+  params.set("milestoneTemplateName", template.name);
+  params.set("milestonesRemoved", String(removedCount));
 
   redirect(`/settings?${params.toString()}`);
 }
 
-const gateTemplateSchema = z.discriminatedUnion("scheduleType", [
+const milestoneTemplateSchema = z.discriminatedUnion("scheduleType", [
   z.object({
     scheduleType: z.literal("calendar"),
-    name: z.string().min(3, "Gate name must be at least 3 characters"),
+    name: z.string().min(3, "Milestone name must be at least 3 characters"),
     calendarDueDate: z
       .string()
       .refine((value) => !!value && !Number.isNaN(Date.parse(value)), "Provide a valid calendar date"),
@@ -482,17 +482,17 @@ const gateTemplateSchema = z.discriminatedUnion("scheduleType", [
   }),
   z.object({
     scheduleType: z.literal("cmonth"),
-    name: z.string().min(3, "Gate name must be at least 3 characters"),
+    name: z.string().min(3, "Milestone name must be at least 3 characters"),
     offsetMonths: z.coerce.number().int().min(0).max(48),
     position: z.coerce.number().int().min(1).optional(),
     key: z.string().optional()
   })
 ]);
 
-export async function createGateTemplateAction(formData: FormData) {
+export async function createMilestoneTemplateAction(formData: FormData) {
   const user = await requireAdminUser();
   const scheduleType = (formData.get("scheduleType") ?? "cmonth").toString();
-  const parsed = gateTemplateSchema.parse(
+  const parsed = milestoneTemplateSchema.parse(
     scheduleType === "calendar"
       ? {
           scheduleType: "calendar",
@@ -512,18 +512,18 @@ export async function createGateTemplateAction(formData: FormData) {
 
   const supportsCatalog = await hasGateTemplateCatalogSupport();
   if (!supportsCatalog) {
-    throw new Error("Gate templates will be available once the database migration has completed.");
+    throw new Error("Milestone templates will be available once the database migration has completed.");
   }
 
-  const templates = await getGateTemplates();
+  const milestoneTemplates = await getGateTemplates();
   const normalizedKey = normalizeTemplateKey(parsed.name, parsed.key);
 
-  const existingTemplate = templates.find((template) => template.key === normalizedKey);
+  const existingTemplate = milestoneTemplates.find((template) => template.key === normalizedKey);
   if (existingTemplate) {
-    throw new Error("A gate with that key already exists.");
+    throw new Error("A milestone with that key already exists.");
   }
 
-  const maxPosition = templates.reduce((max, template) => Math.max(max, template.position), 0);
+  const maxPosition = milestoneTemplates.reduce((max, template) => Math.max(max, template.position), 0);
   const position = parsed.position ?? maxPosition + 1;
   const settings = await requireAppSettings();
 
@@ -544,13 +544,13 @@ export async function createGateTemplateAction(formData: FormData) {
 
   const skills = await prisma.skill.findMany({ select: { id: true } });
   let createdCount = 0;
-  const refreshedTemplates = await getGateTemplates();
+  const refreshedMilestoneTemplates = await getGateTemplates();
   for (const skill of skills) {
     const created = await ensureStandardGatesForSkill({
       skillId: skill.id,
       settings,
       actorId: user.id,
-      templates: refreshedTemplates
+      templates: refreshedMilestoneTemplates
     });
     createdCount += created.filter((gate) => gate.templateKey === template.key).length;
   }
@@ -559,15 +559,15 @@ export async function createGateTemplateAction(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/skills");
 
-  const params = new URLSearchParams({ gateTemplateCreated: template.key, gatesAdded: String(createdCount) });
+  const params = new URLSearchParams({ milestoneTemplateCreated: template.key, milestonesAdded: String(createdCount) });
   redirect(`/settings?${params.toString()}`);
 }
 
-const gateTemplateUpdateSchema = z.discriminatedUnion("scheduleType", [
+const milestoneTemplateUpdateSchema = z.discriminatedUnion("scheduleType", [
   z.object({
     scheduleType: z.literal("calendar"),
     key: z.string().min(1),
-    name: z.string().min(3, "Gate name must be at least 3 characters"),
+    name: z.string().min(3, "Milestone name must be at least 3 characters"),
     calendarDueDate: z
       .string()
       .refine((value) => !!value && !Number.isNaN(Date.parse(value)), "Provide a valid calendar date"),
@@ -576,16 +576,16 @@ const gateTemplateUpdateSchema = z.discriminatedUnion("scheduleType", [
   z.object({
     scheduleType: z.literal("cmonth"),
     key: z.string().min(1),
-    name: z.string().min(3, "Gate name must be at least 3 characters"),
+    name: z.string().min(3, "Milestone name must be at least 3 characters"),
     offsetMonths: z.coerce.number().int().min(0).max(48),
     position: z.coerce.number().int().min(1)
   })
 ]);
 
-export async function updateGateTemplateAction(formData: FormData) {
+export async function updateMilestoneTemplateAction(formData: FormData) {
   const user = await requireAdminUser();
   const scheduleType = (formData.get("scheduleType") ?? "cmonth").toString();
-  const parsed = gateTemplateUpdateSchema.parse(
+  const parsed = milestoneTemplateUpdateSchema.parse(
     scheduleType === "calendar"
       ? {
           scheduleType: "calendar",
@@ -605,7 +605,7 @@ export async function updateGateTemplateAction(formData: FormData) {
 
   const supportsCatalog = await hasGateTemplateCatalogSupport();
   if (!supportsCatalog) {
-    throw new Error("Gate templates will be available once the database migration has completed.");
+    throw new Error("Milestone templates will be available once the database migration has completed.");
   }
 
   const settings = await requireAppSettings();
@@ -633,7 +633,7 @@ export async function updateGateTemplateAction(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/skills");
 
-  const params = new URLSearchParams({ gateTemplateUpdated: template.key });
+  const params = new URLSearchParams({ milestoneTemplateUpdated: template.key });
   redirect(`/settings?${params.toString()}`);
 }
 

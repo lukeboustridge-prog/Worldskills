@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "WorldSkills Skill Advisor Tracker",
   description:
-    "Track WorldSkills deliverables, gates, and conversations between Skill Advisors and Skill Competition Managers."
+    "Track WorldSkills deliverables, milestones, and conversations between Skill Advisors and Skill Competition Managers."
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

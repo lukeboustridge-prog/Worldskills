@@ -436,7 +436,7 @@ export async function createCustomDeliverableAction(formData: FormData) {
   revalidateSkill(skill.id);
 }
 
-const gateSchema = z.discriminatedUnion("scheduleType", [
+const milestoneSchema = z.discriminatedUnion("scheduleType", [
   z.object({
     scheduleType: z.literal("calendar"),
     skillId: z.string().min(1),
@@ -456,12 +456,12 @@ const gateSchema = z.discriminatedUnion("scheduleType", [
   })
 ]);
 
-export async function createGateAction(formData: FormData) {
+export async function createMilestoneAction(formData: FormData) {
   const user = await requireUser();
 
   const scheduleType = formData.get("scheduleType") ?? "calendar";
 
-  const parsed = gateSchema.safeParse(
+  const parsed = milestoneSchema.safeParse(
     scheduleType === "cmonth"
       ? {
           scheduleType,
@@ -483,7 +483,7 @@ export async function createGateAction(formData: FormData) {
 
   const skill = await ensureSkill(parsed.data.skillId);
   if (!canManageSkill(user, skill)) {
-    throw new Error("You do not have access to create gates for this skill");
+    throw new Error("You do not have access to create milestones for this skill");
   }
 
   let dueDate: Date;
@@ -611,17 +611,17 @@ export async function unhideDeliverableAction(formData: FormData) {
   revalidateSkill(parsed.data.skillId);
 }
 
-const gateStatusSchema = z.object({
-  gateId: z.string().min(1),
+const milestoneStatusSchema = z.object({
+  milestoneId: z.string().min(1),
   skillId: z.string().min(1),
   status: z.nativeEnum(GateStatus)
 });
 
-export async function updateGateStatusAction(formData: FormData) {
+export async function updateMilestoneStatusAction(formData: FormData) {
   const user = await requireUser();
 
-  const parsed = gateStatusSchema.safeParse({
-    gateId: formData.get("gateId"),
+  const parsed = milestoneStatusSchema.safeParse({
+    milestoneId: formData.get("milestoneId"),
     skillId: formData.get("skillId"),
     status: formData.get("status")
   });
@@ -632,12 +632,12 @@ export async function updateGateStatusAction(formData: FormData) {
 
   const skill = await ensureSkill(parsed.data.skillId);
   if (!canManageSkill(user, skill)) {
-    throw new Error("You do not have access to update gates for this skill");
+    throw new Error("You do not have access to update milestones for this skill");
   }
 
   const status = parsed.data.status;
   const gate = await prisma.gate.update({
-    where: { id: parsed.data.gateId },
+    where: { id: parsed.data.milestoneId },
     data: {
       status,
       completedBy: status === GateStatus.Complete ? user.id : null,
@@ -658,16 +658,16 @@ export async function updateGateStatusAction(formData: FormData) {
   revalidateSkill(parsed.data.skillId);
 }
 
-const deleteGateSchema = z.object({
-  gateId: z.string().min(1),
+const deleteMilestoneSchema = z.object({
+  milestoneId: z.string().min(1),
   skillId: z.string().min(1)
 });
 
-export async function deleteGateAction(formData: FormData) {
+export async function deleteMilestoneAction(formData: FormData) {
   const user = await requireUser();
 
-  const parsed = deleteGateSchema.safeParse({
-    gateId: formData.get("gateId"),
+  const parsed = deleteMilestoneSchema.safeParse({
+    milestoneId: formData.get("milestoneId"),
     skillId: formData.get("skillId")
   });
 
@@ -677,16 +677,16 @@ export async function deleteGateAction(formData: FormData) {
 
   const skill = await ensureSkill(parsed.data.skillId);
   if (!canManageSkill(user, skill)) {
-    throw new Error("You do not have access to remove gates for this skill");
+    throw new Error("You do not have access to remove milestones for this skill");
   }
 
-  await prisma.gate.delete({ where: { id: parsed.data.gateId } });
+  await prisma.gate.delete({ where: { id: parsed.data.milestoneId } });
 
   await logActivity({
     skillId: parsed.data.skillId,
     userId: user.id,
     action: "GateDeleted",
-    payload: { gateId: parsed.data.gateId }
+    payload: { gateId: parsed.data.milestoneId }
   });
 
   revalidateSkill(parsed.data.skillId);
