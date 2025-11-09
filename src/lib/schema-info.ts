@@ -31,7 +31,7 @@ async function queryColumnExists(tableName: string, columnName: string) {
   return Boolean(result[0]?.exists);
 }
 
-export async function hasGateTemplateCatalogSupport() {
+export async function hasMilestoneTemplateCatalogSupport() {
   const [tableExists, columnExists] = await Promise.all([
     queryTableExists("GateTemplate"),
     queryColumnExists("Gate", "templateKey")

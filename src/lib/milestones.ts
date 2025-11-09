@@ -1,43 +1,43 @@
 import {
   type AppSettings,
   type Gate,
-  GateScheduleType,
+  GateScheduleType as MilestoneScheduleType,
   type GateTemplate
 } from "@prisma/client";
 
 import { logActivity } from "@/lib/activity";
 import { prisma } from "@/lib/prisma";
 import { buildCMonthLabel, computeDueDate } from "@/lib/deliverables";
-import { hasGateTemplateCatalogSupport } from "@/lib/schema-info";
+import { hasMilestoneTemplateCatalogSupport } from "@/lib/schema-info";
 
-export interface GateTemplateDefinition {
+export interface MilestoneTemplateDefinition {
   key: string;
   name: string;
-  scheduleType: GateScheduleType;
+  scheduleType: MilestoneScheduleType;
   offsetMonths?: number | null;
   calendarDueDate?: Date | null;
   position: number;
 }
 
-export const DEFAULT_GATE_TEMPLATES: GateTemplateDefinition[] = [
+export const DEFAULT_MILESTONE_TEMPLATES: MilestoneTemplateDefinition[] = [
   {
     key: "KickoffAlignment",
     name: "Kick-off alignment",
-    scheduleType: GateScheduleType.CMonth,
+    scheduleType: MilestoneScheduleType.CMonth,
     offsetMonths: 10,
     position: 1
   },
   {
     key: "ValidationWorkshop",
     name: "Validation workshop",
-    scheduleType: GateScheduleType.CMonth,
+    scheduleType: MilestoneScheduleType.CMonth,
     offsetMonths: 4,
     position: 2
   },
   {
     key: "FinalSignoff",
     name: "Final sign-off",
-    scheduleType: GateScheduleType.CMonth,
+    scheduleType: MilestoneScheduleType.CMonth,
     offsetMonths: 1,
     position: 3
   }
@@ -49,8 +49,8 @@ async function getOrderedTemplates() {
   });
 }
 
-export async function ensureGateTemplatesSeeded() {
-  if (!(await hasGateTemplateCatalogSupport())) {
+export async function ensureMilestoneTemplatesSeeded() {
+  if (!(await hasMilestoneTemplateCatalogSupport())) {
     return;
   }
 
@@ -60,7 +60,7 @@ export async function ensureGateTemplatesSeeded() {
   }
 
   await prisma.gateTemplate.createMany({
-    data: DEFAULT_GATE_TEMPLATES.map((template) => ({
+    data: DEFAULT_MILESTONE_TEMPLATES.map((template) => ({
       key: template.key,
       name: template.name,
       offsetMonths: template.offsetMonths ?? null,
@@ -72,13 +72,13 @@ export async function ensureGateTemplatesSeeded() {
   });
 }
 
-export async function getGateTemplates(): Promise<GateTemplateDefinition[]> {
-  const supportsCatalog = await hasGateTemplateCatalogSupport();
+export async function getMilestoneTemplates(): Promise<MilestoneTemplateDefinition[]> {
+  const supportsCatalog = await hasMilestoneTemplateCatalogSupport();
   if (!supportsCatalog) {
-    return DEFAULT_GATE_TEMPLATES;
+    return DEFAULT_MILESTONE_TEMPLATES;
   }
 
-  await ensureGateTemplatesSeeded();
+  await ensureMilestoneTemplatesSeeded();
   const templates = await getOrderedTemplates();
 
   return templates.map((template) => ({
@@ -91,19 +91,19 @@ export async function getGateTemplates(): Promise<GateTemplateDefinition[]> {
   }));
 }
 
-export async function ensureStandardGatesForSkill(params: {
+export async function ensureStandardMilestonesForSkill(params: {
   skillId: string;
   settings: AppSettings;
   actorId: string;
-  templates?: GateTemplateDefinition[];
+  templates?: MilestoneTemplateDefinition[];
 }) {
   const { skillId, settings, actorId } = params;
-  const templates = params.templates ?? (await getGateTemplates());
+  const templates = params.templates ?? (await getMilestoneTemplates());
   if (templates.length === 0) {
     return [] as Gate[];
   }
 
-  const supportsCatalog = await hasGateTemplateCatalogSupport();
+  const supportsCatalog = await hasMilestoneTemplateCatalogSupport();
 
   if (supportsCatalog) {
     const existing = await prisma.gate.findMany({
@@ -121,7 +121,7 @@ export async function ensureStandardGatesForSkill(params: {
 
     const operations = toCreate
       .map((template) => {
-        const usingCMonth = template.scheduleType === GateScheduleType.CMonth;
+        const usingCMonth = template.scheduleType === MilestoneScheduleType.CMonth;
         const offset = template.offsetMonths ?? null;
         const dueDate = usingCMonth
           ? offset === null
@@ -156,7 +156,7 @@ export async function ensureStandardGatesForSkill(params: {
     await logActivity({
       skillId,
       userId: actorId,
-      action: "GatesSeeded",
+      action: "MilestonesSeeded",
       payload: {
         created: created.map((gate) => ({
           id: gate.id,
@@ -182,7 +182,7 @@ export async function ensureStandardGatesForSkill(params: {
 
   const operations = toCreate
     .map((template) => {
-      const usingCMonth = template.scheduleType === GateScheduleType.CMonth;
+      const usingCMonth = template.scheduleType === MilestoneScheduleType.CMonth;
       const offset = template.offsetMonths ?? null;
       const dueDate = usingCMonth
         ? offset === null
@@ -216,7 +216,7 @@ export async function ensureStandardGatesForSkill(params: {
   await logActivity({
     skillId,
     userId: actorId,
-    action: "GatesSeeded",
+    action: "MilestonesSeeded",
     payload: {
       created: created.map((gate, index) => ({
         id: gate.id,
@@ -229,7 +229,7 @@ export async function ensureStandardGatesForSkill(params: {
   return created;
 }
 
-export async function applyGateTemplateUpdate(params: {
+export async function applyMilestoneTemplateUpdate(params: {
   template: GateTemplate;
   settings: AppSettings;
   actorId: string;
@@ -244,7 +244,7 @@ export async function applyGateTemplateUpdate(params: {
     return;
   }
 
-  const usingCMonth = template.scheduleType === GateScheduleType.CMonth;
+  const usingCMonth = template.scheduleType === MilestoneScheduleType.CMonth;
   const offset = template.offsetMonths ?? null;
   const dueDate = usingCMonth
     ? offset === null
@@ -277,7 +277,7 @@ export async function applyGateTemplateUpdate(params: {
       logActivity({
         skillId,
         userId: actorId,
-        action: "GateTemplateUpdated",
+        action: "MilestoneTemplateUpdated",
         payload: { templateKey: template.key }
       })
     )

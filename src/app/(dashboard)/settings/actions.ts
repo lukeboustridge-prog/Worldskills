@@ -2,7 +2,12 @@
 
 import { randomUUID } from "node:crypto";
 
-import { DeliverableScheduleType, GateScheduleType, Prisma, Role } from "@prisma/client";
+import {
+  DeliverableScheduleType,
+  GateScheduleType as MilestoneScheduleType,
+  Prisma,
+  Role
+} from "@prisma/client";
 import { addDays } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -16,12 +21,12 @@ import {
   recalculateDeliverableSchedule
 } from "@/lib/deliverables";
 import {
-  applyGateTemplateUpdate,
-  ensureStandardGatesForSkill,
-  getGateTemplates
-} from "@/lib/gates";
+  applyMilestoneTemplateUpdate,
+  ensureStandardMilestonesForSkill,
+  getMilestoneTemplates
+} from "@/lib/milestones";
 import { prisma } from "@/lib/prisma";
-import { hasGateTemplateCatalogSupport, hasInvitationTable } from "@/lib/schema-info";
+import { hasMilestoneTemplateCatalogSupport, hasInvitationTable } from "@/lib/schema-info";
 import { getAppSettings, requireAppSettings, upsertAppSettings } from "@/lib/settings";
 
 const settingsSchema = z.object({
@@ -129,7 +134,7 @@ export async function createMissingDeliverablesAction() {
   const skills = await prisma.skill.findMany({ select: { id: true } });
   const [templates, milestoneTemplates] = await Promise.all([
     getDeliverableTemplates(),
-    getGateTemplates()
+    getMilestoneTemplates()
   ]);
 
   let totalCreated = 0;
@@ -143,7 +148,7 @@ export async function createMissingDeliverablesAction() {
     });
     totalCreated += created.length;
 
-    const createdMilestones = await ensureStandardGatesForSkill({
+    const createdMilestones = await ensureStandardMilestonesForSkill({
       skillId: skill.id,
       settings,
       actorId: user.id,
@@ -411,7 +416,7 @@ const milestoneTemplateDeletionSchema = z.object({
 export async function deleteMilestoneTemplateAction(formData: FormData) {
   const user = await requireAdminUser();
 
-  const supportsCatalog = await hasGateTemplateCatalogSupport();
+  const supportsCatalog = await hasMilestoneTemplateCatalogSupport();
   if (!supportsCatalog) {
     throw new Error("Milestone template catalog is not available.");
   }
@@ -444,7 +449,7 @@ export async function deleteMilestoneTemplateAction(formData: FormData) {
         data: uniqueSkillIds.map((skillId) => ({
           skillId,
           userId: user.id,
-          action: "GateTemplateDeleted",
+          action: "MilestoneTemplateDeleted",
           payload: {
             templateKey: template.key,
             templateName: template.name,
@@ -510,12 +515,12 @@ export async function createMilestoneTemplateAction(formData: FormData) {
         }
   );
 
-  const supportsCatalog = await hasGateTemplateCatalogSupport();
+  const supportsCatalog = await hasMilestoneTemplateCatalogSupport();
   if (!supportsCatalog) {
     throw new Error("Milestone templates will be available once the database migration has completed.");
   }
 
-  const milestoneTemplates = await getGateTemplates();
+  const milestoneTemplates = await getMilestoneTemplates();
   const normalizedKey = normalizeTemplateKey(parsed.name, parsed.key);
 
   const existingTemplate = milestoneTemplates.find((template) => template.key === normalizedKey);
@@ -528,7 +533,9 @@ export async function createMilestoneTemplateAction(formData: FormData) {
   const settings = await requireAppSettings();
 
   const schedule =
-    parsed.scheduleType === "calendar" ? GateScheduleType.Calendar : GateScheduleType.CMonth;
+    parsed.scheduleType === "calendar"
+      ? MilestoneScheduleType.Calendar
+      : MilestoneScheduleType.CMonth;
 
   const template = await prisma.gateTemplate.create({
     data: {
@@ -544,9 +551,9 @@ export async function createMilestoneTemplateAction(formData: FormData) {
 
   const skills = await prisma.skill.findMany({ select: { id: true } });
   let createdCount = 0;
-  const refreshedMilestoneTemplates = await getGateTemplates();
+  const refreshedMilestoneTemplates = await getMilestoneTemplates();
   for (const skill of skills) {
-    const created = await ensureStandardGatesForSkill({
+    const created = await ensureStandardMilestonesForSkill({
       skillId: skill.id,
       settings,
       actorId: user.id,
@@ -603,7 +610,7 @@ export async function updateMilestoneTemplateAction(formData: FormData) {
         }
   );
 
-  const supportsCatalog = await hasGateTemplateCatalogSupport();
+  const supportsCatalog = await hasMilestoneTemplateCatalogSupport();
   if (!supportsCatalog) {
     throw new Error("Milestone templates will be available once the database migration has completed.");
   }
@@ -618,12 +625,14 @@ export async function updateMilestoneTemplateAction(formData: FormData) {
       calendarDueDate:
         parsed.scheduleType === "calendar" ? new Date(parsed.calendarDueDate) : null,
       scheduleType:
-        parsed.scheduleType === "calendar" ? GateScheduleType.Calendar : GateScheduleType.CMonth,
+        parsed.scheduleType === "calendar"
+          ? MilestoneScheduleType.Calendar
+          : MilestoneScheduleType.CMonth,
       position: parsed.position
     }
   });
 
-  await applyGateTemplateUpdate({
+  await applyMilestoneTemplateUpdate({
     template,
     settings,
     actorId: user.id

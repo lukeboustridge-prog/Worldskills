@@ -2,7 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
 import { Minus, Plus } from "lucide-react";
-import { DeliverableScheduleType, GateScheduleType, Role } from "@prisma/client";
+import {
+  DeliverableScheduleType,
+  GateScheduleType as MilestoneScheduleType,
+  Role
+} from "@prisma/client";
 import { type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,9 +16,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/lib/auth";
 import { buildCMonthLabel, getDeliverableTemplates } from "@/lib/deliverables";
-import { getGateTemplates } from "@/lib/gates";
+import { getMilestoneTemplates } from "@/lib/milestones";
 import { getAppSettings } from "@/lib/settings";
-import { hasGateTemplateCatalogSupport, hasInvitationTable } from "@/lib/schema-info";
+import { hasMilestoneTemplateCatalogSupport, hasInvitationTable } from "@/lib/schema-info";
 import {
   createDeliverableTemplateAction,
   deleteDeliverableTemplateAction,
@@ -170,12 +174,12 @@ export default async function SettingsPage({
     userErrorMessage ? { id: "user-error", message: userErrorMessage } : null
   ].filter((entry): entry is { id: string; message: string } => entry !== null);
 
-  const milestoneTemplateSupportPromise = hasGateTemplateCatalogSupport();
+  const milestoneTemplateSupportPromise = hasMilestoneTemplateCatalogSupport();
   const invitationSupportPromise = hasInvitationTable();
 
   const [templates, milestoneTemplates, users, invitationsSupported] = await Promise.all([
     getDeliverableTemplates(),
-    getGateTemplates(),
+    getMilestoneTemplates(),
     prisma.user.findMany({
       where: userQuery
         ? {
@@ -651,7 +655,7 @@ export default async function SettingsPage({
                           id={`milestone-schedule-${template.key}`}
                           name="scheduleType"
                           defaultValue={
-                            template.scheduleType === GateScheduleType.Calendar ? "calendar" : "cmonth"
+                            template.scheduleType === MilestoneScheduleType.Calendar ? "calendar" : "cmonth"
                           }
                           className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                         >
@@ -699,7 +703,7 @@ export default async function SettingsPage({
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                     <p className="text-xs text-muted-foreground">
                       Key: <span className="font-mono">{template.key}</span> ·{' '}
-                      {template.scheduleType === GateScheduleType.CMonth && template.offsetMonths != null
+                      {template.scheduleType === MilestoneScheduleType.CMonth && template.offsetMonths != null
                         ? buildCMonthLabel(template.offsetMonths)
                         : template.calendarDueDate
                           ? `Calendar date · ${format(template.calendarDueDate, "dd MMM yyyy")}`

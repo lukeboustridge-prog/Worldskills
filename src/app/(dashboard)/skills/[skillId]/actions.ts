@@ -5,8 +5,8 @@ import { randomUUID } from "crypto";
 import {
   DeliverableScheduleType,
   DeliverableState,
-  GateScheduleType,
-  GateStatus,
+  GateScheduleType as MilestoneScheduleType,
+  GateStatus as MilestoneStatus,
   Role,
   type Skill
 } from "@prisma/client";
@@ -487,7 +487,7 @@ export async function createMilestoneAction(formData: FormData) {
   }
 
   let dueDate: Date;
-  let schedule: GateScheduleType = GateScheduleType.Calendar;
+  let schedule: MilestoneScheduleType = MilestoneScheduleType.Calendar;
   let offset: number | null = null;
   let cMonthLabel: string | null = null;
 
@@ -495,13 +495,13 @@ export async function createMilestoneAction(formData: FormData) {
     const settings = await requireAppSettings();
     offset = parsed.data.offsetMonths;
     dueDate = computeDueDate(settings.competitionStart, offset);
-    schedule = GateScheduleType.CMonth;
+    schedule = MilestoneScheduleType.CMonth;
     cMonthLabel = buildCMonthLabel(offset);
   } else {
     dueDate = new Date(parsed.data.dueDate);
   }
 
-  const gate = await prisma.gate.create({
+  const milestone = await prisma.gate.create({
     data: {
       skillId: parsed.data.skillId,
       name: parsed.data.name,
@@ -515,13 +515,13 @@ export async function createMilestoneAction(formData: FormData) {
   await logActivity({
     skillId: parsed.data.skillId,
     userId: user.id,
-    action: "GateCreated",
+    action: "MilestoneCreated",
     payload: {
-      gateId: gate.id,
-      name: gate.name,
-      scheduleType: gate.scheduleType,
-      cMonthOffset: gate.cMonthOffset,
-      cMonthLabel: gate.cMonthLabel
+      milestoneId: milestone.id,
+      name: milestone.name,
+      scheduleType: milestone.scheduleType,
+      cMonthOffset: milestone.cMonthOffset,
+      cMonthLabel: milestone.cMonthLabel
     }
   });
 
@@ -614,7 +614,7 @@ export async function unhideDeliverableAction(formData: FormData) {
 const milestoneStatusSchema = z.object({
   milestoneId: z.string().min(1),
   skillId: z.string().min(1),
-  status: z.nativeEnum(GateStatus)
+  status: z.nativeEnum(MilestoneStatus)
 });
 
 export async function updateMilestoneStatusAction(formData: FormData) {
@@ -636,22 +636,22 @@ export async function updateMilestoneStatusAction(formData: FormData) {
   }
 
   const status = parsed.data.status;
-  const gate = await prisma.gate.update({
+  const milestone = await prisma.gate.update({
     where: { id: parsed.data.milestoneId },
     data: {
       status,
-      completedBy: status === GateStatus.Complete ? user.id : null,
-      completedAt: status === GateStatus.Complete ? new Date() : null
+      completedBy: status === MilestoneStatus.Complete ? user.id : null,
+      completedAt: status === MilestoneStatus.Complete ? new Date() : null
     }
   });
 
   await logActivity({
     skillId: parsed.data.skillId,
     userId: user.id,
-    action: "GateStatusUpdated",
+    action: "MilestoneStatusUpdated",
     payload: {
-      gateId: gate.id,
-      status: gate.status
+      milestoneId: milestone.id,
+      status: milestone.status
     }
   });
 
@@ -685,8 +685,8 @@ export async function deleteMilestoneAction(formData: FormData) {
   await logActivity({
     skillId: parsed.data.skillId,
     userId: user.id,
-    action: "GateDeleted",
-    payload: { gateId: parsed.data.milestoneId }
+    action: "MilestoneDeleted",
+    payload: { milestoneId: parsed.data.milestoneId }
   });
 
   revalidateSkill(parsed.data.skillId);

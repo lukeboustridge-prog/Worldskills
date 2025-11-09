@@ -1,4 +1,9 @@
-import { DeliverableState, GateScheduleType, GateStatus, Role } from "@prisma/client";
+import {
+  DeliverableState,
+  GateScheduleType as MilestoneScheduleType,
+  GateStatus as MilestoneStatus,
+  Role
+} from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
 import { format } from "date-fns";
 
@@ -22,7 +27,7 @@ import {
   ensureOverdueNotifications
 } from "@/lib/deliverables";
 
-const milestoneStatuses = Object.values(GateStatus);
+const milestoneStatuses = Object.values(MilestoneStatus);
 
 export default async function SkillDetailPage({ params }: { params: { skillId: string } }) {
   const user = await getCurrentUser();
@@ -217,7 +222,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                         <TableCell>
                           <div className="flex flex-col">
                             <span>{format(gate.dueDate, "dd MMM yyyy")}</span>
-                            {gate.scheduleType === GateScheduleType.CMonth && gate.cMonthLabel ? (
+                            {gate.scheduleType === MilestoneScheduleType.CMonth && gate.cMonthLabel ? (
                               <span className="text-xs text-muted-foreground">{gate.cMonthLabel}</span>
                             ) : (
                               <span className="text-xs text-muted-foreground">Calendar date</span>
@@ -225,7 +230,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={gate.status === GateStatus.Complete ? "default" : "outline"}>
+                          <Badge variant={gate.status === MilestoneStatus.Complete ? "default" : "outline"}>
                             {gate.status}
                           </Badge>
                         </TableCell>
