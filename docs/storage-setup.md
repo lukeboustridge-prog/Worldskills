@@ -12,11 +12,9 @@ The document evidence uploader relies on an S3-compatible bucket. Configure the 
 | `FILE_STORAGE_SECRET_ACCESS_KEY` | ✅ | Secret for the access key. |
 | `FILE_STORAGE_ENDPOINT` | ⬜️ | Custom endpoint for S3-compatible providers (MinIO, Cloudflare R2, Supabase, etc.). Leave unset for AWS. |
 | `FILE_STORAGE_FORCE_PATH_STYLE` | ⬜️ | Set to `true` when the provider requires path-style URLs. |
-| `STORAGE_PROVIDER` | ⬜️ | Choose `auto` (default), `blob`, or `s3` to control which backend the uploader uses. |
+| `STORAGE_PROVIDER` | ⬜️ | Choose `auto` (default) or `s3` to control which backend the uploader uses. |
 | `FILE_MAX_MB` | ⬜️ | Maximum upload size in megabytes (defaults to `25`). |
 | `FILE_ALLOWED_MIME` | ⬜️ | Comma-separated list of allowed MIME types (defaults to `application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,image/jpeg,image/png`). |
-
-If you are using [Vercel Blob](https://vercel.com/docs/storage/vercel-blob), set `BLOB_READ_WRITE_TOKEN` (and optionally `NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN` for client-side uploads). When these tokens are present the application will ignore the S3-specific keys above because Blob manages the backing bucket automatically. In `auto` mode the uploader falls back to the S3 configuration when the Blob helper is unavailable in the current runtime.
 
 The `/api/storage/health` endpoint checks the configuration. The upload UI only enables the dropzone when this route returns `{ ok: true }`.
 
@@ -66,7 +64,7 @@ Allow the app origin to perform presigned uploads. Update `https://worldskillssk
 3. Add the required keys (`FILE_STORAGE_BUCKET`, `FILE_STORAGE_REGION`, `FILE_STORAGE_ACCESS_KEY_ID`, `FILE_STORAGE_SECRET_ACCESS_KEY`).
 4. Add optional overrides (`FILE_STORAGE_ENDPOINT`, `FILE_STORAGE_FORCE_PATH_STYLE`, `FILE_MAX_MB`, `FILE_ALLOWED_MIME`) if you need them.
 5. Redeploy the project so the new variables are available.
-6. Verify the configuration by visiting `/api/storage/health`; the response should be `{ "ok": true }`. When Blob is active you will see `provider: "vercel-blob"`; when the helper is unavailable the response will report the S3 provider along with `note: "blob_runtime_unavailable_fell_back_to_s3"`.
+6. Verify the configuration by visiting `/api/storage/health`; the response should be `{ "ok": true, "diagnostic": "configured" }` and include the detected provider (for R2 deployments the provider appears as `cloudflare-r2`).
 
 Once these values are present, document uploads, downloads, and bulk validations will work across the application.
 
@@ -74,7 +72,5 @@ Once these values are present, document uploads, downloads, and bulk validations
 
 - Administrators can review the live configuration at `/storage-debug`, which calls the same health endpoint used by the uploader
   and highlights any missing environment variables.
-- Hit `/api/_env/where-is-my-token` on any deployment to confirm the Blob token is visible to that environment. The JSON payload
-  is cache-busted so you can refresh after updating variables.
 - Set `NEXT_PUBLIC_DEBUG_STORAGE=true` in local development to surface additional console logs and inline diagnostics while
   testing the deliverable uploader.

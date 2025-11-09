@@ -19,8 +19,6 @@ describe("storage configuration", () => {
     delete process.env.FILE_STORAGE_FORCE_PATH_STYLE;
     delete process.env.FILE_MAX_MB;
     delete process.env.FILE_ALLOWED_MIME;
-    delete process.env.BLOB_READ_WRITE_TOKEN;
-    delete process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
   });
 
   afterEach(() => {
@@ -32,8 +30,6 @@ describe("storage configuration", () => {
     delete process.env.FILE_STORAGE_FORCE_PATH_STYLE;
     delete process.env.FILE_MAX_MB;
     delete process.env.FILE_ALLOWED_MIME;
-    delete process.env.BLOB_READ_WRITE_TOKEN;
-    delete process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
   });
 
   it("throws a configuration error when required values are missing", async () => {

@@ -202,24 +202,20 @@ export function DocumentEvidenceManager({
           nextStatus = "ready";
         } else {
           switch (payload.reason) {
-            case "missing_blob_token":
             case "not_configured":
               nextStatus = "not-configured";
               nextNotice = NOT_CONFIGURED_MESSAGE;
               break;
-            case "blob_helper_not_available_in_runtime":
             case "edge_runtime_inherited":
               nextStatus = "error";
               nextNotice = RUNTIME_UNAVAILABLE_MESSAGE;
               break;
-            case "blob_unreachable":
             case "storage_not_available":
-              nextStatus = "error";
-              nextNotice = UNREACHABLE_MESSAGE;
-              break;
+            case "error":
             default:
               nextStatus = "error";
               nextNotice = UNREACHABLE_MESSAGE;
+              break;
           }
         }
 

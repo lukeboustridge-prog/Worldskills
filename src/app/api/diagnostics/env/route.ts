@@ -7,8 +7,9 @@ export async function GET() {
     env: process.env.VERCEL_ENV || "local",
     nodeEnv: process.env.NODE_ENV || "unknown",
     runtime: "nodejs" as const,
-    hasBlobToken: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
-    hasNextPublicBlob: Boolean(process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN),
+    hasStorageBucket: Boolean(process.env.FILE_STORAGE_BUCKET),
+    hasStorageAccessKey: Boolean(process.env.FILE_STORAGE_ACCESS_KEY_ID),
+    hasStorageSecret: Boolean(process.env.FILE_STORAGE_SECRET_ACCESS_KEY),
     vercelUrl: process.env.VERCEL_URL || null,
     gitSha: process.env.VERCEL_GIT_COMMIT_SHA || null,
     time: new Date().toISOString()

@@ -9,8 +9,7 @@ describe("getStorageEnv", () => {
     delete process.env.FILE_STORAGE_REGION;
     delete process.env.FILE_STORAGE_ACCESS_KEY_ID;
     delete process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
-    delete process.env.BLOB_READ_WRITE_TOKEN;
-    delete process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
+    delete process.env.FILE_STORAGE_ENDPOINT;
   });
 
   it("evaluates environment variables at call time", async () => {
@@ -31,21 +30,25 @@ describe("getStorageEnv", () => {
     delete process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
   });
 
-  it("reports vercel blob provider when tokens are present", async () => {
+  it("detects cloudflare r2 provider when endpoint matches", async () => {
     const { getStorageDiagnostics, __resetEnvCachesForTests } = await import("../env");
 
-    process.env.BLOB_READ_WRITE_TOKEN = "token";
-    process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN = "token-public";
+    process.env.FILE_STORAGE_BUCKET = "bucket";
+    process.env.FILE_STORAGE_REGION = "auto";
+    process.env.FILE_STORAGE_ACCESS_KEY_ID = "key";
+    process.env.FILE_STORAGE_SECRET_ACCESS_KEY = "secret";
+    process.env.FILE_STORAGE_ENDPOINT = "https://example.r2.cloudflarestorage.com";
 
     const diagnostics = getStorageDiagnostics();
-    expect(diagnostics.provider).toBe("vercel-blob");
-    expect(diagnostics.blobTokenPresent).toBe(true);
-    expect(diagnostics.nextPublicBlobTokenPresent).toBe(true);
+    expect(diagnostics.provider).toBe("cloudflare-r2");
     expect(diagnostics.ok).toBe(true);
     expect(diagnostics.missing).toHaveLength(0);
 
-    delete process.env.BLOB_READ_WRITE_TOKEN;
-    delete process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
+    delete process.env.FILE_STORAGE_BUCKET;
+    delete process.env.FILE_STORAGE_REGION;
+    delete process.env.FILE_STORAGE_ACCESS_KEY_ID;
+    delete process.env.FILE_STORAGE_SECRET_ACCESS_KEY;
+    delete process.env.FILE_STORAGE_ENDPOINT;
     __resetEnvCachesForTests();
   });
 });

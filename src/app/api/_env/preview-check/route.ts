@@ -18,15 +18,17 @@ export async function GET() {
   const payload: {
     env: string;
     runtime: "node";
-    hasBlobToken: boolean;
-    hasNextPublicBlob: boolean;
+    hasStorageBucket: boolean;
+    hasStorageAccessKey: boolean;
+    hasStorageSecret: boolean;
     projectProductionUrl?: string;
     deploymentUrl?: string;
   } = {
     env: environmentName,
     runtime: "node",
-    hasBlobToken: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
-    hasNextPublicBlob: Boolean(process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN)
+    hasStorageBucket: Boolean(process.env.FILE_STORAGE_BUCKET),
+    hasStorageAccessKey: Boolean(process.env.FILE_STORAGE_ACCESS_KEY_ID),
+    hasStorageSecret: Boolean(process.env.FILE_STORAGE_SECRET_ACCESS_KEY)
   };
 
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
