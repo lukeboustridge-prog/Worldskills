@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     if (!deliverableId || !skillId || !file) {
       return NextResponse.json(
-        { error: "Deliverable, skill, and file are required." },
+        { error: "bad_request", message: "Deliverable, skill, and file are required." },
         { status: 400, headers: NO_STORE_HEADERS },
       );
     }
@@ -64,21 +64,21 @@ export async function POST(req: NextRequest) {
 
     if (!deliverable) {
       return NextResponse.json(
-        { error: "Deliverable not found." },
+        { error: "not_found", message: "Deliverable not found." },
         { status: 404, headers: NO_STORE_HEADERS },
       );
     }
 
     if (deliverable.skillId !== skillId) {
       return NextResponse.json(
-        { error: "Deliverable does not belong to the requested skill." },
+        { error: "bad_request", message: "Deliverable does not belong to the requested skill." },
         { status: 400, headers: NO_STORE_HEADERS },
       );
     }
 
     if (!canManageSkill(user, { saId: deliverable.skill.saId, scmId: deliverable.skill.scmId })) {
       return NextResponse.json(
-        { error: "You do not have permission to upload for this skill." },
+        { error: "forbidden", message: "You do not have permission to upload for this skill." },
         { status: 403, headers: NO_STORE_HEADERS },
       );
     }
@@ -88,7 +88,10 @@ export async function POST(req: NextRequest) {
 
     if (buf.byteLength > DOCUMENT_MAX_BYTES) {
       return NextResponse.json(
-        { error: `File is too large. Max allowed is ${DOCUMENT_MAX_BYTES} bytes.` },
+        {
+          error: "file_too_large",
+          message: `File is too large. Max allowed is ${DOCUMENT_MAX_BYTES} bytes.`,
+        },
         { status: 400, headers: NO_STORE_HEADERS },
       );
     }
@@ -113,14 +116,10 @@ export async function POST(req: NextRequest) {
     try {
       storage = getStorageEnv();
     } catch (err: any) {
-      const message =
-        err instanceof StorageConfigurationError
-          ? err.message
-          : "Storage configuration is missing.";
       return NextResponse.json(
         {
           error: "storage_not_configured",
-          message,
+          message: err?.message ?? "Storage configuration is missing.",
         },
         { status: 503, headers: NO_STORE_HEADERS },
       );
@@ -164,7 +163,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: "upload_failed",
-        message: "Upload failed on the server.",
+        message: err?.message ?? "Upload failed on the server.",
+        stack: err?.stack ?? null,
       },
       { status: 500, headers: NO_STORE_HEADERS },
     );
