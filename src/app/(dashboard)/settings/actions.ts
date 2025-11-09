@@ -234,7 +234,7 @@ export async function createDeliverableTemplateAction(formData: FormData) {
     throw new Error("A deliverable with that key already exists.");
   }
 
-  const maxPosition = milestoneTemplates.reduce((max, template) => Math.max(max, template.position), 0);
+  const maxPosition = templates.reduce((max, template) => Math.max(max, template.position), 0);
   const position = parsed.position ?? maxPosition + 1;
   const settings = await requireAppSettings();
 
