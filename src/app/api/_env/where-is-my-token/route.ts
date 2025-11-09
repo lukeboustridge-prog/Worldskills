@@ -21,8 +21,9 @@ export async function GET() {
     env: readEnv("VERCEL_ENV", "local"),
     nodeEnv: readEnv("NODE_ENV", "unknown"),
     runtime,
-    hasBlobToken: Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim()),
-    hasNextPublicBlob: Boolean(process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN?.trim()),
+    hasStorageBucket: Boolean(process.env.FILE_STORAGE_BUCKET?.trim()),
+    hasStorageAccessKey: Boolean(process.env.FILE_STORAGE_ACCESS_KEY_ID?.trim()),
+    hasStorageSecret: Boolean(process.env.FILE_STORAGE_SECRET_ACCESS_KEY?.trim()),
     vercelUrl: process.env.VERCEL_URL?.trim() ?? null,
     buildId: process.env.VERCEL_GIT_COMMIT_SHA?.trim() ?? null,
     time: new Date().toISOString()

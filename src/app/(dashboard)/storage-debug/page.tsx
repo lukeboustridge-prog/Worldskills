@@ -27,8 +27,8 @@ export default async function StorageDebugPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Storage diagnostics</h1>
         <p className="text-sm text-muted-foreground">
-          Verify the storage configuration used for document evidence uploads (S3-compatible or Vercel Blob). Only
-          administrators can view this page.
+          Verify the S3-compatible storage configuration used for document evidence uploads. Only administrators can view this
+          page.
         </p>
       </div>
 
@@ -57,9 +57,6 @@ export default async function StorageDebugPage() {
             </li>
             <li>
               Optional overrides: <code>FILE_STORAGE_ENDPOINT</code>, <code>FILE_STORAGE_FORCE_PATH_STYLE</code>
-            </li>
-            <li>
-              Vercel Blob preview tokens: <code>BLOB_READ_WRITE_TOKEN</code>, <code>NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN</code>
             </li>
           </ul>
           <p>

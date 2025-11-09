@@ -22,8 +22,6 @@ function formatProvider(provider: StorageDiagnosticsSnapshot["provider"]) {
       return "MinIO";
     case "supabase":
       return "Supabase Storage";
-    case "vercel-blob":
-      return "Vercel Blob";
     case "custom":
       return "Custom endpoint";
     default:
@@ -38,7 +36,7 @@ export function StorageDebugPanel({ initialDiagnostics }: StorageDebugPanelProps
   const [error, setError] = useState<string | null>(null);
   const [lastPayload, setLastPayload] = useState<StorageHealthResponse | null>(null);
 
-  const hasMissingRequirements = diagnostics.requirements.some((requirement) => !requirement.present && !requirement.optional);
+  const hasMissingRequirements = diagnostics.requirements.some((requirement) => !requirement.present);
   const statusLabel = diagnostics.ok
     ? "Ready"
     : hasMissingRequirements
@@ -122,32 +120,12 @@ export function StorageDebugPanel({ initialDiagnostics }: StorageDebugPanelProps
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <p className="text-xs uppercase text-muted-foreground">Blob token</p>
-            <p className="text-sm font-medium text-foreground">
-              {diagnostics.blobTokenPresent ? "Present" : "Missing"}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs uppercase text-muted-foreground">NEXT_PUBLIC blob token</p>
-            <p className="text-sm font-medium text-foreground">
-              {diagnostics.nextPublicBlobTokenPresent ? "Present" : "Missing"}
-            </p>
-          </div>
-        </div>
-
         {diagnostics.endpoint ? (
           <p className="text-xs text-muted-foreground">Endpoint: {diagnostics.endpoint}</p>
         ) : null}
 
         <div className="space-y-2">
           <p className="text-sm font-medium text-foreground">Required environment keys</p>
-          {diagnostics.provider === "vercel-blob" ? (
-            <p className="text-xs text-muted-foreground">
-              S3 keys are managed by Vercel Blob and aren't required when a Blob token is present.
-            </p>
-          ) : null}
           <ul className="space-y-2">
             {diagnostics.requirements.map((requirement) => (
               <li
@@ -167,12 +145,10 @@ export function StorageDebugPanel({ initialDiagnostics }: StorageDebugPanelProps
                   className={
                     requirement.present
                       ? "border-emerald-200 bg-emerald-500/10 text-emerald-600"
-                      : requirement.optional
-                        ? "border-muted-foreground/40 bg-muted text-muted-foreground"
-                        : "border-destructive/40 bg-destructive/10 text-destructive"
+                      : "border-destructive/40 bg-destructive/10 text-destructive"
                   }
                 >
-                  {requirement.present ? "Present" : requirement.optional ? "Not required" : "Missing"}
+                  {requirement.present ? "Present" : "Missing"}
                 </Badge>
               </li>
             ))}

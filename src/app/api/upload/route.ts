@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { r2 } from "@/lib/r2";
+import { uploadToR2 } from "@/lib/uploadToR2";
 
 export const runtime = "nodejs";
 
@@ -14,19 +13,7 @@ export async function POST(req: NextRequest) {
 
   const file = fileEntry as File;
   const buf = Buffer.from(await file.arrayBuffer());
-  const key = `${Date.now()}-${file.name}`;
+  const result = await uploadToR2(file.name, buf, file.type);
 
-  await r2.send(
-    new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET!,
-      Key: key,
-      Body: buf,
-      ContentType: file.type,
-    })
-  );
-
-  return NextResponse.json({
-    key,
-    url: `${process.env.R2_ENDPOINT}/${process.env.R2_BUCKET}/${key}`,
-  });
+  return NextResponse.json(result);
 }

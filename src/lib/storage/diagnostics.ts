@@ -1,9 +1,6 @@
 export type StorageHealthReason =
   | "not_configured"
   | "error"
-  | "missing_blob_token"
-  | "blob_unreachable"
-  | "blob_helper_not_available_in_runtime"
   | "edge_runtime_inherited"
   | "storage_not_available";
 
@@ -12,7 +9,6 @@ export type StorageProviderType =
   | "cloudflare-r2"
   | "minio"
   | "supabase"
-  | "vercel-blob"
   | "custom"
   | "unknown";
 
@@ -22,7 +18,6 @@ export interface StorageRequirementStatus {
   keys: string[];
   present: boolean;
   resolvedKey?: string;
-  optional?: boolean;
 }
 
 export interface StorageDiagnosticsDetails {
@@ -34,8 +29,6 @@ export interface StorageDiagnosticsDetails {
   endpoint?: string;
   provider: StorageProviderType;
   forcePathStyle: boolean;
-  blobTokenPresent: boolean;
-  nextPublicBlobTokenPresent: boolean;
 }
 
 export type StorageDiagnosticsSnapshot = StorageDiagnosticsDetails & { ok: boolean };
@@ -45,12 +38,10 @@ export interface StorageHealthDetails extends StorageDiagnosticsDetails {
 }
 
 export type StorageHealthDiagnostic =
-  | "missing_blob_token"
-  | "blob_verified"
-  | "blob_unreachable"
-  | "blob_helper_runtime"
-  | "blob_runtime_fallback"
+  | "not_configured"
+  | "configured"
   | "edge_runtime"
+  | "storage_unreachable"
   | "exception";
 
 export interface StorageHealthResponse {

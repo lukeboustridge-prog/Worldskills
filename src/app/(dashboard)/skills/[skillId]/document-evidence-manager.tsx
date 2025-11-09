@@ -96,36 +96,25 @@ async function uploadWithProgress(params: {
 }) {
   const { url, file, headers, onProgress } = params;
 
-  return new Promise<void>((resolve, reject) => {
-    const request = new XMLHttpRequest();
-    request.open("PUT", url);
+  onProgress(0);
 
-    Object.entries(headers).forEach(([key, value]) => {
-      request.setRequestHeader(key, value);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "PUT",
+      headers,
+      body: file
     });
+  } catch (cause) {
+    console.error("Document upload network failure", cause);
+    throw new Error("Network error while uploading the file.");
+  }
 
-    request.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        const percent = Math.round((event.loaded / event.total) * 100);
-        onProgress(percent);
-      }
-    };
+  if (!response.ok) {
+    throw new Error(`Upload failed with status ${response.status}.`);
+  }
 
-    request.onerror = () => {
-      reject(new Error("Network error while uploading the file."));
-    };
-
-    request.onload = () => {
-      if (request.status >= 200 && request.status < 300) {
-        onProgress(100);
-        resolve();
-      } else {
-        reject(new Error(`Upload failed with status ${request.status}.`));
-      }
-    };
-
-    request.send(file);
-  });
+  onProgress(100);
 }
 
 export function DocumentEvidenceManager({
@@ -202,24 +191,20 @@ export function DocumentEvidenceManager({
           nextStatus = "ready";
         } else {
           switch (payload.reason) {
-            case "missing_blob_token":
             case "not_configured":
               nextStatus = "not-configured";
               nextNotice = NOT_CONFIGURED_MESSAGE;
               break;
-            case "blob_helper_not_available_in_runtime":
             case "edge_runtime_inherited":
               nextStatus = "error";
               nextNotice = RUNTIME_UNAVAILABLE_MESSAGE;
               break;
-            case "blob_unreachable":
             case "storage_not_available":
-              nextStatus = "error";
-              nextNotice = UNREACHABLE_MESSAGE;
-              break;
+            case "error":
             default:
               nextStatus = "error";
               nextNotice = UNREACHABLE_MESSAGE;
+              break;
           }
         }
 

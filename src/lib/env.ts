@@ -256,9 +256,6 @@ function resolveStorageConfig(): {
 
   const forcePathStyle = parseBoolean(forcePathStyleValue);
 
-  const blobToken = readEnv("BLOB_READ_WRITE_TOKEN");
-  const nextPublicBlobToken = readEnv("NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN");
-
   const bucketValue = resolvedValues.bucket?.value;
   const regionValue = resolvedValues.region?.value;
   const accessKeyIdValue = resolvedValues.accessKeyId?.value;
@@ -268,20 +265,7 @@ function resolveStorageConfig(): {
     bucketValue && regionValue && accessKeyIdValue && secretAccessKeyValue
   );
 
-  const provider = blobToken ? "vercel-blob" : detectStorageProvider(endpoint);
-
-  if (blobToken) {
-    // When using Vercel Blob the bucket and key-based S3 credentials are not
-    // required, so mark any missing requirements as optional and clear the
-    // warning lists that power the admin diagnostics.
-    for (const requirement of requirements) {
-      if (!requirement.present) {
-        requirement.optional = true;
-      }
-    }
-    missing.splice(0, missing.length);
-    errors.splice(0, errors.length);
-  }
+  const provider = detectStorageProvider(endpoint);
 
   let config: StorageEnvConfig | null = null;
   if (hasCompleteS3Config) {
@@ -295,7 +279,7 @@ function resolveStorageConfig(): {
     };
   }
 
-  const ok = Boolean(blobToken) || Boolean(config);
+  const ok = Boolean(config);
 
   return {
     config,
@@ -308,8 +292,6 @@ function resolveStorageConfig(): {
       endpoint,
       provider,
       forcePathStyle,
-      blobTokenPresent: Boolean(blobToken),
-      nextPublicBlobTokenPresent: Boolean(nextPublicBlobToken)
     },
     errors,
     ok

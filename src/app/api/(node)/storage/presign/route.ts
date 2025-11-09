@@ -12,15 +12,9 @@ import {
   validateDocumentEvidenceInput
 } from "@/lib/deliverables";
 import { normaliseFileName } from "@/lib/utils";
-import {
-  createPresignedUpload,
-  StorageConfigurationError
-} from "@/lib/storage/client";
+import { createPresignedUpload, StorageConfigurationError } from "@/lib/storage/client";
 import type { StorageProviderType } from "@/lib/storage/diagnostics";
 import { ValidationError, getStorageDiagnostics } from "@/lib/env";
-import { getStorageMode } from "@/lib/storage/provider";
-import { verifyVercelBlobSupport } from "@/lib/storage/blob";
-import type { BlobVerificationResult } from "@/lib/storage/blob";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -152,12 +146,8 @@ function buildStorageKey(params: { deliverableId: string; skillId: string; filen
 export async function POST(request: NextRequest) {
   let body: unknown;
   const env = process.env.VERCEL_ENV ?? "local";
-  const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
-  const hasFileStorageBucket = Boolean(process.env.FILE_STORAGE_BUCKET?.trim());
   console.log("[storage/presign] hit", {
-    env,
-    hasBlobToken,
-    hasFileStorageBucket
+    env
   });
 
   let providerHint: StorageProviderType | undefined;
@@ -267,12 +257,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const mode = getStorageMode();
-  const blobVerification: BlobVerificationResult | null =
-    mode === "s3" ? null : await verifyVercelBlobSupport();
-  const preferS3Fallback =
-    mode === "auto" && blobVerification?.status === "error" && blobVerification.code === "runtime_unavailable";
-
   try {
     try {
       validateDocumentEvidenceInput({
@@ -293,15 +277,12 @@ export async function POST(request: NextRequest) {
       filename: normalised.data.filename
     });
 
-    const presigned = await createPresignedUpload(
-      {
-        key: storageKey,
-        contentType: normalised.data.contentType,
-        contentLength: normalised.data.byteSize,
-        checksum: normalised.data.checksum
-      },
-      preferS3Fallback ? { preferS3: true } : undefined
-    );
+    const presigned = await createPresignedUpload({
+      key: storageKey,
+      contentType: normalised.data.contentType,
+      contentLength: normalised.data.byteSize,
+      checksum: normalised.data.checksum
+    });
 
     providerHint = presigned.provider;
     console.log("[storage/presign] presign-success", { env, provider: providerHint });
@@ -333,8 +314,7 @@ export async function POST(request: NextRequest) {
           error: "validation_error",
           message: error.message,
           provider: provider ?? null,
-          env,
-          details: { hasBlobToken }
+          env
         },
         { status: 400, headers: NO_STORE_HEADERS }
       );
@@ -346,8 +326,6 @@ export async function POST(request: NextRequest) {
         stack: error.stack,
         provider,
         env,
-        hasBlobToken,
-        hasFileStorageBucket,
         providerAttempts: error.providerAttempts
       });
       return NextResponse.json(
@@ -357,7 +335,7 @@ export async function POST(request: NextRequest) {
             "Document storage is not configured yet. Please contact the administrator to enable uploads.",
           provider: provider ?? null,
           env,
-          details: { hasBlobToken, providerAttempts: error.providerAttempts ?? [] }
+          details: { providerAttempts: error.providerAttempts ?? [] }
         },
         { status: 503, headers: NO_STORE_HEADERS }
       );
@@ -367,9 +345,7 @@ export async function POST(request: NextRequest) {
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       provider,
-      env,
-      hasBlobToken,
-      hasFileStorageBucket
+      env
     });
     const message =
       error instanceof Error
@@ -380,8 +356,7 @@ export async function POST(request: NextRequest) {
         error: "presign_failed",
         message,
         provider: provider ?? null,
-        env,
-        details: { hasBlobToken }
+        env
       },
       { status: 503, headers: NO_STORE_HEADERS }
     );
