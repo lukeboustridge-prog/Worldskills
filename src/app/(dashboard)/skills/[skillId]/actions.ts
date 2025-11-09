@@ -5,8 +5,8 @@ import { randomUUID } from "crypto";
 import {
   DeliverableScheduleType,
   DeliverableState,
-  GateScheduleType,
-  GateStatus,
+  GateScheduleType as MilestoneScheduleType,
+  GateStatus as MilestoneStatus,
   Role,
   type Skill
 } from "@prisma/client";
@@ -436,7 +436,7 @@ export async function createCustomDeliverableAction(formData: FormData) {
   revalidateSkill(skill.id);
 }
 
-const gateSchema = z.discriminatedUnion("scheduleType", [
+const milestoneSchema = z.discriminatedUnion("scheduleType", [
   z.object({
     scheduleType: z.literal("calendar"),
     skillId: z.string().min(1),
@@ -456,12 +456,12 @@ const gateSchema = z.discriminatedUnion("scheduleType", [
   })
 ]);
 
-export async function createGateAction(formData: FormData) {
+export async function createMilestoneAction(formData: FormData) {
   const user = await requireUser();
 
   const scheduleType = formData.get("scheduleType") ?? "calendar";
 
-  const parsed = gateSchema.safeParse(
+  const parsed = milestoneSchema.safeParse(
     scheduleType === "cmonth"
       ? {
           scheduleType,
@@ -483,11 +483,11 @@ export async function createGateAction(formData: FormData) {
 
   const skill = await ensureSkill(parsed.data.skillId);
   if (!canManageSkill(user, skill)) {
-    throw new Error("You do not have access to create gates for this skill");
+    throw new Error("You do not have access to create milestones for this skill");
   }
 
   let dueDate: Date;
-  let schedule: GateScheduleType = GateScheduleType.Calendar;
+  let schedule: MilestoneScheduleType = MilestoneScheduleType.Calendar;
   let offset: number | null = null;
   let cMonthLabel: string | null = null;
 
@@ -495,13 +495,13 @@ export async function createGateAction(formData: FormData) {
     const settings = await requireAppSettings();
     offset = parsed.data.offsetMonths;
     dueDate = computeDueDate(settings.competitionStart, offset);
-    schedule = GateScheduleType.CMonth;
+    schedule = MilestoneScheduleType.CMonth;
     cMonthLabel = buildCMonthLabel(offset);
   } else {
     dueDate = new Date(parsed.data.dueDate);
   }
 
-  const gate = await prisma.gate.create({
+  const milestone = await prisma.gate.create({
     data: {
       skillId: parsed.data.skillId,
       name: parsed.data.name,
@@ -515,13 +515,13 @@ export async function createGateAction(formData: FormData) {
   await logActivity({
     skillId: parsed.data.skillId,
     userId: user.id,
-    action: "GateCreated",
+    action: "MilestoneCreated",
     payload: {
-      gateId: gate.id,
-      name: gate.name,
-      scheduleType: gate.scheduleType,
-      cMonthOffset: gate.cMonthOffset,
-      cMonthLabel: gate.cMonthLabel
+      milestoneId: milestone.id,
+      name: milestone.name,
+      scheduleType: milestone.scheduleType,
+      cMonthOffset: milestone.cMonthOffset,
+      cMonthLabel: milestone.cMonthLabel
     }
   });
 
@@ -611,17 +611,17 @@ export async function unhideDeliverableAction(formData: FormData) {
   revalidateSkill(parsed.data.skillId);
 }
 
-const gateStatusSchema = z.object({
-  gateId: z.string().min(1),
+const milestoneStatusSchema = z.object({
+  milestoneId: z.string().min(1),
   skillId: z.string().min(1),
-  status: z.nativeEnum(GateStatus)
+  status: z.nativeEnum(MilestoneStatus)
 });
 
-export async function updateGateStatusAction(formData: FormData) {
+export async function updateMilestoneStatusAction(formData: FormData) {
   const user = await requireUser();
 
-  const parsed = gateStatusSchema.safeParse({
-    gateId: formData.get("gateId"),
+  const parsed = milestoneStatusSchema.safeParse({
+    milestoneId: formData.get("milestoneId"),
     skillId: formData.get("skillId"),
     status: formData.get("status")
   });
@@ -632,42 +632,42 @@ export async function updateGateStatusAction(formData: FormData) {
 
   const skill = await ensureSkill(parsed.data.skillId);
   if (!canManageSkill(user, skill)) {
-    throw new Error("You do not have access to update gates for this skill");
+    throw new Error("You do not have access to update milestones for this skill");
   }
 
   const status = parsed.data.status;
-  const gate = await prisma.gate.update({
-    where: { id: parsed.data.gateId },
+  const milestone = await prisma.gate.update({
+    where: { id: parsed.data.milestoneId },
     data: {
       status,
-      completedBy: status === GateStatus.Complete ? user.id : null,
-      completedAt: status === GateStatus.Complete ? new Date() : null
+      completedBy: status === MilestoneStatus.Complete ? user.id : null,
+      completedAt: status === MilestoneStatus.Complete ? new Date() : null
     }
   });
 
   await logActivity({
     skillId: parsed.data.skillId,
     userId: user.id,
-    action: "GateStatusUpdated",
+    action: "MilestoneStatusUpdated",
     payload: {
-      gateId: gate.id,
-      status: gate.status
+      milestoneId: milestone.id,
+      status: milestone.status
     }
   });
 
   revalidateSkill(parsed.data.skillId);
 }
 
-const deleteGateSchema = z.object({
-  gateId: z.string().min(1),
+const deleteMilestoneSchema = z.object({
+  milestoneId: z.string().min(1),
   skillId: z.string().min(1)
 });
 
-export async function deleteGateAction(formData: FormData) {
+export async function deleteMilestoneAction(formData: FormData) {
   const user = await requireUser();
 
-  const parsed = deleteGateSchema.safeParse({
-    gateId: formData.get("gateId"),
+  const parsed = deleteMilestoneSchema.safeParse({
+    milestoneId: formData.get("milestoneId"),
     skillId: formData.get("skillId")
   });
 
@@ -677,16 +677,16 @@ export async function deleteGateAction(formData: FormData) {
 
   const skill = await ensureSkill(parsed.data.skillId);
   if (!canManageSkill(user, skill)) {
-    throw new Error("You do not have access to remove gates for this skill");
+    throw new Error("You do not have access to remove milestones for this skill");
   }
 
-  await prisma.gate.delete({ where: { id: parsed.data.gateId } });
+  await prisma.gate.delete({ where: { id: parsed.data.milestoneId } });
 
   await logActivity({
     skillId: parsed.data.skillId,
     userId: user.id,
-    action: "GateDeleted",
-    payload: { gateId: parsed.data.gateId }
+    action: "MilestoneDeleted",
+    payload: { milestoneId: parsed.data.milestoneId }
   });
 
   revalidateSkill(parsed.data.skillId);

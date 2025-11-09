@@ -1,4 +1,9 @@
-import { DeliverableState, GateScheduleType, GateStatus, Role } from "@prisma/client";
+import {
+  DeliverableState,
+  GateScheduleType as MilestoneScheduleType,
+  GateStatus as MilestoneStatus,
+  Role
+} from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
 import { format } from "date-fns";
 
@@ -12,9 +17,9 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDeliverableState } from "@/lib/utils";
 import { getUserDisplayName } from "@/lib/users";
-import { createMessageAction, deleteGateAction, updateGateStatusAction } from "./actions";
+import { createMessageAction, deleteMilestoneAction, updateMilestoneStatusAction } from "./actions";
 import { DeliverablesTable, type DeliverableRow } from "./deliverables-table";
-import { CreateGateForm } from "./create-gate-form";
+import { CreateMilestoneForm } from "./create-milestone-form";
 import {
   DUE_SOON_THRESHOLD_DAYS,
   classifyDeliverables,
@@ -22,7 +27,7 @@ import {
   ensureOverdueNotifications
 } from "@/lib/deliverables";
 
-const gateStatuses = Object.values(GateStatus);
+const milestoneStatuses = Object.values(MilestoneStatus);
 
 export default async function SkillDetailPage({ params }: { params: { skillId: string } }) {
   const user = await getCurrentUser();
@@ -144,7 +149,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
       <Tabs defaultValue="deliverables" className="space-y-6">
         <TabsList>
           <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
-          <TabsTrigger value="gates">Gates</TabsTrigger>
+          <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
           <TabsTrigger value="activity">Activity log</TabsTrigger>
         </TabsList>
@@ -179,27 +184,27 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="gates" className="space-y-6">
+        <TabsContent value="milestones" className="space-y-6">
           {canEditSkill ? (
             <Card>
               <CardHeader>
-                <CardTitle>Add a gate</CardTitle>
-                <CardDescription>Track key deadlines and gate approvals for this skill.</CardDescription>
+                <CardTitle>Add a milestone</CardTitle>
+                <CardDescription>Track key deadlines and approvals for this skill.</CardDescription>
               </CardHeader>
               <CardContent>
-                <CreateGateForm skillId={skill.id} />
+                <CreateMilestoneForm skillId={skill.id} />
               </CardContent>
             </Card>
           ) : null}
 
           <Card>
             <CardHeader>
-              <CardTitle>Gate tracking</CardTitle>
+              <CardTitle>Milestone tracking</CardTitle>
               <CardDescription>Monitor progress toward key milestones.</CardDescription>
             </CardHeader>
             <CardContent>
               {skill.gates.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No gates scheduled yet.</p>
+                <p className="text-sm text-muted-foreground">No milestones scheduled yet.</p>
               ) : (
                 <Table>
                   <TableHeader>
@@ -217,7 +222,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                         <TableCell>
                           <div className="flex flex-col">
                             <span>{format(gate.dueDate, "dd MMM yyyy")}</span>
-                            {gate.scheduleType === GateScheduleType.CMonth && gate.cMonthLabel ? (
+                            {gate.scheduleType === MilestoneScheduleType.CMonth && gate.cMonthLabel ? (
                               <span className="text-xs text-muted-foreground">{gate.cMonthLabel}</span>
                             ) : (
                               <span className="text-xs text-muted-foreground">Calendar date</span>
@@ -225,21 +230,21 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={gate.status === GateStatus.Complete ? "default" : "outline"}>
+                          <Badge variant={gate.status === MilestoneStatus.Complete ? "default" : "outline"}>
                             {gate.status}
                           </Badge>
                         </TableCell>
                         <TableCell className="space-x-2 text-right">
                           {canEditSkill ? (
-                            <form action={updateGateStatusAction} className="inline-flex items-center gap-2">
+                            <form action={updateMilestoneStatusAction} className="inline-flex items-center gap-2">
                               <input type="hidden" name="skillId" value={skill.id} />
-                              <input type="hidden" name="gateId" value={gate.id} />
+                              <input type="hidden" name="milestoneId" value={gate.id} />
                               <select
                                 name="status"
                                 defaultValue={gate.status}
                                 className="h-9 rounded-md border border-input bg-background px-2 text-sm"
                               >
-                                {gateStatuses.map((status) => (
+                                {milestoneStatuses.map((status) => (
                                   <option key={status} value={status}>
                                     {status}
                                   </option>
@@ -251,9 +256,9 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                             </form>
                           ) : null}
                           {canEditSkill ? (
-                            <form action={deleteGateAction} className="inline">
+                            <form action={deleteMilestoneAction} className="inline">
                               <input type="hidden" name="skillId" value={skill.id} />
-                              <input type="hidden" name="gateId" value={gate.id} />
+                              <input type="hidden" name="milestoneId" value={gate.id} />
                               <Button type="submit" variant="destructive" size="sm">
                                 Delete
                               </Button>

@@ -6,15 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { createGateAction } from "./actions";
+import { createMilestoneAction } from "./actions";
 
 type ScheduleType = "calendar" | "cmonth";
 
-interface CreateGateFormProps {
+interface CreateMilestoneFormProps {
   skillId: string;
 }
 
-export function CreateGateForm({ skillId }: CreateGateFormProps) {
+export function CreateMilestoneForm({ skillId }: CreateMilestoneFormProps) {
   const [name, setName] = useState("");
   const [scheduleType, setScheduleType] = useState<ScheduleType>("calendar");
   const [dueDate, setDueDate] = useState("");
@@ -25,12 +25,12 @@ export function CreateGateForm({ skillId }: CreateGateFormProps) {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!name.trim()) {
-      setError("Enter a gate name before saving.");
+      setError("Enter a milestone name before saving.");
       return;
     }
 
     if (scheduleType === "calendar" && !dueDate) {
-      setError("Choose a calendar date for the gate.");
+      setError("Choose a calendar date for the milestone.");
       return;
     }
 
@@ -53,7 +53,7 @@ export function CreateGateForm({ skillId }: CreateGateFormProps) {
 
     startTransition(async () => {
       try {
-        await createGateAction(formData);
+        await createMilestoneAction(formData);
         setName("");
         if (scheduleType === "calendar") {
           setDueDate("");
@@ -61,7 +61,7 @@ export function CreateGateForm({ skillId }: CreateGateFormProps) {
           setOffsetMonths("1");
         }
       } catch (cause) {
-        setError(cause instanceof Error ? cause.message : "Unable to create gate");
+        setError(cause instanceof Error ? cause.message : "Unable to create milestone");
       }
     });
   };
@@ -70,9 +70,9 @@ export function CreateGateForm({ skillId }: CreateGateFormProps) {
     <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
       <input type="hidden" name="skillId" value={skillId} />
       <div className="space-y-2 md:col-span-2">
-        <Label htmlFor="gate-name">Gate name</Label>
+        <Label htmlFor="milestone-name">Milestone name</Label>
         <Input
-          id="gate-name"
+          id="milestone-name"
           name="name"
           placeholder="Validation workshop"
           value={name}
@@ -85,9 +85,9 @@ export function CreateGateForm({ skillId }: CreateGateFormProps) {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="gate-schedule">Schedule type</Label>
+        <Label htmlFor="milestone-schedule">Schedule type</Label>
         <select
-          id="gate-schedule"
+          id="milestone-schedule"
           name="scheduleType"
           value={scheduleType}
           onChange={(event) => {
@@ -103,9 +103,9 @@ export function CreateGateForm({ skillId }: CreateGateFormProps) {
       </div>
       {scheduleType === "calendar" ? (
         <div className="space-y-2">
-          <Label htmlFor="gate-date">Due date</Label>
+          <Label htmlFor="milestone-date">Due date</Label>
           <Input
-            id="gate-date"
+            id="milestone-date"
             name="dueDate"
             type="date"
             value={dueDate}
@@ -119,9 +119,9 @@ export function CreateGateForm({ skillId }: CreateGateFormProps) {
         </div>
       ) : (
         <div className="space-y-2">
-          <Label htmlFor="gate-offset">Months before C1</Label>
+          <Label htmlFor="milestone-offset">Months before C1</Label>
           <Input
-            id="gate-offset"
+            id="milestone-offset"
             name="offsetMonths"
             type="number"
             min={0}
@@ -141,7 +141,7 @@ export function CreateGateForm({ skillId }: CreateGateFormProps) {
       ) : null}
       <div className="md:col-span-2">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Creating..." : "Create gate"}
+          {isPending ? "Creating..." : "Create milestone"}
         </Button>
       </div>
     </form>

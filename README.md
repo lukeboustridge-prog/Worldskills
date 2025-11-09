@@ -1,13 +1,13 @@
 # WorldSkills Skill Advisor Tracker
 
-WorldSkills Skill Advisor Tracker is a full-stack Next.js 14 application that helps Skill Advisors (SA) and Skill Competition Managers (SCM) collaborate on competition deliverables, gates, and communication.
+WorldSkills Skill Advisor Tracker is a full-stack Next.js 14 application that helps Skill Advisors (SA) and Skill Competition Managers (SCM) collaborate on competition deliverables, milestones, and communication.
 
 ## Features
 
 - 🔐 Email/password authentication with [NextAuth (Auth.js)] and Prisma-backed user accounts.
 - 🆕 Self-service account registration with secure password hashing.
 - 👥 Role-based permissions for Skill Advisors and Skill Competition Managers.
-- 📋 CRUD management for Skills, Deliverables, and Gates backed by Prisma ORM and Neon PostgreSQL.
+- 📋 CRUD management for Skills, Deliverables, and Milestones backed by Prisma ORM and Neon PostgreSQL.
 - 💬 Messaging workspace for each skill with an auditable activity log.
 - 📊 Dashboard views tailored to each role with progress summaries.
 - 🎨 Responsive UI built with Tailwind CSS and shadcn/ui-inspired components.
@@ -143,8 +143,8 @@ prisma/
 
 ## Notes
 
-- Deliverable state changes, evidence submissions, gate updates, and chat messages all write to the `ActivityLog` table for auditability.
-- Only Skill Advisors can adjust deliverable states or gate statuses. SCMs can add evidence links and messages.
+- Deliverable state changes, evidence submissions, milestone updates, and chat messages all write to the `ActivityLog` table for auditability.
+- Only Skill Advisors can adjust deliverable states or milestone statuses. SCMs can add evidence links and messages.
 - Uploads are tracked as evidence URLs (file storage integration can be added later).
 - A tracked `public/` directory is available for static assets.
 - The included `vercel.json` enforces the `.next` build output so Vercel reuses the same pnpm 9.15 toolchain as local development on Node 22.

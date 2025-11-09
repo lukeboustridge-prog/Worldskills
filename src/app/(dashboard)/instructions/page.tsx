@@ -77,10 +77,10 @@ const COMMON_SECTIONS: GuideSection[] = [
   },
   {
     title: "Working inside a skill workspace",
-    description: "The workspace keeps deliverables, gates, notes, and chat messages together.",
+    description: "The workspace keeps deliverables, milestones, notes, and chat messages together.",
     steps: [
       "Open a skill card and choose “Open workspace” to see the full detail.",
-      "Use the tabs to switch between Deliverables, Gates, Notes, and the Activity log.",
+      "Use the tabs to switch between Deliverables, Milestones, Notes, and the Activity log.",
       "Within Deliverables, each row shows the due date, status, and any supporting evidence. The calendar icon opens a date picker so you can choose new dates without typing.",
       "The evidence section lets you attach links or upload documents or images (depending on your permissions) so progress is easy to audit.",
       "Scroll to the bottom of the page to add a message. Messages appear instantly for everyone who has access to the skill."
@@ -109,7 +109,7 @@ const ROLE_SECTIONS: Record<Role, GuideSection[]> = {
       title: "Managing your assigned skills",
       steps: [
         "From the Skills page, look for cards where your name appears in the “SA” badge—those are your responsibilities.",
-        "Open the card and click “Open workspace” to review deliverables, gates, and notes in detail.",
+        "Open the card and click “Open workspace” to review deliverables, milestones, and notes in detail.",
         "Use the quick message panel in the card or the full conversation tab in the workspace to keep your SCM and administrators informed of progress.",
         "Check the hidden badge before each catch-up so you remember which deliverables were excluded from reporting and why."
       ],
@@ -230,7 +230,7 @@ const ADMIN_SECTIONS: GuideSection[] = [
     steps: [
       "Use the Competition timeline section on the Settings page to update the C1 date. The system recalculates every deliverable when you confirm the change.",
       "Review the Standard deliverables catalog regularly. You can add new templates, adjust due dates using the date picker, or delete templates that no longer apply—deletions remove seeded deliverables across all skills.",
-      "Update Gate templates in the same way so milestones remain accurate.",
+      "Update Milestone templates in the same way so schedules remain accurate.",
       "Record major timeline changes in the Notes field provided so the rationale is stored with the settings.",
       "After making adjustments, notify Skill Advisors through the messaging system so they know what changed."
     ],
