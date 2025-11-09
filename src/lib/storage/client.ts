@@ -63,19 +63,21 @@ function getClient() {
     cachedProvider = detectProviderFromEndpoint(config.endpoint);
   }
 
-  return { client: cachedClient, config, provider: cachedProvider ?? detectProviderFromEndpoint(config.endpoint) };
+  return {
+    client: cachedClient,
+    config,
+    provider: cachedProvider ?? detectProviderFromEndpoint(config.endpoint),
+  };
 }
 
-export async function createPresignedUpload(
-  params: {
-    key: string;
-    contentType: string;
-    contentLength: number;
-    checksum?: string;
-    expiresIn?: number;
-  },
-) {
-  const { key, contentType, contentLength, checksum, expiresIn = 300 } = params;
+export async function createPresignedUpload(params: {
+  key: string;
+  contentType: string;
+  contentLength: number;
+  checksum?: string; // accepted but ignored for R2
+  expiresIn?: number;
+}) {
+  const { key, contentType, contentLength, expiresIn = 300 } = params;
 
   const { client, config, provider } = getClient();
 
@@ -86,7 +88,6 @@ export async function createPresignedUpload(
     Key: normalisedKey,
     ContentType: contentType,
     ContentLength: contentLength,
-    ChecksumSHA256: checksum,
   });
 
   const url = await getSignedUrl(client, command, { expiresIn });
@@ -95,10 +96,6 @@ export async function createPresignedUpload(
   const headers: Record<string, string> = {
     "Content-Type": contentType,
   };
-
-  if (checksum) {
-    headers["x-amz-checksum-sha256"] = checksum;
-  }
 
   return {
     provider,
@@ -144,7 +141,9 @@ export async function createPresignedDownload(params: {
     Bucket: config.bucket,
     Key: sanitiseKey(key),
     ResponseContentDisposition: fileName
-      ? `attachment; filename="${fileName.replace(/"/g, "")}"; filename*=UTF-8''${encodeURIComponent(fileName)}`
+      ? `attachment; filename="${fileName.replace(/"/g, "")}"; filename*=UTF-8''${encodeURIComponent(
+          fileName,
+        )}`
       : undefined,
   });
 
