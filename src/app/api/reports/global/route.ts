@@ -10,7 +10,7 @@ export const revalidate = 0;
 
 export async function GET() {
   const data = await getGlobalReportData();
-  const pdf = renderGlobalReportPdf(data);
+  const pdf = await renderGlobalReportPdf(data);
   const filename = `WorldSkills_SA_Global_Report_${format(data.generatedAt, "yyyy-MM-dd")}.pdf`;
 
   return new NextResponse(pdf, {
