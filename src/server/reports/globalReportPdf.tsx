@@ -762,7 +762,7 @@ const AppendicesPage = ({ data }: { data: GlobalReportData }) => {
   );
 };
 
-export async function renderGlobalReportPdf(data: GlobalReportData) {
+export async function renderGlobalReportPdf(data: GlobalReportData): Promise<Buffer> {
   const doc = (
     <Document>
       <CoverPage data={data} />
