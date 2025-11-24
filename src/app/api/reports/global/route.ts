@@ -13,7 +13,9 @@ export async function GET() {
   const pdf = await renderGlobalReportPdf(data);
   const filename = `WorldSkills_SA_Global_Report_${format(data.generatedAt, "yyyy-MM-dd")}.pdf`;
 
-  return new NextResponse(pdf, {
+  const blob = new Blob([pdf], { type: "application/pdf" });
+
+  return new NextResponse(blob, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
