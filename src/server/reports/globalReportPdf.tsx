@@ -1,7 +1,9 @@
 import { format } from "date-fns";
-import { Document, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
+import { Document, Font, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
 
 import { type GlobalReportData, type SkillRiskLevel } from "@/server/reports/globalReportData";
+
+Font.registerHyphenationCallback((word) => [word]);
 
 const colors = {
   text: "#1F2937",
@@ -10,9 +12,9 @@ const colors = {
   headerBg: "#F3F4F6",
   rowAlt: "#F9FAFB",
   risk: {
-    "On track": "#16A34A",
-    Attention: "#CA8A04",
-    "At risk": "#DC2626"
+    "On track": "#0F7B0F",
+    Attention: "#C47F00",
+    "At risk": "#C62828"
   }
 };
 
@@ -37,8 +39,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: 700,
-    marginBottom: 10,
-    marginTop: 18,
+    marginBottom: 6,
+    marginTop: 12,
     color: colors.text
   },
   subtitle: {
@@ -129,7 +131,7 @@ const styles = StyleSheet.create({
     marginTop: 10
   },
   tableHeader: {
-    backgroundColor: colors.headerBg,
+    backgroundColor: "#EFEFEF",
     display: "flex",
     flexDirection: "row",
     borderBottomWidth: 1,
@@ -138,7 +140,7 @@ const styles = StyleSheet.create({
   tableHeaderCell: {
     paddingVertical: 8,
     paddingHorizontal: 8,
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: 700,
     color: colors.text,
     borderRightWidth: 1,
@@ -149,6 +151,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: colors.border
+  },
+  tableBodyRow: {
+    backgroundColor: "white"
+  },
+  tableBodyRowStriped: {
+    backgroundColor: colors.rowAlt
   },
   tableCell: {
     paddingVertical: 7,
@@ -164,21 +172,6 @@ const styles = StyleSheet.create({
   },
   rightAlign: {
     textAlign: "right"
-  },
-  badge: {
-    fontSize: 9,
-    fontWeight: 700,
-    marginLeft: 4
-  },
-  chip: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center"
-  },
-  riskDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4
   },
   logoRow: {
     display: "flex",
@@ -257,6 +250,10 @@ interface Column {
   align?: "right" | "left";
 }
 
+function getRiskStyle(level: SkillRiskLevel) {
+  return { color: colors.risk[level] };
+}
+
 function formatDuration(minutes: number | null) {
   if (minutes === null || Number.isNaN(minutes)) return "Not available";
   if (minutes < 1) return "< 1 minute";
@@ -290,10 +287,7 @@ function truncate(text: string, max = 110) {
 }
 
 const RiskBadge = ({ level }: { level: SkillRiskLevel }) => (
-  <View style={styles.chip}>
-    <View style={[styles.riskDot, { backgroundColor: colors.risk[level] }]} />
-    <Text style={[styles.badge, { color: colors.risk[level] }]}>{level}</Text>
-  </View>
+  <Text style={[styles.cellText, getRiskStyle(level)]}>{level}</Text>
 );
 
 const TableHeader = ({ columns }: { columns: Column[] }) => (
@@ -328,10 +322,10 @@ const TableRow = ({
   rowIndex: number;
 }) => (
   <View
-    style={{
-      ...styles.tableRow,
-      backgroundColor: rowIndex % 2 === 0 ? "white" : colors.rowAlt
-    }}
+    style={[
+      styles.tableRow,
+      rowIndex % 2 === 0 ? styles.tableBodyRow : styles.tableBodyRowStriped
+    ]}
   >
     {values.map((value, index) => (
       <View
@@ -511,16 +505,16 @@ const ExecutiveSummaryPage = ({ data }: { data: GlobalReportData }) => (
 const SkillsOverviewPage = ({ data }: { data: GlobalReportData }) => {
   const skills = sortSkills(data);
   const columns: Column[] = [
-    { label: "Skill", flex: 1.6 },
-    { label: "Sector", flex: 1.4 },
-    { label: "SA", flex: 1.1 },
-    { label: "SCM", flex: 1.1 },
+    { label: "Skill", flex: 2 },
+    { label: "Sector", flex: 1.6 },
+    { label: "SA", flex: 1.2 },
+    { label: "SCM", flex: 1.2 },
     { label: "Status", flex: 0.9 },
     { label: "Risk", flex: 0.9 },
-    { label: "% complete", flex: 0.8, align: "right" },
+    { label: "% complete", flex: 0.7, align: "right" },
     { label: "Overdue", flex: 0.7, align: "right" },
-    { label: "Due soon", flex: 0.8, align: "right" },
-    { label: "Issues", flex: 1.5 }
+    { label: "Due soon", flex: 0.7, align: "right" },
+    { label: "Issues", flex: 1.8 }
   ];
 
   return (
@@ -608,8 +602,8 @@ const ScmPerformancePage = ({ data }: { data: GlobalReportData }) => {
     { label: "SCM", flex: 1.6 },
     { label: "Skills", flex: 0.8, align: "right" },
     { label: "Awaiting replies", flex: 1, align: "right" },
-    { label: "Average response", flex: 1.1 },
-    { label: "Oldest outstanding", flex: 1.1 }
+    { label: "Average response", flex: 1.1, align: "right" },
+    { label: "Oldest outstanding", flex: 1.1, align: "right" }
   ];
 
   return (
@@ -702,7 +696,7 @@ const AppendicesPage = ({ data }: { data: GlobalReportData }) => {
     { label: "Skill", flex: 1.2 },
     { label: "SA", flex: 1 },
     { label: "SCM", flex: 1 },
-    { label: "Waiting time", flex: 0.9 },
+    { label: "Waiting time", flex: 0.9, align: "right" },
     { label: "Subject", flex: 1.6 }
   ];
 
@@ -712,7 +706,7 @@ const AppendicesPage = ({ data }: { data: GlobalReportData }) => {
       <View style={styles.table}>
         <TableHeader columns={overdueColumns} />
         {data.overdueDeliverables.length === 0 ? (
-          <View style={styles.tableRow}>
+          <View style={[styles.tableRow, styles.tableBodyRow]}>
             <Text style={{ ...styles.tableCell, flex: 1 }}>No overdue deliverables at this time.</Text>
           </View>
         ) : (
@@ -739,7 +733,7 @@ const AppendicesPage = ({ data }: { data: GlobalReportData }) => {
       <View style={styles.table}>
         <TableHeader columns={awaitingColumns} />
         {data.awaitingConversations.length === 0 ? (
-          <View style={styles.tableRow}>
+          <View style={[styles.tableRow, styles.tableBodyRow]}>
             <Text style={{ ...styles.tableCell, flex: 1 }}>No pending SCM responses.</Text>
           </View>
         ) : (
