@@ -75,6 +75,11 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     color: colors.text
   },
+  metricSub: {
+    fontSize: 9,
+    color: colors.muted,
+    marginTop: 4
+  },
   infoCardsRow: {
     display: "flex",
     flexDirection: "row",
@@ -189,8 +194,7 @@ const styles = StyleSheet.create({
   logoBar: {
     width: 6,
     height: 22,
-    backgroundColor: "#0071BC",
-    transform: [{ rotate: "-12deg" }]
+    backgroundColor: "#0071BC"
   },
   logoText: {
     fontSize: 12,
@@ -391,6 +395,9 @@ const CoverPage = ({ data }: { data: GlobalReportData }) => (
       <View style={styles.metricCard}>
         <Text style={styles.metricLabel}>SCM Issues (awaiting replies)</Text>
         <Text style={styles.metricValue}>{data.summary.awaitingConversations}</Text>
+        <Text style={styles.metricSub}>
+          Oldest wait {formatDuration(data.awaitingOldestAgeMinutes)}
+        </Text>
       </View>
     </View>
 
@@ -440,7 +447,7 @@ const ExecutiveSummaryPage = ({ data }: { data: GlobalReportData }) => (
           <Text style={styles.infoCardValue}>{data.summary.riskCounts["At risk"]}</Text>
         </View>
       </View>
-      <View style={[styles.infoCard, { marginRight: 0 }] }>
+      <View style={[styles.infoCard, { marginRight: 0 }]}>
         <Text style={styles.infoCardTitle}>Communication overview</Text>
         <View style={styles.infoCardRow}>
           <Text style={styles.infoCardLabel}>Awaiting SCM reply</Text>
@@ -528,14 +535,14 @@ const SkillsOverviewPage = ({ data }: { data: GlobalReportData }) => {
             values={[
               skill.name,
               skill.sector,
-              skill.advisor.name,
+              skill.advisor?.name ?? "Unassigned",
               skill.scm ? skill.scm.name : "Unassigned",
               skill.status,
               <RiskBadge level={skill.riskLevel} key={skill.id} />,
               `${Math.round(skill.percentComplete)}%`,
               skill.overdueCount.toString(),
               skill.dueSoonCount.toString(),
-              truncate(skill.issues)
+              truncate(skill.issues || "None identified")
             ]}
             rowIndex={index}
           />
@@ -784,6 +791,22 @@ async function normalizePdfOutput(output: unknown): Promise<Uint8Array> {
 
   if (output instanceof ArrayBuffer) {
     return new Uint8Array(output);
+  }
+
+  const maybeNodeStream = output as NodeJS.ReadableStream | undefined;
+
+  if (maybeNodeStream && typeof maybeNodeStream[Symbol.asyncIterator] === "function") {
+    const chunks: Uint8Array[] = [];
+
+    for await (const chunk of maybeNodeStream as AsyncIterable<Uint8Array | string>) {
+      if (typeof chunk === "string") {
+        chunks.push(new TextEncoder().encode(chunk));
+      } else if (chunk) {
+        chunks.push(chunk);
+      }
+    }
+
+    return concatChunks(chunks);
   }
 
   const maybeReadable = output as { getReader?: () => ReadableStreamDefaultReader<Uint8Array> };
