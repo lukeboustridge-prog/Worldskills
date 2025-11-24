@@ -764,7 +764,47 @@ const AppendicesPage = ({ data }: { data: GlobalReportData }) => {
   );
 };
 
-export async function renderGlobalReportPdf(data: GlobalReportData): Promise<Buffer> {
+function concatChunks(chunks: Uint8Array[]): Uint8Array {
+  const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  return result;
+}
+
+async function normalizePdfOutput(output: unknown): Promise<Uint8Array> {
+  if (output instanceof Uint8Array) {
+    return output;
+  }
+
+  if (output instanceof ArrayBuffer) {
+    return new Uint8Array(output);
+  }
+
+  const maybeReadable = output as { getReader?: () => ReadableStreamDefaultReader<Uint8Array> };
+
+  if (typeof maybeReadable?.getReader === "function") {
+    const reader = maybeReadable.getReader();
+    const chunks: Uint8Array[] = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) chunks.push(value);
+    }
+
+    return concatChunks(chunks);
+  }
+
+  throw new Error("Unsupported PDF output format");
+}
+
+export async function renderGlobalReportPdf(data: GlobalReportData): Promise<Uint8Array> {
   const doc = (
     <Document>
       <CoverPage data={data} />
@@ -778,5 +818,7 @@ export async function renderGlobalReportPdf(data: GlobalReportData): Promise<Buf
   );
 
   const instance = pdf(doc);
-  return instance.toBuffer();
+  const pdfBuffer = await instance.toBuffer();
+
+  return normalizePdfOutput(pdfBuffer);
 }
