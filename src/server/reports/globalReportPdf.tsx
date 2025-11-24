@@ -162,13 +162,13 @@ const styles = StyleSheet.create({
   },
   badge: {
     fontSize: 9,
-    fontWeight: 700
+    fontWeight: 700,
+    marginLeft: 4
   },
   chip: {
     display: "flex",
     flexDirection: "row",
-    alignItems: "center",
-    gap: 4
+    alignItems: "center"
   },
   riskDot: {
     width: 8,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 22,
     backgroundColor: "#0071BC",
-    transform: "rotate(-12deg)"
+    transform: [{ rotate: "-12deg" }]
   },
   logoText: {
     fontSize: 12,
