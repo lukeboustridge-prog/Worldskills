@@ -343,7 +343,7 @@ const TableRow = ({
         ]}
       >
         {typeof value === "string" ? (
-          <Text style={[styles.cellText, columns[index].align === "right" ? styles.rightAlign : undefined]}>
+          <Text style={columns[index].align === "right" ? [styles.cellText, styles.rightAlign] : styles.cellText}>
             {value}
           </Text>
         ) : (
