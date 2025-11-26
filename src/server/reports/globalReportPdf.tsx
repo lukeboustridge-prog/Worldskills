@@ -1,6 +1,7 @@
+import fs from "fs";
+import path from "path";
 import { format } from "date-fns";
 import { Document, Font, Image, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
-import path from "path";
 
 import { type GlobalReportData, type SkillRiskLevel } from "@/server/reports/globalReportData";
 
@@ -20,6 +21,9 @@ const colors = {
 };
 
 const worldskillsLogoPath = path.join(process.cwd(), "public", "logo.png");
+const worldskillsLogo = fs.existsSync(worldskillsLogoPath)
+  ? fs.readFileSync(worldskillsLogoPath)
+  : undefined;
 
 const styles = StyleSheet.create({
   page: {
@@ -118,11 +122,13 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 4
   },
   infoCardLabel: {
     fontSize: 9,
-    color: colors.muted
+    color: colors.muted,
+    marginRight: 6
   },
   infoCardValue: {
     fontSize: 10,
@@ -251,8 +257,8 @@ function getRiskStyle(level: SkillRiskLevel) {
   return { color: colors.risk[level] };
 }
 
-function formatDuration(minutes: number | null) {
-  if (minutes === null || Number.isNaN(minutes)) return "Not available";
+function formatDuration(minutes: number | null | undefined) {
+  if (minutes === null || minutes === undefined || Number.isNaN(minutes)) return "Not available";
   if (minutes < 1) return "< 1 minute";
   const days = Math.floor(minutes / (60 * 24));
   const hours = Math.floor((minutes % (60 * 24)) / 60);
@@ -262,6 +268,11 @@ function formatDuration(minutes: number | null) {
   if (hours) parts.push(`${hours}h`);
   if (mins && parts.length < 2) parts.push(`${mins}m`);
   return parts.join(" ") || "0m";
+}
+
+function formatSummaryValue(value: string | number | null | undefined) {
+  if (value === null || value === undefined) return "Not available";
+  return typeof value === "number" ? value.toString() : value;
 }
 
 const riskOrder: SkillRiskLevel[] = ["At risk", "Attention", "On track"];
@@ -352,7 +363,7 @@ const TableRow = ({
 const CoverPage = ({ data }: { data: GlobalReportData }) => (
   <Page size="A4" style={styles.page}>
     <View style={styles.coverHeader}>
-      <Image src={worldskillsLogoPath} style={styles.logo} />
+      <Image src={worldskillsLogo ?? worldskillsLogoPath} style={styles.logo} />
     </View>
     <Text style={styles.coverTitle}>WSC2026 Skill Preparation Progress Report</Text>
     <Text style={{ textAlign: "center", color: colors.muted }}>
@@ -432,15 +443,21 @@ const ExecutiveSummaryPage = ({ data }: { data: GlobalReportData }) => (
         <Text style={styles.infoCardTitle}>Communication overview</Text>
         <View style={styles.infoCardRow}>
           <Text style={styles.infoCardLabel}>Awaiting SCM reply</Text>
-          <Text style={styles.infoCardValue}>{data.summary.awaitingConversations}</Text>
+          <Text style={styles.infoCardValue}>
+            {formatSummaryValue(data.summary.awaitingConversations)}
+          </Text>
         </View>
         <View style={styles.infoCardRow}>
           <Text style={styles.infoCardLabel}>Oldest wait</Text>
-          <Text style={styles.infoCardValue}>{formatDuration(data.awaitingOldestAgeMinutes)}</Text>
+          <Text style={styles.infoCardValue}>
+            {formatSummaryValue(formatDuration(data.awaitingOldestAgeMinutes))}
+          </Text>
         </View>
         <View style={styles.infoCardRow}>
           <Text style={styles.infoCardLabel}>Avg SCM response</Text>
-          <Text style={styles.infoCardValue}>{formatDuration(data.averageResponseMinutes)}</Text>
+          <Text style={styles.infoCardValue}>
+            {formatSummaryValue(formatDuration(data.averageResponseMinutes))}
+          </Text>
         </View>
       </View>
     </View>
