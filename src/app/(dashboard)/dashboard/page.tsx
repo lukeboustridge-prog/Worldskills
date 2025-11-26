@@ -6,6 +6,7 @@ import { differenceInCalendarDays, differenceInMinutes, format } from "date-fns"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlobalReportButton } from "@/components/dashboard/global-report-button";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
@@ -382,6 +383,7 @@ export default async function DashboardPage({
           </p>
         </div>
         <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+          <GlobalReportButton />
           <div className="inline-flex items-center gap-1 rounded-md border bg-background p-1">
             <Button
               variant={scope === "all" ? "default" : "ghost"}
