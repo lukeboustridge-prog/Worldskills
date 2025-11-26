@@ -1,5 +1,7 @@
+import fs from "fs";
+import path from "path";
 import { format } from "date-fns";
-import { Document, Font, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
+import { Document, Font, Image, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer";
 
 import { type GlobalReportData, type SkillRiskLevel } from "@/server/reports/globalReportData";
 
@@ -18,6 +20,11 @@ const colors = {
   }
 };
 
+const worldskillsLogoPath = path.join(process.cwd(), "public", "logo.png");
+const worldskillsLogo = fs.existsSync(worldskillsLogoPath)
+  ? fs.readFileSync(worldskillsLogoPath)
+  : undefined;
+
 const styles = StyleSheet.create({
   page: {
     paddingTop: 48,
@@ -26,6 +33,10 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica",
     fontSize: 10,
     color: colors.text
+  },
+  landscapePage: {
+    padding: 24,
+    flexDirection: "column"
   },
   footer: {
     position: "absolute",
@@ -111,11 +122,13 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 4
   },
   infoCardLabel: {
     fontSize: 9,
-    color: colors.muted
+    color: colors.muted,
+    marginRight: 6
   },
   infoCardValue: {
     fontSize: 10,
@@ -140,7 +153,7 @@ const styles = StyleSheet.create({
   tableHeaderCell: {
     paddingVertical: 8,
     paddingHorizontal: 8,
-    fontSize: 8.5,
+    fontSize: 9.5,
     fontWeight: 700,
     color: colors.text,
     borderRightWidth: 1,
@@ -173,26 +186,16 @@ const styles = StyleSheet.create({
   rightAlign: {
     textAlign: "right"
   },
-  logoRow: {
-    display: "flex",
+  coverHeader: {
     flexDirection: "row",
+    justifyContent: "flex-start",
     alignItems: "center",
-    marginBottom: 18
+    marginBottom: 12
   },
-  logoMarks: {
-    display: "flex",
-    flexDirection: "row",
-    marginRight: 6
-  },
-  logoBar: {
-    width: 6,
-    height: 22,
-    backgroundColor: "#0071BC"
-  },
-  logoText: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: "#111827"
+  logo: {
+    width: 80,
+    height: 40,
+    objectFit: "contain"
   },
   coverTitle: {
     fontSize: 24,
@@ -254,8 +257,8 @@ function getRiskStyle(level: SkillRiskLevel) {
   return { color: colors.risk[level] };
 }
 
-function formatDuration(minutes: number | null) {
-  if (minutes === null || Number.isNaN(minutes)) return "Not available";
+function formatDuration(minutes: number | null | undefined) {
+  if (minutes === null || minutes === undefined || Number.isNaN(minutes)) return "Not available";
   if (minutes < 1) return "< 1 minute";
   const days = Math.floor(minutes / (60 * 24));
   const hours = Math.floor((minutes % (60 * 24)) / 60);
@@ -265,6 +268,11 @@ function formatDuration(minutes: number | null) {
   if (hours) parts.push(`${hours}h`);
   if (mins && parts.length < 2) parts.push(`${mins}m`);
   return parts.join(" ") || "0m";
+}
+
+function formatSummaryValue(value: string | number | null | undefined) {
+  if (value === null || value === undefined) return "Not available";
+  return typeof value === "number" ? value.toString() : value;
 }
 
 const riskOrder: SkillRiskLevel[] = ["At risk", "Attention", "On track"];
@@ -352,22 +360,12 @@ const TableRow = ({
   </View>
 );
 
-const Logo = () => (
-  <View style={styles.logoRow}>
-    <View style={styles.logoMarks}>
-      <View style={{ ...styles.logoBar, backgroundColor: "#F2994A" }} />
-      <View style={{ ...styles.logoBar, backgroundColor: "#56CCF2" }} />
-      <View style={{ ...styles.logoBar, backgroundColor: "#2D9CDB" }} />
-    </View>
-    <Text style={styles.logoText}>WorldSkills</Text>
-  </View>
-);
-
 const CoverPage = ({ data }: { data: GlobalReportData }) => (
   <Page size="A4" style={styles.page}>
-    <Logo />
-    <Text style={styles.coverTitle}>Global Progress Report</Text>
-    <Text style={styles.coverSubtitle}>Skill Advisor Tracker</Text>
+    <View style={styles.coverHeader}>
+      <Image src={worldskillsLogo ?? worldskillsLogoPath} style={styles.logo} />
+    </View>
+    <Text style={styles.coverTitle}>WSC2026 Skill Preparation Progress Report</Text>
     <Text style={{ textAlign: "center", color: colors.muted }}>
       Snapshot as at {format(data.generatedAt, "yyyy-MM-dd")}
       {data.competitionLabel ? ` • ${data.competitionLabel}` : ""}
@@ -445,15 +443,21 @@ const ExecutiveSummaryPage = ({ data }: { data: GlobalReportData }) => (
         <Text style={styles.infoCardTitle}>Communication overview</Text>
         <View style={styles.infoCardRow}>
           <Text style={styles.infoCardLabel}>Awaiting SCM reply</Text>
-          <Text style={styles.infoCardValue}>{data.summary.awaitingConversations}</Text>
+          <Text style={styles.infoCardValue}>
+            {formatSummaryValue(data.summary.awaitingConversations)}
+          </Text>
         </View>
         <View style={styles.infoCardRow}>
           <Text style={styles.infoCardLabel}>Oldest wait</Text>
-          <Text style={styles.infoCardValue}>{formatDuration(data.awaitingOldestAgeMinutes)}</Text>
+          <Text style={styles.infoCardValue}>
+            {formatSummaryValue(formatDuration(data.awaitingOldestAgeMinutes))}
+          </Text>
         </View>
         <View style={styles.infoCardRow}>
           <Text style={styles.infoCardLabel}>Avg SCM response</Text>
-          <Text style={styles.infoCardValue}>{formatDuration(data.averageResponseMinutes)}</Text>
+          <Text style={styles.infoCardValue}>
+            {formatSummaryValue(formatDuration(data.averageResponseMinutes))}
+          </Text>
         </View>
       </View>
     </View>
@@ -505,20 +509,20 @@ const ExecutiveSummaryPage = ({ data }: { data: GlobalReportData }) => (
 const SkillsOverviewPage = ({ data }: { data: GlobalReportData }) => {
   const skills = sortSkills(data);
   const columns: Column[] = [
-    { label: "Skill", flex: 2 },
-    { label: "Sector", flex: 1.6 },
-    { label: "SA", flex: 1.2 },
-    { label: "SCM", flex: 1.2 },
+    { label: "Skill", flex: 2.4 },
+    { label: "Sector", flex: 1.8 },
+    { label: "SA", flex: 1.1 },
+    { label: "SCM", flex: 1.1 },
     { label: "Status", flex: 0.9 },
     { label: "Risk", flex: 0.9 },
-    { label: "% complete", flex: 0.7, align: "right" },
-    { label: "Overdue", flex: 0.7, align: "right" },
-    { label: "Due soon", flex: 0.7, align: "right" },
-    { label: "Issues", flex: 1.8 }
+    { label: "% complete", flex: 0.6, align: "right" },
+    { label: "Overdue", flex: 0.6, align: "right" },
+    { label: "Due soon", flex: 0.6, align: "right" },
+    { label: "Issues", flex: 2.1 }
   ];
 
   return (
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" orientation="landscape" style={styles.landscapePage}>
       <Text style={styles.sectionTitle}>Skills overview</Text>
       <View style={styles.table}>
         <TableHeader columns={columns} />
@@ -566,7 +570,7 @@ const AdvisorPerformancePage = ({ data }: { data: GlobalReportData }) => {
 
   return (
     <Page size="A4" style={styles.page}>
-      <Text style={styles.sectionTitle}>Advisor performance</Text>
+      <Text style={styles.sectionTitle}>Progress by Skill Advisor</Text>
       <View style={styles.table}>
         <TableHeader columns={columns} />
         {data.advisorPerformance.map((advisor, index) => (
@@ -608,7 +612,7 @@ const ScmPerformancePage = ({ data }: { data: GlobalReportData }) => {
 
   return (
     <Page size="A4" style={styles.page}>
-      <Text style={styles.sectionTitle}>Skill Competition Manager performance</Text>
+      <Text style={styles.sectionTitle}>Progress by Skill Competition Manager</Text>
       <View style={styles.table}>
         <TableHeader columns={columns} />
         {data.scmPerformance.map((scm, index) => (
