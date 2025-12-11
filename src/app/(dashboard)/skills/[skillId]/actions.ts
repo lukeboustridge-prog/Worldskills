@@ -736,8 +736,9 @@ export async function createMessageAction(formData: FormData) {
     });
 
     if (skillWithParticipants) {
-      const participants = [skillWithParticipants.sa, skillWithParticipants.scm].filter(Boolean);
+      const participants = [skillWithParticipants.sa, skillWithParticipants.scm];
       const recipients = participants
+        .filter((participant): participant is NonNullable<typeof participant> => Boolean(participant))
         .filter((participant) => participant.id !== user.id)
         .filter((participant) => Boolean(participant.email))
         .map((participant) => ({
