@@ -32,7 +32,7 @@ export function getFromEmail(): string {
 export type SendEmailParams = {
   to: string | string[];
   subject: string;
-  text?: string;
+  text: string;
   html?: string;
   from?: string;
 };
