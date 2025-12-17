@@ -1,107 +1,85 @@
-import { getFromEmail, sendEmail } from "./resend";
+import { sendEmail } from "./resend";
 
-export type NotificationRecipient = {
-  email: string;
-  name?: string | null;
-};
-
-type SkillConversationNotificationParams = {
-  skillId: string;
+interface SendSkillConversationNotificationParams {
+  to: string[];
   skillName: string;
-  messageBody: string;
-  authorName?: string | null;
-  authorEmail?: string | null;
-  recipients: NotificationRecipient[];
-  conversationUrl?: string;
-};
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+  skillId: string; // Kept for the URL, but removed from Subject
+  authorName: string;
+  messageContent: string;
 }
 
-function resolveAppBaseUrl(): string {
-  const candidates = [
-    process.env.NEXT_PUBLIC_APP_URL,
-    process.env.VERCEL_PROJECT_PRODUCTION_URL,
-    process.env.VERCEL_URL
-  ];
+export async function sendSkillConversationNotification({
+  to,
+  skillName,
+  skillId,
+  authorName,
+  messageContent,
+}: SendSkillConversationNotificationParams) {
+  const skillUrl = `${process.env.NEXT_PUBLIC_APP_URL}/skills/${skillId}`;
+  
+  // 1. Updated Subject Line
+  const subject = `Skill Advisor Notification New Message in ${skillName}`;
 
-  for (const candidate of candidates) {
-    if (!candidate) continue;
-    try {
-      const withProtocol = candidate.startsWith("http") ? candidate : `https://${candidate}`;
-      return new URL(withProtocol).origin;
-    } catch {
-      // ignore and try the next candidate
-    }
-  }
+  // 2. Updated HTML with "Card" styling and Button
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f5;">
+        
+        <div style="background-color: #f4f4f5; padding: 40px 20px;">
+          
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+            
+            <div style="background-color: #2563eb; padding: 24px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">
+                WorldSkills Skill Advisor Tracker
+              </h1>
+            </div>
 
-  return "https://skill-tracker";
-}
+            <div style="padding: 32px 24px;">
+              
+              <p style="margin-top: 0; margin-bottom: 24px; font-size: 16px; color: #334155; line-height: 1.5;">
+                <strong>${authorName}</strong> posted a new message in <strong>${skillName}</strong>.
+              </p>
 
-function buildConversationUrl(skillId: string): string {
-  const baseUrl = resolveAppBaseUrl();
-  return `${baseUrl}/skills/${encodeURIComponent(skillId)}`;
-}
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 32px;">
+                <p style="margin: 0; font-family: Consolas, Monaco, 'Andale Mono', monospace; font-size: 14px; color: #475569; white-space: pre-wrap; line-height: 1.6;">${messageContent}</p>
+              </div>
 
-export async function sendSkillConversationNotification(
-  params: SkillConversationNotificationParams
-) {
-  if (params.recipients.length === 0) {
-    return;
-  }
+              <div style="text-align: center;">
+                <a href="${skillUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; transition: background-color 0.2s;">
+                  View in Worldskills Skill Tracker
+                </a>
+              </div>
+              
+              <p style="text-align: center; margin-top: 24px; font-size: 13px; color: #94a3b8;">
+                Or paste this link into your browser:<br>
+                <a href="${skillUrl}" style="color: #2563eb; text-decoration: none;">${skillUrl}</a>
+              </p>
 
-  const uniqueRecipients: NotificationRecipient[] = [];
-  const seenEmails = new Set<string>();
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 24px;">
+            <p style="font-size: 12px; color: #94a3b8;">
+              Sent via WorldSkills Skill Advisor Tracker
+            </p>
+          </div>
 
-  for (const recipient of params.recipients) {
-    const trimmed = recipient.email.trim();
-    if (!trimmed) continue;
-    const lowered = trimmed.toLowerCase();
-    if (seenEmails.has(lowered)) continue;
-    seenEmails.add(lowered);
-    uniqueRecipients.push({ ...recipient, email: trimmed });
-  }
-
-  if (uniqueRecipients.length === 0) {
-    return;
-  }
-
-  const authorLabel = params.authorName || params.authorEmail || "A teammate";
-  const conversationUrl = params.conversationUrl ?? buildConversationUrl(params.skillId);
-  const subject = `[Skill ${params.skillId}] New message in ${params.skillName}`;
-  const textBody = `Skill ${params.skillName} (${params.skillId})\n\n${authorLabel} wrote:\n\n${params.messageBody}\n\nOpen conversation: ${conversationUrl}`;
-  const htmlBody = `
-    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #0f172a;">
-      <p style="margin: 0 0 12px 0; font-size: 15px;">New message in <strong>${escapeHtml(
-        params.skillName
-      )}</strong> (Skill ${escapeHtml(params.skillId)}).</p>
-      <p style="margin: 0 0 8px 0; font-size: 15px;">${escapeHtml(authorLabel)} wrote:</p>
-      <pre style="background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 14px; white-space: pre-wrap;">${escapeHtml(
-        params.messageBody
-      )}</pre>
-      <p style="margin: 16px 0 0 0; font-size: 15px;">
-        <a href="${conversationUrl}" style="color: #2563eb; text-decoration: none;">Open the conversation</a>
-      </p>
-    </div>
+        </div>
+      </body>
+    </html>
   `;
 
-  const from = getFromEmail();
+  const text = `Skill Advisor Notification: New message in ${skillName}\n\n${authorName} wrote:\n\n${messageContent}\n\nView in Worldskills Skill Tracker: ${skillUrl}`;
 
-  await Promise.all(
-    uniqueRecipients.map((recipient) =>
-      sendEmail({
-        from,
-        to: recipient.email,
-        subject,
-        text: textBody,
-        html: htmlBody
-      })
-    )
-  );
+  await sendEmail({
+    to,
+    subject,
+    html,
+    text,
+  });
 }
