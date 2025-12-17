@@ -737,23 +737,19 @@ export async function createMessageAction(formData: FormData) {
 
     if (skillWithParticipants) {
       const participants = [skillWithParticipants.sa, skillWithParticipants.scm];
-      const recipients = participants
+      const recipientEmails = participants
         .filter((participant): participant is NonNullable<typeof participant> => Boolean(participant))
         .filter((participant) => participant.id !== user.id)
-        .filter((participant) => Boolean(participant.email))
-        .map((participant) => ({
-          email: participant.email,
-          name: participant.name
-        }));
+        .map((participant) => participant.email)
+        .filter((email): email is string => Boolean(email));
 
-      if (recipients.length > 0) {
+      if (recipientEmails.length > 0) {
         await sendSkillConversationNotification({
           skillId: skillWithParticipants.id,
           skillName: skillWithParticipants.name,
-          messageBody: parsed.data.body,
-          authorName: user.name ?? null,
-          authorEmail: user.email ?? null,
-          recipients
+          messageContent: parsed.data.body,
+          authorName: user.name ?? "Unknown user",
+          to: recipientEmails
         });
       }
     }
