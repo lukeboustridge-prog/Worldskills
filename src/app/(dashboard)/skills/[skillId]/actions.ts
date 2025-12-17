@@ -25,6 +25,7 @@ import {
   normaliseEvidenceItems,
   serialiseEvidenceItems
 } from "@/lib/deliverables";
+import { sendSkillConversationNotification } from "@/lib/email/notifications";
 import { requireAppSettings } from "@/lib/settings";
 import { canManageSkill } from "@/lib/permissions";
 
@@ -727,6 +728,38 @@ export async function createMessageAction(formData: FormData) {
       body: parsed.data.body
     }
   });
+
+  try {
+    const skillWithParticipants = await prisma.skill.findUnique({
+      where: { id: parsed.data.skillId },
+      include: { sa: true, scm: true }
+    });
+
+    if (skillWithParticipants) {
+      const participants = [skillWithParticipants.sa, skillWithParticipants.scm];
+      const recipientEmails = participants
+        .filter((participant): participant is NonNullable<typeof participant> => Boolean(participant))
+        .filter((participant) => participant.id !== user.id)
+        .map((participant) => participant.email)
+        .filter((email): email is string => Boolean(email));
+
+      if (recipientEmails.length > 0) {
+        await sendSkillConversationNotification({
+          skillId: skillWithParticipants.id,
+          skillName: skillWithParticipants.name,
+          messageContent: parsed.data.body,
+          authorName: user.name ?? "Unknown user",
+          to: recipientEmails
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Failed to send conversation notification", {
+      skillId: parsed.data.skillId,
+      authorId: user.id,
+      error
+    });
+  }
 
   await logActivity({
     skillId: parsed.data.skillId,

@@ -121,28 +121,28 @@ export const SKILL_CATALOG: SkillCatalogEntry[] = [
     sector: "Manufacturing and Engineering Technology"
   },
   {
-    id: "skill-20-industrial-electronics",
+    id: "skill-20-bricklaying",
     code: "20",
-    name: "Industrial Electronics",
-    sector: "Manufacturing and Engineering Technology"
-  },
-  {
-    id: "skill-21-it-network-systems-administration",
-    code: "21",
-    name: "IT Network Systems Administration",
-    sector: "Information and Communication Technology"
-  },
-  {
-    id: "skill-22-printing-technology",
-    code: "22",
-    name: "Printing Technology",
-    sector: "Manufacturing and Engineering Technology"
-  },
-  {
-    id: "skill-23-joinery",
-    code: "23",
-    name: "Joinery",
+    name: "Bricklaying",
     sector: "Construction and Building Technology"
+  },
+  {
+    id: "skill-21-plastering-and-drywall-systems",
+    code: "21",
+    name: "Plastering and Drywall Systems",
+    sector: "Construction and Building Technology"
+  },
+  {
+    id: "skill-22-painting-and-decorating",
+    code: "22",
+    name: "Painting and Decorating",
+    sector: "Construction and Building Technology"
+  },
+  {
+    id: "skill-23-autonomous-mobile-robotics",
+    code: "23",
+    name: "Autonomous Mobile Robotics",
+    sector: "Manufacturing and Engineering Technology"
   },
   {
     id: "skill-24-cabinetmaking",
@@ -151,130 +151,130 @@ export const SKILL_CATALOG: SkillCatalogEntry[] = [
     sector: "Construction and Building Technology"
   },
   {
-    id: "skill-25-carpentry",
+    id: "skill-25-joinery",
     code: "25",
+    name: "Joinery",
+    sector: "Construction and Building Technology"
+  },
+  {
+    id: "skill-26-carpentry",
+    code: "26",
     name: "Carpentry",
     sector: "Construction and Building Technology"
   },
   {
-    id: "skill-26-plastering-and-drywall-systems",
-    code: "26",
-    name: "Plastering and Drywall Systems",
-    sector: "Construction and Building Technology"
-  },
-  {
-    id: "skill-27-surface-decoration",
+    id: "skill-27-jewellery",
     code: "27",
-    name: "Surface Decoration",
-    sector: "Construction and Building Technology"
-  },
-  {
-    id: "skill-28-painting-and-decorating",
-    code: "28",
-    name: "Painting and Decorating",
-    sector: "Construction and Building Technology"
-  },
-  {
-    id: "skill-29-landscape-gardening",
-    code: "29",
-    name: "Landscape Gardening",
-    sector: "Construction and Building Technology"
-  },
-  {
-    id: "skill-30-floor-covering",
-    code: "30",
-    name: "Floor Covering",
-    sector: "Construction and Building Technology"
-  },
-  {
-    id: "skill-31-electrical-wiring",
-    code: "31",
-    name: "Electrical Wiring",
-    sector: "Construction and Building Technology"
-  },
-  {
-    id: "skill-32-bricklaying",
-    code: "32",
-    name: "Bricklaying",
-    sector: "Construction and Building Technology"
-  },
-  {
-    id: "skill-33-stonemasonry",
-    code: "33",
-    name: "Stonemasonry",
-    sector: "Construction and Building Technology"
-  },
-  {
-    id: "skill-34-cloud-computing",
-    code: "34",
-    name: "Cloud Computing",
-    sector: "Information and Communication Technology"
-  },
-  {
-    id: "skill-35-fashion-technology",
-    code: "35",
-    name: "Fashion Technology",
+    name: "Jewellery",
     sector: "Creative Arts and Fashion"
   },
   {
-    id: "skill-36-floristry",
-    code: "36",
+    id: "skill-28-floristry",
+    code: "28",
     name: "Floristry",
     sector: "Creative Arts and Fashion"
   },
   {
-    id: "skill-37-hairdressing",
-    code: "37",
+    id: "skill-29-hairdressing",
+    code: "29",
     name: "Hairdressing",
     sector: "Social and Personal Services"
   },
   {
-    id: "skill-38-beauty-therapy",
-    code: "38",
+    id: "skill-30-beauty-therapy",
+    code: "30",
     name: "Beauty Therapy",
     sector: "Social and Personal Services"
   },
   {
-    id: "skill-39-graphic-design-technology",
-    code: "39",
-    name: "Graphic Design Technology",
+    id: "skill-31-fashion-technology",
+    code: "31",
+    name: "Fashion Technology",
     sector: "Creative Arts and Fashion"
   },
   {
-    id: "skill-40-health-and-social-care",
-    code: "40",
-    name: "Health and Social Care",
+    id: "skill-32-patisserie-and-confectionery",
+    code: "32",
+    name: "Pâtisserie and Confectionery",
     sector: "Social and Personal Services"
   },
   {
-    id: "skill-41-automobile-technology",
-    code: "41",
+    id: "skill-33-automobile-technology",
+    code: "33",
     name: "Automobile Technology",
     sector: "Transportation and Logistics"
   },
   {
-    id: "skill-42-cooking",
-    code: "42",
+    id: "skill-34-cooking",
+    code: "34",
     name: "Cooking",
     sector: "Social and Personal Services"
   },
   {
-    id: "skill-43-restaurant-service",
-    code: "43",
+    id: "skill-35-restaurant-service",
+    code: "35",
     name: "Restaurant Service",
     sector: "Social and Personal Services"
   },
   {
-    id: "skill-44-baking",
-    code: "44",
-    name: "Baking",
+    id: "skill-36-car-painting",
+    code: "36",
+    name: "Car Painting",
+    sector: "Transportation and Logistics"
+  },
+  {
+    id: "skill-37-landscape-gardening",
+    code: "37",
+    name: "Landscape Gardening",
+    sector: "Construction and Building Technology"
+  },
+  {
+    id: "skill-38-refrigeration-and-air-conditioning",
+    code: "38",
+    name: "Refrigeration and Air Conditioning",
+    sector: "Manufacturing and Engineering Technology"
+  },
+  {
+    id: "skill-39-it-network-systems-administration",
+    code: "39",
+    name: "IT Network Systems Administration",
+    sector: "Information and Communication Technology"
+  },
+  {
+    id: "skill-40-graphic-design-technology",
+    code: "40",
+    name: "Graphic Design Technology",
+    sector: "Creative Arts and Fashion"
+  },
+  {
+    id: "skill-41-health-and-social-care",
+    code: "41",
+    name: "Health and Social Care",
     sector: "Social and Personal Services"
   },
   {
-    id: "skill-45-refrigeration-and-air-conditioning",
+    id: "skill-42-dental-prosthetics",
+    code: "42",
+    name: "Dental Prosthetics",
+    sector: "Social and Personal Services"
+  },
+  {
+    id: "skill-43-retail-sales",
+    code: "43",
+    name: "Retail Sales",
+    sector: "Social and Personal Services"
+  },
+  {
+    id: "skill-44-visual-merchandising",
+    code: "44",
+    name: "Visual Merchandising",
+    sector: "Creative Arts and Fashion"
+  },
+  {
+    id: "skill-45-digital-interactive-media-design",
     code: "45",
-    name: "Refrigeration and Air Conditioning",
-    sector: "Manufacturing and Engineering Technology"
+    name: "Digital Interactive Media Design",
+    sector: "Creative Arts and Fashion"
   },
   {
     id: "skill-46-concrete-construction-work",
@@ -361,9 +361,9 @@ export const SKILL_CATALOG: SkillCatalogEntry[] = [
     sector: "Manufacturing and Engineering Technology"
   },
   {
-    id: "skill-60-optoelectronic-technology",
+    id: "skill-60-optoelectronics-technology",
     code: "60",
-    name: "Optoelectronic Technology",
+    name: "Optoelectronics Technology",
     sector: "Manufacturing and Engineering Technology"
   },
   {
