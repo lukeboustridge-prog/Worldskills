@@ -35,7 +35,7 @@ export async function sendSkillConversationNotification({
           <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
             
             <div style="background-color: #2563eb; padding: 24px 24px 18px; text-align: center; border-bottom: 1px solid #1d4ed8;">
-              <img src="${logoUrl}" alt="WorldSkills logo" style="height: 40px; width: 40px; display: block; margin: 0 auto 12px; border-radius: 8px; background: #f8fafc; padding: 6px;">
+              <img src="${logoUrl}" alt="WorldSkills logo" style="height: 48px; width: auto; display: block; margin: 0 auto 16px; border-radius: 8px; background: #f8fafc; padding: 6px;">
               <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">
                 WorldSkills Skill Advisor Tracker
               </h1>
@@ -48,7 +48,7 @@ export async function sendSkillConversationNotification({
               </p>
 
               <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 32px;">
-                <p style="margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; color: #475569; white-space: pre-wrap; line-height: 1.6;">${messageContent}</p>
+                <p style="margin: 0; font-family: Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; color: #475569; white-space: pre-wrap; line-height: 1.6;">${messageContent}</p>
               </div>
 
               <div style="text-align: center;">
