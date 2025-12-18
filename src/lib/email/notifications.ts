@@ -15,8 +15,9 @@ export async function sendSkillConversationNotification({
   authorName,
   messageContent,
 }: SendSkillConversationNotificationParams) {
-  const skillUrl = `${process.env.NEXT_PUBLIC_APP_URL}/skills/${skillId}`;
-  const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL}/logo.png`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://your-actual-app-url.vercel.app";
+  const skillUrl = `${baseUrl}/skills/${skillId}`;
+  const logoUrl = `${baseUrl}/logo.png`;
   
   // 1. Updated Subject Line
   const subject = `Skill Advisor Notification New Message in ${skillName}`;
@@ -53,14 +54,9 @@ export async function sendSkillConversationNotification({
 
               <div style="text-align: center;">
                 <a href="${skillUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; transition: background-color 0.2s;">
-                  View in Worldskills Skill Tracker
+                  Reply in Worldskills Skill Tracker
                 </a>
               </div>
-              
-              <p style="text-align: center; margin-top: 24px; font-size: 13px; color: #94a3b8;">
-                Or paste this link into your browser:<br>
-                <a href="${skillUrl}" style="color: #2563eb; text-decoration: none;">${skillUrl}</a>
-              </p>
 
             </div>
           </div>
