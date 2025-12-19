@@ -12,14 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDeliverableState } from "@/lib/utils";
 import { getUserDisplayName } from "@/lib/users";
-import { createMessageAction, deleteMilestoneAction, updateMilestoneStatusAction } from "./actions";
+import { deleteMilestoneAction, updateMilestoneStatusAction } from "./actions";
 import { DeliverablesTable, type DeliverableRow } from "./deliverables-table";
 import { CreateMilestoneForm } from "./create-milestone-form";
+import { MessageForm } from "./message-form";
 import {
   DUE_SOON_THRESHOLD_DAYS,
   classifyDeliverables,
@@ -282,16 +282,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
             </CardHeader>
             <CardContent className="space-y-4">
               {canPostMessage ? (
-                <form action={createMessageAction} className="space-y-3">
-                  <input type="hidden" name="skillId" value={skill.id} />
-                  <Textarea
-                    name="body"
-                    placeholder="Share an update with your counterpart"
-                    rows={4}
-                    required
-                  />
-                  <Button type="submit">Send message</Button>
-                </form>
+                <MessageForm skillId={skill.id} />
               ) : (
                 <p className="text-sm text-muted-foreground">
                   You can read previous messages but do not have permission to post in this conversation.

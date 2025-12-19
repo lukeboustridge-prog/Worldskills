@@ -20,7 +20,7 @@ export async function sendSkillConversationNotification({
   const logoUrl = "https://skill-tracker.worldskills2026.com/logo.png";
   
   // 1. Updated Subject Line
-  const subject = `Skill Update New Message in ${skillName}`;
+  const subject = `Skill Update: New Message in ${skillName}`;
 
   // 2. Updated HTML with "Card" styling and Button
   const html = `

@@ -48,8 +48,9 @@ export default async function DashboardLayout({
     <div className="min-h-screen bg-muted/30">
       <header className="border-b bg-background">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/dashboard" className="text-lg font-semibold">
-            Worldskills Skill Tracker
+          <Link href="/dashboard" className="flex items-center gap-3 text-lg font-semibold">
+            <img src="/logo.png" alt="WorldSkills logo" className="h-8 w-auto" />
+            <span>Worldskills Skill Tracker</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="text-right text-sm">
