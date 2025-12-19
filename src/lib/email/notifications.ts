@@ -17,10 +17,10 @@ export async function sendSkillConversationNotification({
 }: SendSkillConversationNotificationParams) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://your-actual-app-url.vercel.app";
   const skillUrl = `${baseUrl}/skills/${skillId}`;
-  const logoUrl = `${baseUrl}/logo.png`;
+  const logoUrl = "https://skill-tracker.worldskills2026.com/logo.png";
   
   // 1. Updated Subject Line
-  const subject = `Skill Advisor Notification New Message in ${skillName}`;
+  const subject = `Skill Update New Message in ${skillName}`;
 
   // 2. Updated HTML with "Card" styling and Button
   const html = `
@@ -38,7 +38,7 @@ export async function sendSkillConversationNotification({
             <div style="background-color: #2563eb; padding: 24px 24px 18px; text-align: center; border-bottom: 1px solid #1d4ed8;">
               <img src="${logoUrl}" alt="WorldSkills logo" style="height: 48px; width: auto; display: block; margin: 0 auto 16px; border-radius: 8px; background: #f8fafc; padding: 6px;">
               <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">
-                WorldSkills Skill Advisor Tracker
+                Worldskills Skill Tracker
               </h1>
             </div>
 
@@ -63,7 +63,7 @@ export async function sendSkillConversationNotification({
           
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via WorldSkills Skill Advisor Tracker
+              Sent via Worldskills Skill Tracker
             </p>
           </div>
 
@@ -78,7 +78,7 @@ export async function sendSkillConversationNotification({
     </html>
   `;
 
-  const text = `Skill Advisor Notification: New message in ${skillName}\n\n${authorName} wrote:\n\n${messageContent}\n\nView in Worldskills Skill Tracker: ${skillUrl}`;
+  const text = `Skill Update: New message in ${skillName}\n\n${authorName} wrote:\n\n${messageContent}\n\nView in Worldskills Skill Tracker: ${skillUrl}`;
 
   await sendEmail({
     to,

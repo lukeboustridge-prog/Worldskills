@@ -1,4 +1,4 @@
-# WorldSkills Skill Advisor Tracker
+# Worldskills Skill Tracker
 
 WorldSkills Skill Advisor Tracker is a full-stack Next.js 14 application that helps Skill Advisors (SA) and Skill Competition Managers (SCM) collaborate on competition deliverables, milestones, and communication.
 
