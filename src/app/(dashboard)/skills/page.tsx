@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -13,10 +12,11 @@ import { getAppSettings } from "@/lib/settings";
 import { decorateDeliverable } from "@/lib/deliverables";
 import { SKILL_CATALOG } from "@/lib/skill-catalog";
 import { getUserDisplayName } from "@/lib/users";
-import { deleteSkillAction, messageAllSkillsAction } from "./actions";
-import { createMessageAction } from "./[skillId]/actions";
+import { deleteSkillAction } from "./actions";
 import { CreateSkillDialog } from "./create-skill-dialog";
 import { SkillAssignmentForm } from "./skill-assignment-form";
+import { BroadcastMessageForm } from "./broadcast-message-form";
+import { IndividualMessageForm } from "./individual-message-form";
 
 export default async function SkillsPage({
   searchParams
@@ -198,15 +198,7 @@ export default async function SkillsPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={messageAllSkillsAction} className="space-y-4">
-              <Textarea
-                name="body"
-                placeholder="Share an important update with every skill team"
-                rows={4}
-                required
-              />
-              <Button type="submit">Send message to all skills</Button>
-            </form>
+            <BroadcastMessageForm />
           </CardContent>
         </Card>
       ) : null}
@@ -326,18 +318,7 @@ export default async function SkillsPage({
                                 <div className="space-y-2">
                                   <p className="text-sm font-semibold text-foreground">Send a message</p>
                                   {user.isAdmin || isSecretariat || user.id === skill.saId || user.id === skill.scmId ? (
-                                    <form action={createMessageAction} className="space-y-2">
-                                      <input type="hidden" name="skillId" value={skill.id} />
-                                      <Textarea
-                                        name="body"
-                                        placeholder="Share an update with your counterpart"
-                                        rows={3}
-                                        required
-                                      />
-                                      <Button type="submit" size="sm">
-                                        Post message
-                                      </Button>
-                                    </form>
+                                    <IndividualMessageForm skillId={skill.id} />
                                   ) : (
                                     <p className="text-sm text-muted-foreground">
                                       Open the workspace to view the full conversation thread.
@@ -464,18 +445,7 @@ export default async function SkillsPage({
                               <div className="space-y-2">
                                 <p className="text-sm font-semibold text-foreground">Send a message</p>
                                 {user.isAdmin || isSecretariat || user.id === skill.saId || user.id === skill.scmId ? (
-                                  <form action={createMessageAction} className="space-y-2">
-                                    <input type="hidden" name="skillId" value={skill.id} />
-                                    <Textarea
-                                      name="body"
-                                      placeholder="Share an update with your counterpart"
-                                      rows={3}
-                                      required
-                                    />
-                                    <Button type="submit" size="sm">
-                                      Post message
-                                    </Button>
-                                  </form>
+                                  <IndividualMessageForm skillId={skill.id} />
                                 ) : (
                                   <p className="text-sm text-muted-foreground">
                                     Open the workspace to view the full conversation thread.
