@@ -20,6 +20,7 @@ import { deleteMilestoneAction, updateMilestoneStatusAction } from "./actions";
 import { DeliverablesTable, type DeliverableRow } from "./deliverables-table";
 import { CreateMilestoneForm } from "./create-milestone-form";
 import { MessageForm } from "./message-form";
+import { MeetingList, type MeetingData } from "./meeting-list";
 import {
   DUE_SOON_THRESHOLD_DAYS,
   classifyDeliverables,
@@ -50,10 +51,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
         include: { author: true },
         orderBy: { createdAt: "desc" }
       },
-      activity: {
-        include: { user: true },
-        orderBy: { createdAt: "desc" }
-      }
+      meetings: { orderBy: { startTime: "asc" } }
     }
   });
 
@@ -110,6 +108,18 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     isHidden: deliverable.isHidden
   }));
 
+  const meetingsForClient: MeetingData[] = skill.meetings.map((meeting) => ({
+    id: meeting.id,
+    title: meeting.title,
+    startTimeISO: meeting.startTime.toISOString(),
+    endTimeISO: meeting.endTime.toISOString(),
+    meetingLink: meeting.meetingLink,
+    minutes: meeting.minutes,
+    actionPoints: meeting.actionPoints
+  }));
+
+  const canManageMeetings = isAdmin || user.id === skill.saId || user.id === skill.scmId;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -149,9 +159,9 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
       <Tabs defaultValue="deliverables" className="space-y-6">
         <TabsList>
           <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
-          <TabsTrigger value="milestones">Milestones</TabsTrigger>
+          <TabsTrigger value="meetings">Meetings</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
-          <TabsTrigger value="activity">Activity log</TabsTrigger>
+          <TabsTrigger value="milestones">Milestones</TabsTrigger>
         </TabsList>
 
         <TabsContent value="deliverables" className="space-y-6">
@@ -184,6 +194,15 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="meetings" className="space-y-6">
+          <MeetingList
+            meetings={meetingsForClient}
+            skillId={skill.id}
+            canManage={canManageMeetings}
+          />
+        </TabsContent>
+
         <TabsContent value="milestones" className="space-y-6">
           {canEditSkill ? (
             <Card>
@@ -307,39 +326,6 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                   ))
                 )}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="activity" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent activity</CardTitle>
-              <CardDescription>Automatic log of all changes and comments for this skill.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {skill.activity.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No activity recorded yet.</p>
-              ) : (
-                skill.activity.map((entry) => (
-                  <div key={entry.id} className="rounded-md border p-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium">
-                        {getUserDisplayName(entry.user)}
-                      </p>
-                      <span className="text-xs text-muted-foreground">
-                        {format(entry.createdAt, "dd MMM yyyy HH:mm")}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm">
-                      {entry.action}
-                    </p>
-                    <pre className="mt-2 overflow-x-auto rounded-md bg-muted p-3 text-xs">
-{JSON.stringify(entry.payload, null, 2)}
-                    </pre>
-                  </div>
-                ))
-              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -29,12 +29,18 @@ export function getFromEmail(): string {
   return requireFromEmail();
 }
 
+export type EmailAttachment = {
+  content: string;
+  filename: string;
+};
+
 export type SendEmailParams = {
   to: string | string[];
   subject: string;
   text: string;
   html?: string;
   from?: string;
+  attachments?: EmailAttachment[];
 };
 
 export async function sendEmail(params: SendEmailParams) {
@@ -46,6 +52,7 @@ export async function sendEmail(params: SendEmailParams) {
     to: params.to,
     subject: params.subject,
     text: params.text,
-    html: params.html
+    html: params.html,
+    attachments: params.attachments
   });
 }

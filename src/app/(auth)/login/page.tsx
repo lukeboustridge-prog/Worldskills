@@ -24,13 +24,17 @@ export default function LoginPage() {
   const [messageType, setMessageType] = useState<"success" | "error" | null>(null);
 
   const registered = searchParams.get("registered");
+  const reset = searchParams.get("reset");
 
   useEffect(() => {
     if (registered) {
       setMessage("Account created successfully. Sign in with your new credentials.");
       setMessageType("success");
+    } else if (reset) {
+      setMessage("Password reset successfully. Sign in with your new password.");
+      setMessageType("success");
     }
-  }, [registered]);
+  }, [registered, reset]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -87,7 +91,15 @@ export default function LoginPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-muted-foreground underline hover:text-foreground"
+              >
+                Forgot your password?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"

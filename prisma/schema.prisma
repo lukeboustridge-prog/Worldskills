@@ -54,6 +54,7 @@ model User {
   messages            Message[]
   activity            ActivityLog[]
   invitationsCreated  Invitation[]   @relation("InvitationCreator")
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Skill {
@@ -73,6 +74,7 @@ model Skill {
   gates        Gate[]
   messages     Message[]
   activity     ActivityLog[]
+  meetings     Meeting[]
 
   @@index([scmId])
   @@index([saId])
@@ -180,6 +182,23 @@ model ActivityLog {
   @@index([userId])
 }
 
+model Meeting {
+  id           String    @id @default(cuid())
+  skillId      String
+  title        String
+  startTime    DateTime
+  endTime      DateTime
+  meetingLink  String?
+  minutes      String?   @db.Text
+  actionPoints String?   @db.Text
+  createdAt    DateTime  @default(now())
+
+  skill Skill @relation(fields: [skillId], references: [id])
+
+  @@index([skillId])
+  @@index([startTime])
+}
+
 model Invitation {
   id          String   @id @default(cuid())
   name        String
@@ -195,6 +214,20 @@ model Invitation {
   createdByUser User? @relation("InvitationCreator", fields: [createdBy], references: [id])
 
   @@index([email])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
   @@index([expiresAt])
 }
 
