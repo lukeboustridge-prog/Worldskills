@@ -14,10 +14,34 @@ interface SendMeetingInvitationParams {
 }
 
 function formatDateForICS(date: Date): string {
+  // Produces format like 20240120T120000Z (preserves Z for UTC)
   return date
     .toISOString()
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}/, "");
+}
+
+function generateGoogleCalendarLink(meeting: MeetingDetails): string {
+  const baseUrl = "https://calendar.google.com/calendar/render";
+  const start = formatDateForICS(meeting.startTime);
+  const end = formatDateForICS(meeting.endTime);
+
+  const details = meeting.meetingLink
+    ? `Skill: ${meeting.skillName}\nJoin: ${meeting.meetingLink}`
+    : `Skill: ${meeting.skillName}`;
+
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: meeting.title,
+    details,
+    dates: `${start}/${end}`
+  });
+
+  if (meeting.meetingLink) {
+    params.set("location", meeting.meetingLink);
+  }
+
+  return `${baseUrl}?${params.toString()}`;
 }
 
 function formatDateForDisplay(date: Date): string {
@@ -72,6 +96,7 @@ export async function sendMeetingInvitation({
   const logoUrl = "https://skill-tracker.worldskills2026.com/logo.png";
   const startDisplay = formatDateForDisplay(meeting.startTime);
   const endDisplay = formatDateForDisplay(meeting.endTime);
+  const googleCalendarLink = generateGoogleCalendarLink(meeting);
 
   const subject = `Meeting Invitation: ${meeting.title} - ${meeting.skillName}`;
 
@@ -118,16 +143,22 @@ export async function sendMeetingInvitation({
               </div>
 
               ${meeting.meetingLink ? `
-              <div style="text-align: center; margin-bottom: 24px;">
+              <div style="text-align: center; margin-bottom: 16px;">
                 <a href="${meeting.meetingLink}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px;">
                   Join Meeting
                 </a>
               </div>
 
-              <p style="margin-top: 0; margin-bottom: 0; font-size: 12px; color: #94a3b8; text-align: center;">
+              <p style="margin-top: 0; margin-bottom: 20px; font-size: 12px; color: #94a3b8; text-align: center;">
                 Or copy this link: <a href="${meeting.meetingLink}" style="color: #2563eb;">${meeting.meetingLink}</a>
               </p>
               ` : ""}
+
+              <div style="text-align: center; margin-bottom: 8px;">
+                <a href="${googleCalendarLink}" style="display: inline-block; background-color: #ffffff; color: #374151; font-weight: 500; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; border: 1px solid #d1d5db;">
+                  Add to Google Calendar
+                </a>
+              </div>
 
             </div>
           </div>
@@ -140,7 +171,7 @@ export async function sendMeetingInvitation({
 
           <div style="text-align: center; margin-top: 12px;">
             <p style="font-size: 11px; color: #cbd5e1;">
-              Add the attached .ics file to your calendar to save this event.
+              A calendar file (.ics) is attached for other calendar apps.
             </p>
           </div>
 
@@ -157,7 +188,9 @@ Start: ${startDisplay}
 End: ${endDisplay}
 ${meeting.meetingLink ? `\nJoin meeting: ${meeting.meetingLink}` : ""}
 
-Add the attached .ics file to your calendar to save this event.
+Add to Google Calendar: ${googleCalendarLink}
+
+A calendar file (.ics) is attached for other calendar apps.
 
 Sent via Worldskills Skill Tracker`;
 

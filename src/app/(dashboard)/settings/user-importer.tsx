@@ -104,7 +104,7 @@ export function UserImporter() {
     }
 
     // Build the users array
-    const users = csvData
+    const users: ImportUser[] = csvData
       .map((row) => {
         const email = row[emailIndex]?.trim() ?? "";
         const name = row[nameIndex]?.trim() ?? "";
@@ -112,11 +112,11 @@ export function UserImporter() {
 
         if (!email || !name) return null;
 
-        return {
-          name,
-          email,
-          skillName: skillName || undefined
-        };
+        const user: ImportUser = { name, email };
+        if (skillName) {
+          user.skillName = skillName;
+        }
+        return user;
       })
       .filter((user): user is ImportUser => user !== null);
 
