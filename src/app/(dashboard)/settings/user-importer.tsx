@@ -104,7 +104,7 @@ export function UserImporter() {
     }
 
     // Build the users array
-    const users: ImportUser[] = csvData
+    const users = csvData
       .map((row) => {
         const email = row[emailIndex]?.trim() ?? "";
         const name = row[nameIndex]?.trim() ?? "";
