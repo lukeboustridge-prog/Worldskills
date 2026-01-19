@@ -33,6 +33,7 @@ import {
 } from "./actions";
 import { prisma } from "@/lib/prisma";
 import { getUserDisplayName } from "@/lib/users";
+import { UserImporter } from "./user-importer";
 
 const ROLE_LABELS: Record<Role, string> = {
   [Role.Pending]: "No current permissions",
@@ -889,6 +890,13 @@ export default async function SettingsPage({
             Invitations will be available once the database migration that adds the invitation table has completed.
           </p>
         )}
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Bulk import users"
+        description="Upload a CSV file to create multiple users at once and assign them to skills."
+      >
+        <UserImporter />
       </CollapsibleSection>
 
       <CollapsibleSection

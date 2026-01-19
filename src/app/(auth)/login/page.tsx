@@ -25,6 +25,7 @@ export default function LoginPage() {
 
   const registered = searchParams.get("registered");
   const reset = searchParams.get("reset");
+  const setup = searchParams.get("setup");
 
   useEffect(() => {
     if (registered) {
@@ -33,8 +34,11 @@ export default function LoginPage() {
     } else if (reset) {
       setMessage("Password reset successfully. Sign in with your new password.");
       setMessageType("success");
+    } else if (setup) {
+      setMessage("Account setup complete. Sign in with your new password.");
+      setMessageType("success");
     }
-  }, [registered, reset]);
+  }, [registered, reset, setup]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
