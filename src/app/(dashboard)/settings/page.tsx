@@ -29,7 +29,8 @@ import {
   saveCompetitionSettingsAction,
   updateDeliverableTemplateAction,
   updateMilestoneTemplateAction,
-  updateUserRoleAction
+  updateUserRoleAction,
+  deleteUserAction
 } from "./actions";
 import { prisma } from "@/lib/prisma";
 import { getUserDisplayName } from "@/lib/users";
@@ -163,6 +164,7 @@ export default async function SettingsPage({
       : undefined
   );
   const userUpdated = typeof searchParams?.userUpdated === "string";
+  const userDeleted = typeof searchParams?.userDeleted === "string";
   const userQuery = typeof searchParams?.userQuery === "string" ? searchParams.userQuery.trim() : "";
   const inviteCreated = typeof searchParams?.inviteCreated === "string";
   const inviteToken = typeof searchParams?.inviteToken === "string" ? searchParams.inviteToken : null;
@@ -259,12 +261,20 @@ export default async function SettingsPage({
             <Label>Current status</Label>
             <div className={statusClasses}>{statusLabel}</div>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end gap-2">
             <Button type="submit" variant="outline">
               Save
             </Button>
           </div>
         </form>
+        <div className="mt-3 flex justify-end border-t pt-3">
+          <form action={deleteUserAction}>
+            <input type="hidden" name="userId" value={record.id} />
+            <Button type="submit" variant="destructive" size="sm">
+              Delete user
+            </Button>
+          </form>
+        </div>
       </div>
     );
   };
@@ -377,6 +387,11 @@ export default async function SettingsPage({
         {userUpdated ? (
           <div className="rounded-md border border-slate-400 bg-slate-50 p-4 text-sm text-slate-900">
             User permissions updated successfully.
+          </div>
+        ) : null}
+        {userDeleted ? (
+          <div className="rounded-md border border-red-400 bg-red-50 p-4 text-sm text-red-900">
+            User deleted successfully.
           </div>
         ) : null}
       </div>
@@ -732,7 +747,7 @@ export default async function SettingsPage({
       <CollapsibleSection
         title="User management"
         description="Adjust base roles and admin access. Admins automatically appear in Skill Advisor lists."
-        defaultOpen={userUpdated || userQuery.length > 0}
+        defaultOpen={userUpdated || userDeleted || userQuery.length > 0}
       >
         <details className="rounded-md border p-4" open={userQuery.length > 0}>
           <summary className="cursor-pointer font-medium">Search &amp; filters</summary>

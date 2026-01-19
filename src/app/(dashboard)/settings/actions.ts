@@ -694,6 +694,49 @@ export async function updateUserRoleAction(formData: FormData) {
   return redirect(`/settings?${params.toString()}`);
 }
 
+const deleteUserSchema = z.object({
+  userId: z.string().min(1, "User ID is required")
+});
+
+export async function deleteUserAction(formData: FormData) {
+  const currentUser = await requireAdminUser();
+
+  const parsedResult = deleteUserSchema.safeParse({
+    userId: formData.get("userId")
+  });
+
+  if (!parsedResult.success) {
+    const firstError = parsedResult.error.errors[0]?.message ?? "Unable to delete the user.";
+    const params = new URLSearchParams({ userError: firstError });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  const { userId } = parsedResult.data;
+
+  // Prevent self-deletion
+  if (userId === currentUser.id) {
+    const params = new URLSearchParams({ userError: "You cannot delete your own account." });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  try {
+    await prisma.user.delete({
+      where: { id: userId }
+    });
+  } catch (error) {
+    console.error("Failed to delete user", error);
+    const params = new URLSearchParams({ userError: "Unable to delete the user. Please try again." });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  revalidatePath("/settings");
+  revalidatePath("/skills");
+  revalidatePath("/dashboard");
+
+  const params = new URLSearchParams({ userDeleted: "1" });
+  return redirect(`/settings?${params.toString()}`);
+}
+
 const invitationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Enter a valid email address"),
