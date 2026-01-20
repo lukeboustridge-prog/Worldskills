@@ -33,6 +33,14 @@ enum GateStatus {
   Complete
 }
 
+enum ResourceCategory {
+  GUIDANCE
+  TEMPLATE
+  BEST_PRACTICE
+  ONBOARDING
+  POLICY
+}
+
 enum GateScheduleType {
   Calendar
   CMonth
@@ -277,4 +285,19 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model ResourceLink {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  url         String           @db.Text
+  category    ResourceCategory
+  isFeatured  Boolean          @default(false)
+  position    Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([category])
+  @@index([isFeatured])
 }

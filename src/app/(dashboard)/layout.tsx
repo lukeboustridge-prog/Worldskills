@@ -32,6 +32,7 @@ export default async function DashboardLayout({
   const navItems: { href: string; label: string }[] = [];
   if (user.isAdmin || user.role === Role.SA || user.role === Role.Secretariat) {
     navItems.push({ href: "/dashboard", label: "Dashboard" });
+    navItems.push({ href: "/hub", label: "Advisor Hub" });
     navItems.push({ href: "/reports/pre-deliverables", label: "Pre competition deliverables" });
     navItems.push({ href: "/reports", label: "Reports" });
   }
