@@ -75,19 +75,11 @@ export default async function DashboardPage({
     redirect("/awaiting-access");
   }
 
-  const canAccessDashboard =
-    user.isAdmin || user.role === Role.SA || user.role === Role.Secretariat;
+  // Only ADMIN and Secretariat can access the Dashboard
+  const canAccessDashboard = user.isAdmin || user.role === Role.Secretariat;
   if (!canAccessDashboard) {
-    const fallbackSkill = await prisma.skill.findFirst({
-      where: { scmId: user.id },
-      select: { id: true }
-    });
-
-    if (fallbackSkill) {
-      redirect(`/skills/${fallbackSkill.id}`);
-    }
-
-    redirect("/skills");
+    // Redirect SA and SCM users to the Skills Hub
+    redirect("/hub");
   }
 
   const canFilterToMine = user.isAdmin || user.role === Role.SA;

@@ -12,8 +12,8 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/hub", label: "My Hub", icon: Home },
-  { href: "/hub/qc", label: "My Progress", icon: CheckCircle },
+  { href: "/hub", label: "Skills Hub", icon: Home },
+  { href: "/hub/qc", label: "Skills Matrix", icon: CheckCircle },
   { href: "/hub/kb", label: "Knowledge Base", icon: Book },
   { href: "/hub/meetings", label: "Meetings", icon: Calendar },
   { href: "/hub/onboarding", label: "Getting Started", icon: Sparkles, highlighted: true },

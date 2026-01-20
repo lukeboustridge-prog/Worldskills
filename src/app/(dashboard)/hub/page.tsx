@@ -39,15 +39,25 @@ const QUICK_ACTIONS = [
   },
 ];
 
-export default async function MyHubPage() {
+export default async function SkillsHubPage() {
   const user = await getCurrentUser();
 
   if (!user) {
     redirect("/login");
   }
 
+  // Support both SA and SCM users
+  const skillsQuery =
+    user.role === "SCM"
+      ? { scmId: user.id }
+      : user.role === "SA"
+        ? { saId: user.id }
+        : user.isAdmin
+          ? {}
+          : { saId: user.id };
+
   const skills = await prisma.skill.findMany({
-    where: { saId: user.id },
+    where: skillsQuery,
     include: {
       deliverables: true,
     },
@@ -123,7 +133,7 @@ export default async function MyHubPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">My Hub</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Skills Hub</h1>
         <p className="mt-2 text-muted-foreground">
           Your personalised workspace for managing skills and deliverables.
         </p>
