@@ -147,19 +147,22 @@ export async function createPresignedDownload(params: {
   key: string;
   expiresIn?: number;
   fileName?: string;
+  disposition?: "attachment" | "inline";
 }) {
-  const { key, expiresIn = 120, fileName } = params;
+  const { key, expiresIn = 120, fileName, disposition = "attachment" } = params;
 
   const { client, config } = getClient();
+
+  const contentDisposition = fileName
+    ? `${disposition}; filename="${fileName.replace(/"/g, "")}"; filename*=UTF-8''${encodeURIComponent(
+        fileName,
+      )}`
+    : undefined;
 
   const command = new GetObjectCommand({
     Bucket: config.bucket,
     Key: sanitiseKey(key),
-    ResponseContentDisposition: fileName
-      ? `attachment; filename="${fileName.replace(/"/g, "")}"; filename*=UTF-8''${encodeURIComponent(
-          fileName,
-        )}`
-      : undefined,
+    ResponseContentDisposition: contentDisposition,
   });
 
   const url = await getSignedUrl(client, command, { expiresIn });

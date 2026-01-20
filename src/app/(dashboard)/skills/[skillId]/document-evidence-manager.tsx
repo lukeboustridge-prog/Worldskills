@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -548,6 +548,23 @@ export function DocumentEvidenceManager({
               variant="outline"
               size="sm"
               asChild
+              aria-label="View file"
+              disabled={evidence.status === "blocked"}
+            >
+              <a
+                href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download?preview=true`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Eye className="mr-1 h-4 w-4" />
+                View
+              </a>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              asChild
               aria-label="Download file"
               disabled={evidence.status === "blocked"}
             >
@@ -578,18 +595,37 @@ export function DocumentEvidenceManager({
           </div>
         ) : (
           evidence ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              asChild
-              aria-label="Download file"
-              disabled={evidence.status === "blocked"}
-            >
-              <a href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download`}>
-                Download
-              </a>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                asChild
+                aria-label="View file"
+                disabled={evidence.status === "blocked"}
+              >
+                <a
+                  href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download?preview=true`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Eye className="mr-1 h-4 w-4" />
+                  View
+                </a>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                asChild
+                aria-label="Download file"
+                disabled={evidence.status === "blocked"}
+              >
+                <a href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download`}>
+                  Download
+                </a>
+              </Button>
+            </div>
           ) : null
         )}
       </div>

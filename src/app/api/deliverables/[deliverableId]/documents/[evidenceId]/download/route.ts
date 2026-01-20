@@ -64,12 +64,15 @@ export async function GET(request: NextRequest, { params }: { params: { delivera
 
   const fileName = normaliseFileName(document.fileName || deliverable.label);
 
+  const isPreview = request.nextUrl.searchParams.get("preview") === "true";
+
   let download;
   try {
     download = await createPresignedDownload({
       key: document.storageKey,
       expiresIn: DOWNLOAD_TTL_SECONDS,
-      fileName
+      fileName,
+      disposition: isPreview ? "inline" : "attachment"
     });
   } catch (error) {
     if (error instanceof StorageConfigurationError) {

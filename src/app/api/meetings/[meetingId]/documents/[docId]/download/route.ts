@@ -88,12 +88,15 @@ export async function GET(
 
   const fileName = normaliseFileName(document.fileName || meeting.title);
 
+  const isPreview = request.nextUrl.searchParams.get("preview") === "true";
+
   let download;
   try {
     download = await createPresignedDownload({
       key: document.storageKey,
       expiresIn: DOWNLOAD_TTL_SECONDS,
       fileName,
+      disposition: isPreview ? "inline" : "attachment",
     });
   } catch (error) {
     if (error instanceof StorageConfigurationError) {

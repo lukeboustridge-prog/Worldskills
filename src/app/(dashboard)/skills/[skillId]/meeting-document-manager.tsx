@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -473,6 +473,21 @@ export function MeetingDocumentManager({
                   </p>
                 </div>
                 <div className="flex gap-2 ml-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    aria-label="View file"
+                  >
+                    <a
+                      href={`/api/meetings/${meetingId}/documents/${doc.id}/download?preview=true`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </a>
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
