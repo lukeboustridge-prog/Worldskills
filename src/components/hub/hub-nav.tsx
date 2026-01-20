@@ -13,10 +13,10 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/hub", label: "My Hub", icon: Home },
-  { href: "/hub/qc", label: "Quality Control", icon: CheckCircle },
+  { href: "/hub/qc", label: "My Progress", icon: CheckCircle },
   { href: "/hub/kb", label: "Knowledge Base", icon: Book },
   { href: "/hub/meetings", label: "Meetings", icon: Calendar },
-  { href: "/hub/onboarding", label: "New Advisors", icon: Sparkles, highlighted: true },
+  { href: "/hub/onboarding", label: "Getting Started", icon: Sparkles, highlighted: true },
 ];
 
 export function HubNav() {

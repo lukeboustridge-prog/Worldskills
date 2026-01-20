@@ -510,7 +510,7 @@ export default async function DashboardPage({
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Advisor performance</CardTitle>
+            <CardTitle>Skill Advisor Performance</CardTitle>
             <CardDescription>Completion rates and overdue counts by Skill Advisor</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

@@ -62,11 +62,6 @@ function formatLocalTime(isoString: string): string {
   });
 }
 
-function toUTCISOString(localDateTimeString: string): string {
-  const localDate = new Date(localDateTimeString);
-  return localDate.toISOString();
-}
-
 function MeetingItem({
   meeting,
   skillId,
@@ -452,14 +447,20 @@ function ScheduleMeetingForm({ skillId }: { skillId: string }) {
   );
 
   const handleSubmit = async (formData: FormData) => {
-    const startTimeLocal = formData.get("startTimeLocal") as string;
-    const endTimeLocal = formData.get("endTimeLocal") as string;
+    const dateValue = formData.get("date") as string;
+    const startTimeValue = formData.get("startTime") as string;
+    const durationMinutes = parseInt(formData.get("duration") as string, 10);
+
+    // Combine date and time into a datetime string
+    const startTimeLocal = `${dateValue}T${startTimeValue}`;
+    const startDate = new Date(startTimeLocal);
+    const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
 
     const newFormData = new FormData();
     newFormData.set("skillId", formData.get("skillId") as string);
     newFormData.set("title", formData.get("title") as string);
-    newFormData.set("startTime", toUTCISOString(startTimeLocal));
-    newFormData.set("endTime", toUTCISOString(endTimeLocal));
+    newFormData.set("startTime", startDate.toISOString());
+    newFormData.set("endTime", endDate.toISOString());
     newFormData.set("meetingLink", formData.get("meetingLink") as string);
 
     // Add initial links and documents
@@ -519,24 +520,43 @@ function ScheduleMeetingForm({ skillId }: { skillId: string }) {
               placeholder="e.g., Weekly sync meeting"
             />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="meeting-start">Start Time</Label>
+              <Label htmlFor="meeting-date">Date</Label>
               <Input
-                id="meeting-start"
-                name="startTimeLocal"
-                type="datetime-local"
+                id="meeting-date"
+                name="date"
+                type="date"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="meeting-end">End Time</Label>
+              <Label htmlFor="meeting-start-time">Start Time</Label>
               <Input
-                id="meeting-end"
-                name="endTimeLocal"
-                type="datetime-local"
+                id="meeting-start-time"
+                name="startTime"
+                type="time"
                 required
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="meeting-duration">Duration</Label>
+              <select
+                id="meeting-duration"
+                name="duration"
+                required
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                defaultValue="60"
+              >
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="90">1.5 hours</option>
+                <option value="120">2 hours</option>
+                <option value="180">3 hours</option>
+                <option value="240">4 hours</option>
+              </select>
             </div>
           </div>
           <div className="space-y-2">

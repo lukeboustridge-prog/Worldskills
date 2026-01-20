@@ -75,7 +75,7 @@ export default async function OnboardingPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">New Advisors</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Getting Started</h1>
         <p className="mt-2 text-muted-foreground">
           Welcome! Everything you need to get started as a Skill Advisor.
         </p>

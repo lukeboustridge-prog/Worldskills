@@ -248,7 +248,7 @@ const ADMIN_SECTIONS: GuideSection[] = [
       "Monitor overdue badges across sectors and coordinate with the Secretariat to provide extra support where necessary."
     ],
     tips: [
-      "Assign every skill to both an Advisor and an SCM to keep responsibilities clear.",
+      "Assign every skill to both a Skill Advisor and an SCM to keep responsibilities clear.",
       "Use the Dashboard’s sector breakdown to spot areas that are falling behind before deadlines arrive."
     ]
   }
