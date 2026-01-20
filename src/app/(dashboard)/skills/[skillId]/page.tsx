@@ -27,6 +27,62 @@ import {
   decorateDeliverable,
   ensureOverdueNotifications
 } from "@/lib/deliverables";
+import type { MeetingDocument, MeetingLink } from "./meeting-actions";
+import type { Prisma } from "@prisma/client";
+
+function normaliseMeetingDocuments(value: Prisma.JsonValue | null | undefined): MeetingDocument[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const record = item as Record<string, unknown>;
+      const id = typeof record.id === "string" ? record.id : null;
+      const fileName = typeof record.fileName === "string" ? record.fileName : null;
+      const storageKey = typeof record.storageKey === "string" ? record.storageKey : null;
+      const fileSize = typeof record.fileSize === "number" ? record.fileSize : 0;
+      const mimeType = typeof record.mimeType === "string" ? record.mimeType : "application/octet-stream";
+      const uploadedAt = typeof record.uploadedAt === "string" ? record.uploadedAt : new Date().toISOString();
+
+      if (!id || !fileName || !storageKey) {
+        return null;
+      }
+
+      return { id, fileName, storageKey, fileSize, mimeType, uploadedAt };
+    })
+    .filter((item): item is MeetingDocument => item !== null);
+}
+
+function normaliseMeetingLinks(value: Prisma.JsonValue | null | undefined): MeetingLink[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const record = item as Record<string, unknown>;
+      const id = typeof record.id === "string" ? record.id : null;
+      const label = typeof record.label === "string" ? record.label : null;
+      const url = typeof record.url === "string" ? record.url : null;
+      const addedAt = typeof record.addedAt === "string" ? record.addedAt : new Date().toISOString();
+
+      if (!id || !label || !url) {
+        return null;
+      }
+
+      return { id, label, url, addedAt };
+    })
+    .filter((item): item is MeetingLink => item !== null);
+}
 
 const milestoneStatuses = Object.values(MilestoneStatus);
 
@@ -115,7 +171,9 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     endTimeISO: meeting.endTime.toISOString(),
     meetingLink: meeting.meetingLink,
     minutes: meeting.minutes,
-    actionPoints: meeting.actionPoints
+    actionPoints: meeting.actionPoints,
+    documents: normaliseMeetingDocuments(meeting.documents),
+    links: normaliseMeetingLinks(meeting.links)
   }));
 
   const canManageMeetings = isAdmin || user.id === skill.saId || user.id === skill.scmId;

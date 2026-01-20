@@ -191,6 +191,8 @@ model Meeting {
   meetingLink  String?
   minutes      String?   @db.Text
   actionPoints String?   @db.Text
+  documents    Json      @default("[]")
+  links        Json      @default("[]")
   createdAt    DateTime  @default(now())
 
   skill Skill @relation(fields: [skillId], references: [id])
