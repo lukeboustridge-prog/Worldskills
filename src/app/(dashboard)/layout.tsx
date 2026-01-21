@@ -31,7 +31,7 @@ export default async function DashboardLayout({
   }
 
   const navItems: { href: string; label: string }[] = [];
-  if (user.isAdmin || user.role === Role.Secretariat) {
+  if (user.isAdmin || user.role === Role.Secretariat || user.role === Role.SA) {
     navItems.push({ href: "/dashboard", label: "Dashboard" });
   }
   if (
@@ -42,9 +42,6 @@ export default async function DashboardLayout({
     user.role === Role.Secretariat
   ) {
     navItems.push({ href: "/hub", label: "Skills Hub" });
-  }
-  if (user.isAdmin || user.role === Role.SA || user.role === Role.Secretariat) {
-    navItems.push({ href: "/reports", label: "Reports" });
   }
 
   navItems.push({ href: "/instructions", label: "User guide" });
