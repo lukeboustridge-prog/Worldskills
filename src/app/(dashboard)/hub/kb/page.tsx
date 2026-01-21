@@ -87,7 +87,7 @@ export default async function KnowledgeBasePage() {
 
       <KBSearch resources={resources} />
 
-      {user.role === Role.SA && (
+      {(user.role === Role.SA || user.isAdmin) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
