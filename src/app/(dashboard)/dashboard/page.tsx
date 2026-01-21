@@ -75,10 +75,10 @@ export default async function DashboardPage({
     redirect("/awaiting-access");
   }
 
-  // Only ADMIN and Secretariat can access the Dashboard
-  const canAccessDashboard = user.isAdmin || user.role === Role.Secretariat;
+  // ADMIN, Secretariat, and Skill Advisors can access the Dashboard
+  const canAccessDashboard = user.isAdmin || user.role === Role.Secretariat || user.role === Role.SA;
   if (!canAccessDashboard) {
-    // Redirect SA, SCM, and Skill Team users to the Skills Hub
+    // Redirect SCM and Skill Team users to the Skills Hub
     redirect("/hub");
   }
 
