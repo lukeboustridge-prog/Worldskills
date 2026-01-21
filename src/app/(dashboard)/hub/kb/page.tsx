@@ -1,7 +1,7 @@
-import { ResourceCategory } from "@prisma/client";
+import { ResourceCategory, Role } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ExternalLink, Settings } from "lucide-react";
+import { ExternalLink, Globe, Settings } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -86,6 +86,42 @@ export default async function KnowledgeBasePage() {
       </div>
 
       <KBSearch resources={resources} />
+
+      {user.role === Role.SA && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              External Links
+            </CardTitle>
+            <CardDescription>
+              Useful external websites and tools for Skill Advisors
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <li>
+                <a
+                  href="https://worldskillscis.show/sa_test"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-muted"
+                >
+                  <ExternalLink className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium leading-tight">
+                      CIS (Competition Information System)
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                      Test and play with the marking schemes
+                    </p>
+                  </div>
+                </a>
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       {resourcesByCategory.length === 0 ? (
         <Card>
