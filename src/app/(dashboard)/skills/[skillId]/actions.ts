@@ -7,14 +7,15 @@ import {
   DeliverableState,
   GateScheduleType as MilestoneScheduleType,
   GateStatus as MilestoneStatus,
-  Role,
-  type Skill
+  Role
 } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { logActivity } from "@/lib/activity";
 import { requireUser } from "@/lib/auth";
+import { sendWelcomeEmail } from "@/lib/email/welcome";
 import { prisma } from "@/lib/prisma";
 import {
   buildCMonthLabel,
@@ -30,7 +31,12 @@ import { requireAppSettings } from "@/lib/settings";
 import { canManageSkill } from "@/lib/permissions";
 
 async function ensureSkill(skillId: string) {
-  const skill = await prisma.skill.findUnique({ where: { id: skillId } });
+  const skill = await prisma.skill.findUnique({
+    where: { id: skillId },
+    include: {
+      teamMembers: { select: { userId: true } }
+    }
+  });
   if (!skill) {
     throw new Error("Skill not found");
   }
@@ -62,7 +68,7 @@ export async function updateDeliverableStateAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canManageSkill(user, skill)) {
+  if (!canManageSkill(user, { saId: skill.saId, scmId: skill.scmId, teamMemberIds: skill.teamMembers.map((member) => member.userId) })) {
     throw new Error("You do not have access to update this deliverable");
   }
 
@@ -115,7 +121,7 @@ export async function appendEvidenceAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canManageSkill(user, skill)) {
+  if (!canManageSkill(user, { saId: skill.saId, scmId: skill.scmId, teamMemberIds: skill.teamMembers.map((member) => member.userId) })) {
     throw new Error("You do not have access to update this deliverable");
   }
 
@@ -189,7 +195,7 @@ export async function updateEvidenceTypeAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canManageSkill(user, skill)) {
+  if (!canManageSkill(user, { saId: skill.saId, scmId: skill.scmId, teamMemberIds: skill.teamMembers.map((member) => member.userId) })) {
     throw new Error("You do not have access to update this evidence");
   }
 
@@ -288,7 +294,11 @@ export async function updateDeliverableScheduleAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  const canManage = canManageSkill(user, skill);
+  const canManage = canManageSkill(user, {
+    saId: skill.saId,
+    scmId: skill.scmId,
+    teamMemberIds: skill.teamMembers.map((member) => member.userId)
+  });
   if (!canManage) {
     throw new Error("Only assigned team members or an administrator can update deliverable schedules");
   }
@@ -381,7 +391,7 @@ export async function createCustomDeliverableAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canManageSkill(user, skill)) {
+  if (!canManageSkill(user, { saId: skill.saId, scmId: skill.scmId, teamMemberIds: skill.teamMembers.map((member) => member.userId) })) {
     throw new Error("You do not have permission to create deliverables for this skill");
   }
 
@@ -483,7 +493,7 @@ export async function createMilestoneAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canManageSkill(user, skill)) {
+  if (!canManageSkill(user, { saId: skill.saId, scmId: skill.scmId, teamMemberIds: skill.teamMembers.map((member) => member.userId) })) {
     throw new Error("You do not have access to create milestones for this skill");
   }
 
@@ -547,7 +557,7 @@ export async function hideDeliverableAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canManageSkill(user, skill)) {
+  if (!canManageSkill(user, { saId: skill.saId, scmId: skill.scmId, teamMemberIds: skill.teamMembers.map((member) => member.userId) })) {
     throw new Error("You do not have permission to update this deliverable");
   }
 
@@ -586,7 +596,7 @@ export async function unhideDeliverableAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canManageSkill(user, skill)) {
+  if (!canManageSkill(user, { saId: skill.saId, scmId: skill.scmId, teamMemberIds: skill.teamMembers.map((member) => member.userId) })) {
     throw new Error("You do not have permission to update this deliverable");
   }
 
@@ -632,7 +642,7 @@ export async function updateMilestoneStatusAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canManageSkill(user, skill)) {
+  if (!canManageSkill(user, { saId: skill.saId, scmId: skill.scmId, teamMemberIds: skill.teamMembers.map((member) => member.userId) })) {
     throw new Error("You do not have access to update milestones for this skill");
   }
 
@@ -677,7 +687,7 @@ export async function deleteMilestoneAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  if (!canManageSkill(user, skill)) {
+  if (!canManageSkill(user, { saId: skill.saId, scmId: skill.scmId, teamMemberIds: skill.teamMembers.map((member) => member.userId) })) {
     throw new Error("You do not have access to remove milestones for this skill");
   }
 
@@ -711,7 +721,11 @@ export async function createMessageAction(formData: FormData) {
   }
 
   const skill = await ensureSkill(parsed.data.skillId);
-  const permittedUserIds = [skill.saId, skill.scmId].filter(Boolean) as string[];
+  const permittedUserIds = [
+    skill.saId,
+    skill.scmId,
+    ...skill.teamMembers.map((member) => member.userId)
+  ].filter(Boolean) as string[];
   const canPost =
     user.isAdmin ||
     user.role === Role.Secretariat ||
@@ -732,11 +746,19 @@ export async function createMessageAction(formData: FormData) {
   try {
     const skillWithParticipants = await prisma.skill.findUnique({
       where: { id: parsed.data.skillId },
-      include: { sa: true, scm: true }
+      include: {
+        sa: true,
+        scm: true,
+        teamMembers: { include: { user: true } }
+      }
     });
 
     if (skillWithParticipants) {
-      const participants = [skillWithParticipants.sa, skillWithParticipants.scm];
+      const participants = [
+        skillWithParticipants.sa,
+        skillWithParticipants.scm,
+        ...skillWithParticipants.teamMembers.map((member) => member.user)
+      ];
       const recipientEmails = participants
         .filter((participant): participant is NonNullable<typeof participant> => Boolean(participant))
         .filter((participant) => participant.id !== user.id)
@@ -769,4 +791,140 @@ export async function createMessageAction(formData: FormData) {
   });
 
   revalidateSkill(parsed.data.skillId);
+}
+
+const inviteSkillTeamSchema = z.object({
+  skillId: z.string().min(1),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Enter a valid email address")
+});
+
+export async function inviteSkillTeamMemberAction(formData: FormData) {
+  const user = await requireUser();
+
+  const parsed = inviteSkillTeamSchema.safeParse({
+    skillId: formData.get("skillId"),
+    name: formData.get("name"),
+    email: formData.get("email")
+  });
+
+  if (!parsed.success) {
+    const firstError = parsed.error.errors[0]?.message ?? "Check the invitation details.";
+    const params = new URLSearchParams({ inviteError: firstError });
+    redirect(`/skills/${formData.get("skillId")}?${params.toString()}`);
+    return;
+  }
+
+  const skill = await prisma.skill.findUnique({
+    where: { id: parsed.data.skillId },
+    include: { sa: true }
+  });
+
+  if (!skill) {
+    const params = new URLSearchParams({ inviteError: "Skill not found." });
+    redirect(`/skills/${parsed.data.skillId}?${params.toString()}`);
+    return;
+  }
+
+  if (!user.isAdmin && user.id !== skill.saId) {
+    const params = new URLSearchParams({ inviteError: "Only the assigned Skill Advisor can invite team members." });
+    redirect(`/skills/${skill.id}?${params.toString()}`);
+    return;
+  }
+
+  const email = parsed.data.email.toLowerCase().trim();
+  const name = parsed.data.name.trim();
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  let invitedUser = existingUser;
+
+  if (existingUser) {
+    const shouldPromote = !existingUser.isAdmin && existingUser.role === Role.Pending;
+    const shouldUpdateName = !existingUser.name && name.length > 0;
+
+    if (shouldPromote || shouldUpdateName) {
+      invitedUser = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          role: shouldPromote ? Role.SkillTeam : existingUser.role,
+          name: shouldUpdateName ? name : existingUser.name
+        }
+      });
+    }
+  } else {
+    invitedUser = await prisma.user.create({
+      data: {
+        email,
+        name,
+        role: Role.SkillTeam,
+        passwordHash: null
+      }
+    });
+  }
+
+  if (!invitedUser) {
+    const params = new URLSearchParams({ inviteError: "Unable to create the user record." });
+    redirect(`/skills/${skill.id}?${params.toString()}`);
+    return;
+  }
+
+  await prisma.skillMember.upsert({
+    where: {
+      skillId_userId: {
+        skillId: skill.id,
+        userId: invitedUser.id
+      }
+    },
+    update: {},
+    create: {
+      skillId: skill.id,
+      userId: invitedUser.id
+    }
+  });
+
+  if (!invitedUser.passwordHash) {
+    const token = randomUUID();
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await prisma.verificationToken.deleteMany({
+      where: { identifier: email }
+    });
+
+    await prisma.verificationToken.create({
+      data: {
+        identifier: email,
+        token,
+        expires
+      }
+    });
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const setupUrl = `${baseUrl}/setup-account?token=${token}`;
+
+    try {
+      await sendWelcomeEmail({
+        to: email,
+        name,
+        token,
+        role: Role.SkillTeam,
+        skillName: skill.name,
+        setupUrl
+      });
+    } catch (error) {
+      console.error("Failed to send skill team invite email", error);
+      const params = new URLSearchParams({ inviteError: "Invitation saved but the email failed to send." });
+      redirect(`/skills/${skill.id}?${params.toString()}`);
+      return;
+    }
+  }
+
+  revalidateSkill(skill.id);
+  revalidatePath("/hub");
+  revalidatePath("/skills");
+
+  const params = new URLSearchParams({ invite: "sent" });
+  redirect(`/skills/${skill.id}?${params.toString()}`);
 }

@@ -38,7 +38,14 @@ export default async function SkillsPage({
   const canViewSkills = isAdmin || isSkillAdvisor;
 
   if (!canViewSkills && !isSecretariat) {
-    const skill = await prisma.skill.findFirst({ where: { scmId: user.id } });
+    const skill =
+      user.role === Role.SkillTeam
+        ? await prisma.skill.findFirst({
+            where: {
+              teamMembers: { some: { userId: user.id } }
+            }
+          })
+        : await prisma.skill.findFirst({ where: { scmId: user.id } });
     if (skill) {
       redirect(`/skills/${skill.id}`);
     }
@@ -51,6 +58,9 @@ export default async function SkillsPage({
       include: {
         sa: true,
         scm: true,
+        teamMembers: {
+          select: { userId: true }
+        },
         deliverables: {
           select: {
             id: true,
@@ -317,7 +327,11 @@ export default async function SkillsPage({
                               <div className="rounded-lg border bg-background p-4 shadow-sm">
                                 <div className="space-y-2">
                                   <p className="text-sm font-semibold text-foreground">Send a message</p>
-                                  {user.isAdmin || isSecretariat || user.id === skill.saId || user.id === skill.scmId ? (
+                                  {user.isAdmin ||
+                                  isSecretariat ||
+                                  user.id === skill.saId ||
+                                  user.id === skill.scmId ||
+                                  skill.teamMembers.some((member) => member.userId === user.id) ? (
                                     <IndividualMessageForm skillId={skill.id} />
                                   ) : (
                                     <p className="text-sm text-muted-foreground">
@@ -444,7 +458,11 @@ export default async function SkillsPage({
                             <div className="rounded-lg border bg-background p-4 shadow-sm">
                               <div className="space-y-2">
                                 <p className="text-sm font-semibold text-foreground">Send a message</p>
-                                {user.isAdmin || isSecretariat || user.id === skill.saId || user.id === skill.scmId ? (
+                                {user.isAdmin ||
+                                isSecretariat ||
+                                user.id === skill.saId ||
+                                user.id === skill.scmId ||
+                                skill.teamMembers.some((member) => member.userId === user.id) ? (
                                   <IndividualMessageForm skillId={skill.id} />
                                 ) : (
                                   <p className="text-sm text-muted-foreground">

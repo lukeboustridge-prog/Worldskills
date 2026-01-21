@@ -110,7 +110,11 @@ function serialiseMeetingLinks(links: MeetingLink[]): Prisma.InputJsonValue {
 async function ensureSkill(skillId: string) {
   const skill = await prisma.skill.findUnique({
     where: { id: skillId },
-    include: { sa: true, scm: true }
+    include: {
+      sa: true,
+      scm: true,
+      teamMembers: { select: { userId: true } }
+    }
   });
   if (!skill) {
     throw new Error("Skill not found");
@@ -124,11 +128,12 @@ function revalidateSkill(skillId: string) {
 
 function canScheduleMeeting(
   user: { id: string; role: Role; isAdmin: boolean },
-  skill: { saId: string; scmId: string | null }
+  skill: { saId: string; scmId: string | null; teamMembers: { userId: string }[] }
 ): boolean {
   if (user.isAdmin) return true;
-  if (user.role === Role.SA && user.id === skill.saId) return true;
-  if (user.role === Role.SCM && user.id === skill.scmId) return true;
+  if (user.id === skill.saId) return true;
+  if (skill.scmId && user.id === skill.scmId) return true;
+  if (skill.teamMembers.some((member) => member.userId === user.id)) return true;
   return false;
 }
 

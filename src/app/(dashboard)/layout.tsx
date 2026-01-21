@@ -11,6 +11,7 @@ const ROLE_LABELS: Record<Role, string> = {
   [Role.Pending]: "Pending access",
   [Role.SA]: "Skill Advisor",
   [Role.SCM]: "Skill Competition Manager",
+  [Role.SkillTeam]: "Skill Team",
   [Role.Secretariat]: "Secretariat"
 };
 
@@ -33,7 +34,13 @@ export default async function DashboardLayout({
   if (user.isAdmin || user.role === Role.Secretariat) {
     navItems.push({ href: "/dashboard", label: "Dashboard" });
   }
-  if (user.isAdmin || user.role === Role.SA || user.role === Role.SCM || user.role === Role.Secretariat) {
+  if (
+    user.isAdmin ||
+    user.role === Role.SA ||
+    user.role === Role.SCM ||
+    user.role === Role.SkillTeam ||
+    user.role === Role.Secretariat
+  ) {
     navItems.push({ href: "/hub", label: "Skills Hub" });
   }
   if (user.isAdmin || user.role === Role.SA || user.role === Role.Secretariat) {

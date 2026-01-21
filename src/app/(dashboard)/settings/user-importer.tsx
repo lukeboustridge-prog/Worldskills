@@ -12,6 +12,7 @@ import { bulkImportUsersAction, type ImportUser, type BulkImportResult } from ".
 const ROLE_OPTIONS: { value: Role; label: string }[] = [
   { value: Role.SA, label: "Skill Advisor" },
   { value: Role.SCM, label: "Skill Competition Manager" },
+  { value: Role.SkillTeam, label: "Skill Team" },
   { value: Role.Secretariat, label: "Secretariat" }
 ];
 
@@ -228,7 +229,7 @@ export function UserImporter() {
             ))}
           </select>
           <p className="text-xs text-muted-foreground">
-            All imported users will be assigned this role. If a Skill Name is mapped and matched, the user will be linked as the {selectedRole === Role.SA ? "Skill Advisor" : selectedRole === Role.SCM ? "Skill Competition Manager" : "assigned role"} for that skill.
+            All imported users will be assigned this role. If a Skill Name is mapped and matched, the user will be linked as the {selectedRole === Role.SA ? "Skill Advisor" : selectedRole === Role.SCM ? "Skill Competition Manager" : selectedRole === Role.SkillTeam ? "Skill Team member" : "assigned role"} for that skill.
           </p>
         </div>
       ) : null}

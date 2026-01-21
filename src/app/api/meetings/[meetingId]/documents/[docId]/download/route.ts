@@ -66,6 +66,9 @@ export async function GET(
         select: {
           saId: true,
           scmId: true,
+          teamMembers: {
+            select: { userId: true },
+          },
         },
       },
     },
@@ -75,7 +78,13 @@ export async function GET(
     return NextResponse.json({ error: "Meeting not found." }, { status: 404 });
   }
 
-  if (!canViewSkill(user, { saId: meeting.skill.saId, scmId: meeting.skill.scmId })) {
+  if (
+    !canViewSkill(user, {
+      saId: meeting.skill.saId,
+      scmId: meeting.skill.scmId,
+      teamMemberIds: meeting.skill.teamMembers.map((member) => member.userId),
+    })
+  ) {
     return NextResponse.json({ error: "You do not have access to this document." }, { status: 403 });
   }
 

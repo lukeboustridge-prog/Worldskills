@@ -15,11 +15,13 @@ export default async function SkillsMatrixPage() {
 
   // Role-based data fetching
   // SA: All skills they manage
-  // SCM: Only their assigned skill
+  // SCM/Skill Team: Only their assigned skill
   // Admin/Secretariat: All skills (for now, same as SA view)
   let userSkillsQuery = {};
   if (user.role === Role.SCM) {
     userSkillsQuery = { scmId: user.id };
+  } else if (user.role === Role.SkillTeam) {
+    userSkillsQuery = { teamMembers: { some: { userId: user.id } } };
   } else if (user.role === Role.SA) {
     userSkillsQuery = { saId: user.id };
   } else if (user.isAdmin || user.role === Role.Secretariat) {
@@ -35,9 +37,9 @@ export default async function SkillsMatrixPage() {
     orderBy: { name: "asc" },
   });
 
-  // For SCM users, also fetch all skills to calculate cohort average
+  // For SCM/Skill Team users, also fetch all skills to calculate cohort average
   let allSkills = userSkills;
-  if (user.role === Role.SCM) {
+  if (user.role === Role.SCM || user.role === Role.SkillTeam) {
     allSkills = await prisma.skill.findMany({
       include: {
         deliverables: true,
@@ -84,12 +86,12 @@ export default async function SkillsMatrixPage() {
     };
   });
 
-  // Calculate cohort average for SCM benchmarking
+  // Calculate cohort average for SCM/Skill Team benchmarking
   let cohortAveragePercent = 0;
   let userSkillCompletionPercent = 0;
   let benchmarkDifference = 0;
 
-  if (user.role === Role.SCM && allSkills.length > 0) {
+  if ((user.role === Role.SCM || user.role === Role.SkillTeam) && allSkills.length > 0) {
     // Calculate cohort average
     const cohortStats = allSkills.map((skill) => {
       const visibleDeliverables = skill.deliverables.filter((d) => !d.isHidden);

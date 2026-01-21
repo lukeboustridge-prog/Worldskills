@@ -42,7 +42,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { deliv
       skill: {
         select: {
           saId: true,
-          scmId: true
+          scmId: true,
+          teamMembers: {
+            select: { userId: true }
+          }
         }
       }
     }
@@ -56,7 +59,13 @@ export async function DELETE(request: NextRequest, { params }: { params: { deliv
     return NextResponse.json({ error: "Deliverable does not belong to the requested skill." }, { status: 400 });
   }
 
-  if (!canManageSkill(user, { saId: deliverable.skill.saId, scmId: deliverable.skill.scmId })) {
+  if (
+    !canManageSkill(user, {
+      saId: deliverable.skill.saId,
+      scmId: deliverable.skill.scmId,
+      teamMemberIds: deliverable.skill.teamMembers.map((member) => member.userId)
+    })
+  ) {
     return NextResponse.json({ error: "You do not have permission to update evidence for this skill." }, { status: 403 });
   }
 

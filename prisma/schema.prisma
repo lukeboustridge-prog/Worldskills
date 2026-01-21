@@ -11,6 +11,7 @@ enum Role {
   Pending
   SA
   SCM
+  SkillTeam
   Secretariat
 }
 
@@ -59,6 +60,7 @@ model User {
   sessions            Session[]
   skillsAsSA          Skill[]        @relation("SkillSA")
   skillsAsSCM         Skill[]        @relation("SkillSCM")
+  skillMemberships    SkillMember[]
   messages            Message[]
   activity            ActivityLog[]
   invitationsCreated  Invitation[]   @relation("InvitationCreator")
@@ -83,10 +85,25 @@ model Skill {
   messages     Message[]
   activity     ActivityLog[]
   meetings     Meeting[]
+  teamMembers  SkillMember[]
 
   @@index([scmId])
   @@index([saId])
   @@unique([name])
+}
+
+model SkillMember {
+  id        String   @id @default(cuid())
+  skillId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([skillId, userId])
+  @@index([skillId])
+  @@index([userId])
 }
 
 model DeliverableTemplate {

@@ -10,13 +10,15 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDeliverableState } from "@/lib/utils";
 import { getUserDisplayName } from "@/lib/users";
-import { deleteMilestoneAction, updateMilestoneStatusAction } from "./actions";
+import { deleteMilestoneAction, updateMilestoneStatusAction, inviteSkillTeamMemberAction } from "./actions";
 import { DeliverablesTable, type DeliverableRow } from "./deliverables-table";
 import { CreateMilestoneForm } from "./create-milestone-form";
 import { MessageForm } from "./message-form";
@@ -86,7 +88,13 @@ function normaliseMeetingLinks(value: Prisma.JsonValue | null | undefined): Meet
 
 const milestoneStatuses = Object.values(MilestoneStatus);
 
-export default async function SkillDetailPage({ params }: { params: { skillId: string } }) {
+export default async function SkillDetailPage({
+  params,
+  searchParams
+}: {
+  params: { skillId: string };
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
@@ -101,6 +109,7 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     include: {
       sa: true,
       scm: true,
+      teamMembers: { include: { user: true } },
       deliverables: { orderBy: { dueDate: "asc" } },
       gates: { orderBy: { dueDate: "asc" } },
       messages: {
@@ -115,18 +124,21 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     notFound();
   }
 
-  const permittedUserIds = new Set([skill.saId, skill.scmId].filter(Boolean) as string[]);
+  const teamMemberIds = skill.teamMembers.map((member) => member.userId);
+  const permittedUserIds = new Set([skill.saId, skill.scmId, ...teamMemberIds].filter(Boolean) as string[]);
   const isAdmin = user.isAdmin;
   const isSecretariat = user.role === Role.Secretariat;
+  const isSkillTeamMember = teamMemberIds.includes(user.id);
 
   if (!isAdmin && !isSecretariat && !permittedUserIds.has(user.id)) {
     redirect("/dashboard");
   }
 
-  const canEditSkill = user.isAdmin || user.id === skill.saId || user.id === skill.scmId;
+  const canEditSkill = user.isAdmin || user.id === skill.saId || user.id === skill.scmId || isSkillTeamMember;
   const canValidateDeliverables = user.isAdmin || user.id === skill.saId;
   const canPostMessage =
-    isAdmin || isSecretariat || user.id === skill.saId || user.id === skill.scmId;
+    isAdmin || isSecretariat || user.id === skill.saId || user.id === skill.scmId || isSkillTeamMember;
+  const canInviteSkillTeam = user.isAdmin || user.id === skill.saId;
   const advisorLabel = getUserDisplayName(skill.sa);
   const managerLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
 
@@ -176,7 +188,12 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
     links: normaliseMeetingLinks(meeting.links)
   }));
 
-  const canManageMeetings = isAdmin || user.id === skill.saId || user.id === skill.scmId;
+  const canManageMeetings = isAdmin || user.id === skill.saId || user.id === skill.scmId || isSkillTeamMember;
+
+  const inviteParam = searchParams?.invite;
+  const inviteErrorParam = searchParams?.inviteError;
+  const inviteSuccess = (Array.isArray(inviteParam) ? inviteParam[0] : inviteParam) === "sent";
+  const inviteError = Array.isArray(inviteErrorParam) ? inviteErrorParam[0] : inviteErrorParam ?? null;
 
   return (
     <div className="space-y-6">
@@ -214,12 +231,24 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
         </div>
       </div>
 
+      {inviteSuccess ? (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          Invitation sent. Ask the new team member to check their email for the setup link.
+        </div>
+      ) : null}
+      {inviteError ? (
+        <div className="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {inviteError}
+        </div>
+      ) : null}
+
       <Tabs defaultValue="deliverables" className="space-y-6">
         <TabsList>
           <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
           <TabsTrigger value="meetings">Meetings</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
+          <TabsTrigger value="team">Team</TabsTrigger>
         </TabsList>
 
         <TabsContent value="deliverables" className="space-y-6">
@@ -384,6 +413,60 @@ export default async function SkillDetailPage({ params }: { params: { skillId: s
                   ))
                 )}
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="team" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Invite a Skill Team member</CardTitle>
+              <CardDescription>
+                Add a teammate to this skill with Skill Team access (same permissions as the SCM).
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {canInviteSkillTeam ? (
+                <form action={inviteSkillTeamMemberAction} className="grid gap-4 md:grid-cols-[1fr_1fr_auto]">
+                  <input type="hidden" name="skillId" value={skill.id} />
+                  <div className="space-y-2">
+                    <Label htmlFor="invite-name">Full name</Label>
+                    <Input id="invite-name" name="name" required placeholder="Alex Team Member" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="invite-email">Email</Label>
+                    <Input id="invite-email" name="email" type="email" required placeholder="alex@example.com" />
+                  </div>
+                  <div className="flex items-end">
+                    <Button type="submit">Send invite</Button>
+                  </div>
+                </form>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Only the assigned Skill Advisor can invite Skill Team members.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Skill Team</CardTitle>
+              <CardDescription>People who can help manage this skill.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {skill.teamMembers.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No Skill Team members added yet.</p>
+              ) : (
+                <ul className="space-y-2 text-sm">
+                  {skill.teamMembers.map((member) => (
+                    <li key={member.id} className="rounded-md border px-3 py-2">
+                      <p className="font-medium">{getUserDisplayName(member.user)}</p>
+                      <p className="text-xs text-muted-foreground">{member.user.email}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

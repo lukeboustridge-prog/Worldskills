@@ -30,7 +30,10 @@ export async function GET(request: NextRequest, { params }: { params: { delivera
       skill: {
         select: {
           saId: true,
-          scmId: true
+          scmId: true,
+          teamMembers: {
+            select: { userId: true }
+          }
         }
       }
     }
@@ -40,7 +43,13 @@ export async function GET(request: NextRequest, { params }: { params: { delivera
     return NextResponse.json({ error: "Deliverable not found." }, { status: 404 });
   }
 
-  if (!canViewSkill(user, { saId: deliverable.skill.saId, scmId: deliverable.skill.scmId })) {
+  if (
+    !canViewSkill(user, {
+      saId: deliverable.skill.saId,
+      scmId: deliverable.skill.scmId,
+      teamMemberIds: deliverable.skill.teamMembers.map((member) => member.userId)
+    })
+  ) {
     return NextResponse.json({ error: "You do not have access to this document." }, { status: 403 });
   }
 

@@ -1,4 +1,4 @@
-import { DeliverableState } from "@prisma/client";
+import { DeliverableState, Role } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { differenceInCalendarDays, format } from "date-fns";
@@ -46,15 +46,17 @@ export default async function SkillsHubPage() {
     redirect("/login");
   }
 
-  // Support both SA and SCM users
+  // Support SA, SCM, and Skill Team users
   const skillsQuery =
-    user.role === "SCM"
+    user.role === Role.SCM
       ? { scmId: user.id }
-      : user.role === "SA"
-        ? { saId: user.id }
-        : user.isAdmin
-          ? {}
-          : { saId: user.id };
+      : user.role === Role.SkillTeam
+        ? { teamMembers: { some: { userId: user.id } } }
+        : user.role === Role.SA
+          ? { saId: user.id }
+          : user.isAdmin
+            ? {}
+            : { saId: user.id };
 
   const skills = await prisma.skill.findMany({
     where: skillsQuery,

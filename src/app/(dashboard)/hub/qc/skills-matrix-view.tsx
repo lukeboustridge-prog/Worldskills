@@ -155,7 +155,7 @@ export function SkillsMatrixView({
   userSkillCompletionPercent,
   benchmarkDifference,
 }: SkillsMatrixViewProps) {
-  const isSCM = userRole === Role.SCM && !isAdmin;
+  const isSCM = (userRole === Role.SCM || userRole === Role.SkillTeam) && !isAdmin;
   const totalDeliverables = skills.reduce((sum, s) => sum + s.total, 0);
   const totalComplete = skills.reduce((sum, s) => sum + s.complete, 0);
   const totalOverdue = skills.reduce((sum, s) => sum + s.overdue, 0);
@@ -171,7 +171,7 @@ export function SkillsMatrixView({
         </p>
       </div>
 
-      {/* Benchmarking Widget - Only for SCM users */}
+      {/* Benchmarking Widget - Only for SCM/Skill Team users */}
       {isSCM && skills.length > 0 && (
         <BenchmarkingWidget
           cohortAveragePercent={cohortAveragePercent}
@@ -223,7 +223,7 @@ export function SkillsMatrixView({
             <p className="text-sm text-muted-foreground py-8 text-center">
               {isSCM
                 ? "You are not currently assigned to any skill."
-                : "No skills found. You may need to be assigned as a Skill Advisor."}
+                : "No skills found. You may need to be assigned as a Skill Advisor or Skill Team member."}
             </p>
           ) : (
             <div className="overflow-x-auto">

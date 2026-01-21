@@ -16,7 +16,11 @@ export default async function HubLayout({
   }
 
   const canAccessHub =
-    user.isAdmin || user.role === Role.SA || user.role === Role.SCM || user.role === Role.Secretariat;
+    user.isAdmin ||
+    user.role === Role.SA ||
+    user.role === Role.SCM ||
+    user.role === Role.SkillTeam ||
+    user.role === Role.Secretariat;
 
   if (!canAccessHub) {
     redirect("/dashboard");

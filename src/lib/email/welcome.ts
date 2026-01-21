@@ -6,6 +6,7 @@ const ROLE_LABELS: Record<Role, string> = {
   [Role.Pending]: "User",
   [Role.SA]: "Skill Advisor",
   [Role.SCM]: "Skill Competition Manager",
+  [Role.SkillTeam]: "Skill Team",
   [Role.Secretariat]: "Secretariat"
 };
 

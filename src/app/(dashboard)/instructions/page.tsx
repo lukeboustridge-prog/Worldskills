@@ -12,6 +12,7 @@ const ROLE_LABELS: Record<Role, string> = {
   [Role.Pending]: "Pending access",
   [Role.SA]: "Skill Advisor",
   [Role.SCM]: "Skill Competition Manager",
+  [Role.SkillTeam]: "Skill Team",
   [Role.Secretariat]: "Secretariat"
 };
 
@@ -151,6 +152,34 @@ const ROLE_SECTIONS: Record<Role, GuideSection[]> = {
       title: "Supporting your Skill Advisor",
       steps: [
         "Use the Skills page to open the workspace for each skill you manage.",
+        "Review the Deliverables tab to understand what your Skill Advisor has planned and which deadlines are approaching.",
+        "Share updates in the message thread so your advisor has the latest information before meetings.",
+        "If you notice incorrect information, leave a comment tagging the Skill Advisor so they can make official updates."
+      ],
+      tips: [
+        "Agree on a regular rhythm (for example, weekly) to review the workspace together.",
+        "Keep your updates short and factual so they are easy to scan later."
+      ]
+    },
+    {
+      title: "Providing evidence and documents",
+      steps: [
+        "Open a deliverable row to upload files or add links that prove progress.",
+        "Use the notes field inside the row to explain what you have attached or what help you need.",
+        "Let the Skill Advisor know through the message thread when evidence is ready so they can validate it.",
+        "If a deliverable no longer applies, discuss it with the Skill Advisor. They can hide it from reporting once you agree."
+      ],
+      tips: [
+        "Store working documents in shared folders and link to them instead of uploading duplicates when possible.",
+        "Check overdue badges on the Skills page daily so you can support the advisor before deadlines slip."
+      ]
+    }
+  ],
+  [Role.SkillTeam]: [
+    {
+      title: "Supporting your Skill Advisor",
+      steps: [
+        "Use the Skills page to open the workspace for each skill you are assigned to.",
         "Review the Deliverables tab to understand what your Skill Advisor has planned and which deadlines are approaching.",
         "Share updates in the message thread so your advisor has the latest information before meetings.",
         "If you notice incorrect information, leave a comment tagging the Skill Advisor so they can make official updates."

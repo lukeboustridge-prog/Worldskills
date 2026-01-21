@@ -40,6 +40,7 @@ const ROLE_LABELS: Record<Role, string> = {
   [Role.Pending]: "No current permissions",
   [Role.SA]: "Skill Advisor",
   [Role.SCM]: "Skill Competition Manager",
+  [Role.SkillTeam]: "Skill Team",
   [Role.Secretariat]: "Secretariat"
 };
 

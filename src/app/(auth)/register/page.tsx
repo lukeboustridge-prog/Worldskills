@@ -15,6 +15,7 @@ const GENERIC_ERROR_MESSAGE = "We couldn't create your account right now. Please
 const ROLE_LABELS: Record<string, string> = {
   SA: "Skill Advisor",
   SCM: "Skill Competition Manager",
+  SkillTeam: "Skill Team",
   Secretariat: "Secretariat"
 };
 

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { format, isBefore } from "date-fns";
 import { Calendar, Clock, Video, FileText, ExternalLink } from "lucide-react";
+import { Role } from "@prisma/client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,16 @@ export default async function MeetingsPage() {
   }
 
   const skills = await prisma.skill.findMany({
-    where: { saId: user.id },
+    where:
+      user.role === Role.SA
+        ? { saId: user.id }
+        : user.role === Role.SCM
+          ? { scmId: user.id }
+          : user.role === Role.SkillTeam
+            ? { teamMembers: { some: { userId: user.id } } }
+            : user.isAdmin || user.role === Role.Secretariat
+              ? {}
+              : { saId: user.id },
     select: { id: true },
   });
 

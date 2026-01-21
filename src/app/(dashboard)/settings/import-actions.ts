@@ -114,7 +114,22 @@ export async function bulkImportUsersAction(
             updateData.scmId = user.id;
           }
 
-          if (Object.keys(updateData).length > 0) {
+          if (parsed.data.role === Role.SkillTeam) {
+            await prisma.skillMember.upsert({
+              where: {
+                skillId_userId: {
+                  skillId: skill.id,
+                  userId: user.id
+                }
+              },
+              update: {},
+              create: {
+                skillId: skill.id,
+                userId: user.id
+              }
+            });
+            result.linked++;
+          } else if (Object.keys(updateData).length > 0) {
             await prisma.skill.update({
               where: { id: skill.id },
               data: updateData

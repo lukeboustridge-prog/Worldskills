@@ -57,6 +57,9 @@ export async function POST(req: NextRequest) {
           select: {
             saId: true,
             scmId: true,
+            teamMembers: {
+              select: { userId: true },
+            },
           },
         },
       },
@@ -76,7 +79,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!canManageSkill(user, { saId: deliverable.skill.saId, scmId: deliverable.skill.scmId })) {
+    if (
+      !canManageSkill(user, {
+        saId: deliverable.skill.saId,
+        scmId: deliverable.skill.scmId,
+        teamMemberIds: deliverable.skill.teamMembers.map((member) => member.userId),
+      })
+    ) {
       return NextResponse.json(
         { error: "forbidden", message: "You do not have permission to upload for this skill." },
         { status: 403, headers: NO_STORE_HEADERS },

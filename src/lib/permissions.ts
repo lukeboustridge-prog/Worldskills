@@ -3,6 +3,7 @@ import { Role } from "@prisma/client";
 export interface SkillAccessContext {
   saId: string;
   scmId: string | null;
+  teamMemberIds?: string[];
 }
 
 export interface UserAccessContext {
@@ -21,6 +22,10 @@ export function canManageSkill(user: UserAccessContext, skill: SkillAccessContex
   }
 
   if (skill.scmId && user.id === skill.scmId) {
+    return true;
+  }
+
+  if (skill.teamMemberIds && skill.teamMemberIds.includes(user.id)) {
     return true;
   }
 
