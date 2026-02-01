@@ -1,8 +1,8 @@
-# Roadmap: Management Meetings Feature
+# Roadmap: Descriptor Library v1.0
 
 ## Overview
 
-The management meetings feature extends the existing skill meeting system to support coordination meetings for Skill Advisors and Secretariat members. This roadmap delivers four phases that progressively build from database foundation through business logic, UI integration, and deployment validation. Each phase maintains backward compatibility with existing skill meetings while introducing role-based visibility and selective attendance capabilities.
+This roadmap delivers a searchable descriptor library for SCMs to access proven marking scheme descriptors from WSC2024. The journey starts with robust Excel parsing and data import (highest risk), establishes admin curation workflows, implements search with relevance tuning, builds the library UI with preview and copy functionality, and completes with access control integration. The focus is exclusively on library features—marking scheme builder and export functionality are out of scope as users copy descriptors into external tools.
 
 ## Phases
 
@@ -12,85 +12,106 @@ The management meetings feature extends the existing skill meeting system to sup
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Database Foundation & Type System** - Schema changes for optional skill association and attendee tracking
-- [x] **Phase 2: Permission & Business Logic Layer** - Authorization, email generation, and visibility rules for both meeting types
-- [ ] **Phase 3: UI Integration & Components** - Meeting creation, display, and filtering with visual distinction
-- [ ] **Phase 4: Deployment & Validation** - Production deployment with data migration validation and rollback capability
+- [ ] **Phase 1: Data Import & Foundation** - Parse WSC2024 Excel files and establish database schema
+- [ ] **Phase 2: Admin Curation** - Enable admin CRUD for descriptor library management
+- [ ] **Phase 3: Search & Discovery** - Implement full-text search with relevance tuning
+- [ ] **Phase 4: Library UI** - Build search interface with preview and clipboard integration
+- [ ] **Phase 5: Access Control & Polish** - Integrate permissions and finalize library
 
 ## Phase Details
 
-### Phase 1: Database Foundation & Type System
-**Goal**: Database schema supports both skill-specific and management meetings with selective attendance tracking
+### Phase 1: Data Import & Foundation
+**Goal**: Import all 58 WSC2024 marking schemes with robust parsing and establish database schema with performance indexes
 **Depends on**: Nothing (first phase)
-**Requirements**: DB-01, DB-02, DB-03, DB-04
+**Requirements**: IMPORT-01, IMPORT-02, IMPORT-03, IMPORT-04, IMPORT-05, IMPORT-06, IMPORT-07, LIBRARY-01, LIBRARY-04, LIBRARY-05
 **Success Criteria** (what must be TRUE):
-  1. Meeting can be created without skillId (NULL references handled correctly)
-  2. MeetingAttendee records persist for management meetings with selected Secretariat members
-  3. Existing skill meetings remain functional with no data loss after migration
-  4. TypeScript types reflect optional Meeting.skill relation throughout codebase
-**Plans**: 2 plans
-
-Plans:
-- [x] 01-01-PLAN.md — Schema update for optional skillId and MeetingAttendee junction table
-- [x] 01-02-PLAN.md — TypeScript codebase updates for null-safe skill access
-
-### Phase 2: Permission & Business Logic Layer
-**Goal**: Backend correctly authorizes, emails, and filters meetings based on role and meeting type
-**Depends on**: Phase 1
-**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06, MEET-01, MEET-02, MEET-03, MEET-04, MEET-05, MEET-06, MEET-07, MEET-08, EMAIL-01, EMAIL-02, EMAIL-03, EMAIL-04, EMAIL-05, SAFE-03
-**Success Criteria** (what must be TRUE):
-  1. Skill Advisor can view all management meetings plus their own skill meetings
-  2. Secretariat member can view only management meetings they're invited to
-  3. Only Admins and Secretariat can create, edit, or delete management meetings
-  4. Management meeting creation sends calendar invites to all SAs and selected Secretariat members
-  5. Email templates correctly identify meeting type (Skill Meeting vs Skill Advisor Meeting)
-**Plans**: 2 plans
-
-Plans:
-- [x] 02-01-PLAN.md — Authorization foundation (permission helpers, email template, activity logging)
-- [x] 02-02-PLAN.md — Management meeting server actions and visibility queries
-
-### Phase 3: UI Integration & Components
-**Goal**: Users can create, view, filter, and distinguish between skill and management meetings in unified interface
-**Depends on**: Phase 2
-**Requirements**: UI-01, UI-02, UI-03, UI-04, UI-05, UI-06, UI-07, UI-08
-**Success Criteria** (what must be TRUE):
-  1. Skill meetings display "Skill Meeting" badge, management meetings display "Skill Advisor Meeting" badge
-  2. Meetings hub shows both skill and management meetings in single list
-  3. Admin can create management meeting with attendee selector for Secretariat members
-  4. User can filter meetings by type (skill vs management)
-  5. Meeting detail page displays attendee list for management meetings
+  1. All 58 WSC2024 Excel files successfully parsed without silent failures
+  2. Descriptors stored with complete performance levels (Excellent/Good/Pass/Below Pass grouped together)
+  3. Text content normalized (smart quotes, bullets, Unicode artifacts converted to clean text)
+  4. Source skill metadata captured for every descriptor (skill name, sector, WSC2024 attribution visible)
+  5. Database schema includes version field and rollback capability for future migrations
 **Plans**: TBD
 
 Plans:
-- [ ] 03-01: TBD during planning
+- [ ] 01-01: TBD
+- [ ] 01-02: TBD
 
-### Phase 4: Deployment & Validation
-**Goal**: Management meetings feature deployed to production with validated data integrity and rollback capability
-**Depends on**: Phase 3
-**Requirements**: SAFE-01, SAFE-02, SAFE-04
+### Phase 2: Admin Curation
+**Goal**: Enable admins to manually create, edit, delete, and quality-control descriptors in the library
+**Depends on**: Phase 1 (requires database schema and imported data)
+**Requirements**: MANAGE-01, MANAGE-02, MANAGE-03, MANAGE-04, MANAGE-05, MANAGE-06, MANAGE-07, IMPORT-08, LIBRARY-02, LIBRARY-03, LIBRARY-06
 **Success Criteria** (what must be TRUE):
-  1. All existing skill meetings render correctly after production deployment
-  2. Database migration completes without data loss or constraint violations
-  3. Feature flag enables instant rollback if issues detected
-  4. Post-deployment validation confirms NULL skill references handled safely across all components
+  1. Admin can add new custom descriptors (not just imported ones) with full metadata
+  2. Admin can edit descriptor text, performance levels, tags, and quality indicators
+  3. Admin can delete descriptors with soft-delete preservation for audit trail
+  4. Validation prevents saving descriptors without required fields (criterion name, performance level, source)
+  5. Duplicate detection warns admin if similar descriptor already exists
 **Plans**: TBD
 
 Plans:
-- [ ] 04-01: TBD during planning
+- [ ] 02-01: TBD
+- [ ] 02-02: TBD
+
+### Phase 3: Search & Discovery
+**Goal**: Implement PostgreSQL full-text search with relevance ranking and multi-criteria filtering
+**Depends on**: Phase 1 (requires imported descriptor corpus), Phase 2 (requires tag taxonomy)
+**Requirements**: SEARCH-01, SEARCH-02, SEARCH-03, SEARCH-04, SEARCH-05, SEARCH-06, SEARCH-07, SEARCH-08
+**Success Criteria** (what must be TRUE):
+  1. Keyword search returns results ranked by relevance (most relevant descriptors appear first)
+  2. Filters (skill area, criterion type, performance level) narrow search results seamlessly
+  3. Search completes in under 100ms for typical queries (tested with 12K+ descriptor corpus)
+  4. Users can save frequently used search queries via URL persistence
+  5. Search relevance validated with 10 real SCM test queries (top 3 results are relevant)
+**Plans**: TBD
+
+Plans:
+- [ ] 03-01: TBD
+- [ ] 03-02: TBD
+
+### Phase 4: Library UI
+**Goal**: Build search interface with faceted filtering, preview modals, and clipboard integration
+**Depends on**: Phase 3 (requires working search backend)
+**Requirements**: UI-01, UI-02, UI-03, UI-04, UI-05, UI-06, UI-07, UI-08, UI-09, UI-10
+**Success Criteria** (what must be TRUE):
+  1. SCM can search descriptors with debounced input (300ms delay, no excessive server load)
+  2. Faceted filter panels show counts (e.g., "Safety (23)", "Teamwork (15)") and update dynamically
+  3. Preview modal displays complete criterion with all performance levels grouped together
+  4. Single-click copy to clipboard works with visual confirmation toast ("Copied to clipboard")
+  5. Source attribution badge shows origin WSC2024 skill for trust signal
+**Plans**: TBD
+
+Plans:
+- [ ] 04-01: TBD
+- [ ] 04-02: TBD
+
+### Phase 5: Access Control & Polish
+**Goal**: Integrate descriptor library permissions with existing role system and finalize user experience
+**Depends on**: Phase 4 (requires complete library UI)
+**Requirements**: ACCESS-01, ACCESS-02, ACCESS-03, ACCESS-04
+**Success Criteria** (what must be TRUE):
+  1. SCMs can search and view descriptor library (read access to all descriptors)
+  2. Skill Advisors can search and view descriptor library (read access)
+  3. Admins can access curation interface (add, edit, delete descriptors)
+  4. Permission checks follow existing patterns (canAccessDescriptorLibrary follows canManageSkill)
+  5. Library integrated into existing navigation (accessible from hub or skill workspace)
+**Plans**: TBD
+
+Plans:
+- [ ] 05-01: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Database Foundation & Type System | 2/2 | ✓ Complete | 2026-02-01 |
-| 2. Permission & Business Logic Layer | 2/2 | ✓ Complete | 2026-02-01 |
-| 3. UI Integration & Components | 0/TBD | Not started | - |
-| 4. Deployment & Validation | 0/TBD | Not started | - |
+| 1. Data Import & Foundation | 0/TBD | Not started | - |
+| 2. Admin Curation | 0/TBD | Not started | - |
+| 3. Search & Discovery | 0/TBD | Not started | - |
+| 4. Library UI | 0/TBD | Not started | - |
+| 5. Access Control & Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-01*
-*Last updated: 2026-02-01 after Phase 2 execution*
+*Last updated: 2026-02-01*

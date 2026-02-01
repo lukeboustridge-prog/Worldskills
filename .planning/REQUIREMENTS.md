@@ -95,17 +95,58 @@ Features explicitly excluded from v1.0 milestone:
 
 ## Traceability
 
-*This section will be populated by roadmapper to map requirements to phases and success criteria.*
-
-| Requirement | Phase | Success Criteria | Status |
-|-------------|-------|------------------|--------|
-| (To be filled during roadmap creation) | | | |
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| IMPORT-01 | Phase 1 | Pending |
+| IMPORT-02 | Phase 1 | Pending |
+| IMPORT-03 | Phase 1 | Pending |
+| IMPORT-04 | Phase 1 | Pending |
+| IMPORT-05 | Phase 1 | Pending |
+| IMPORT-06 | Phase 1 | Pending |
+| IMPORT-07 | Phase 1 | Pending |
+| IMPORT-08 | Phase 2 | Pending |
+| MANAGE-01 | Phase 2 | Pending |
+| MANAGE-02 | Phase 2 | Pending |
+| MANAGE-03 | Phase 2 | Pending |
+| MANAGE-04 | Phase 2 | Pending |
+| MANAGE-05 | Phase 2 | Pending |
+| MANAGE-06 | Phase 2 | Pending |
+| MANAGE-07 | Phase 2 | Pending |
+| LIBRARY-01 | Phase 1 | Pending |
+| LIBRARY-02 | Phase 2 | Pending |
+| LIBRARY-03 | Phase 2 | Pending |
+| LIBRARY-04 | Phase 1 | Pending |
+| LIBRARY-05 | Phase 1 | Pending |
+| LIBRARY-06 | Phase 2 | Pending |
+| SEARCH-01 | Phase 3 | Pending |
+| SEARCH-02 | Phase 3 | Pending |
+| SEARCH-03 | Phase 3 | Pending |
+| SEARCH-04 | Phase 3 | Pending |
+| SEARCH-05 | Phase 3 | Pending |
+| SEARCH-06 | Phase 3 | Pending |
+| SEARCH-07 | Phase 3 | Pending |
+| SEARCH-08 | Phase 3 | Pending |
+| UI-01 | Phase 4 | Pending |
+| UI-02 | Phase 4 | Pending |
+| UI-03 | Phase 4 | Pending |
+| UI-04 | Phase 4 | Pending |
+| UI-05 | Phase 4 | Pending |
+| UI-06 | Phase 4 | Pending |
+| UI-07 | Phase 4 | Pending |
+| UI-08 | Phase 4 | Pending |
+| UI-09 | Phase 4 | Pending |
+| UI-10 | Phase 4 | Pending |
+| ACCESS-01 | Phase 5 | Pending |
+| ACCESS-02 | Phase 5 | Pending |
+| ACCESS-03 | Phase 5 | Pending |
+| ACCESS-04 | Phase 5 | Pending |
 
 **Coverage Summary:**
 - v1 requirements: 39 total across 6 categories
+- Phase mapping: 39/39 requirements mapped (100% coverage)
 - v2 requirements: 6 deferred features
 - Out of scope: 7 explicit exclusions
 
 ---
 *Requirements defined: 2026-02-01*
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-01 (traceability added)*
