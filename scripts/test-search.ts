@@ -5,14 +5,15 @@ async function test() {
   console.log("Testing searchDescriptors function...\n");
 
   try {
-    const results = await searchDescriptors({ query: "safety", limit: 5 });
-    console.log("Results count:", results.length);
+    const response = await searchDescriptors({ query: "safety", limit: 5 });
+    console.log("Results count:", response.results.length);
+    console.log("Total:", response.total);
 
-    if (results.length > 0) {
-      console.log("First result rank:", results[0]?.rank);
-      console.log("First result criterion:", results[0]?.criterionName);
+    if (response.results.length > 0) {
+      console.log("First result rank:", response.results[0]?.rank);
+      console.log("First result criterion:", response.results[0]?.criterionName);
 
-      if (results[0].rank !== null) {
+      if (response.results[0].rank !== null) {
         console.log("\n✓ Search returns ranked results");
       } else {
         console.log("\n✗ Search did not return ranked results");

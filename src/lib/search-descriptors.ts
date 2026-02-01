@@ -7,7 +7,7 @@ export interface SearchParams {
   category?: string;
   qualityIndicator?: QualityIndicator;
   limit?: number;
-  offset?: number;
+  page?: number;
 }
 
 export interface SearchResult {
@@ -26,6 +26,14 @@ export interface SearchResult {
   rank: number | null;
 }
 
+export interface SearchResponse {
+  results: SearchResult[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
 /**
  * Search descriptors using PostgreSQL full-text search with relevance ranking.
  *
@@ -34,16 +42,22 @@ export interface SearchResult {
  * If no query, results are ordered by criterionName alphabetically.
  *
  * Uses the functional GIN index idx_descriptors_fts for performance.
+ *
+ * Returns pagination metadata: total count, current page, hasMore flag.
  */
-export async function searchDescriptors(params: SearchParams): Promise<SearchResult[]> {
+export async function searchDescriptors(params: SearchParams): Promise<SearchResponse> {
   const {
     query,
     skillName,
     category,
     qualityIndicator,
     limit = 20,
-    offset = 0
+    page = 1
   } = params;
+
+  // Prevent deep pagination performance issues
+  const clampedPage = Math.min(Math.max(1, page), 20);
+  const offset = (clampedPage - 1) * limit;
 
   // If query provided, use FTS with ranking
   if (query && query.trim()) {
@@ -62,46 +76,72 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
       additionalWhere = Prisma.sql`${additionalWhere} AND "qualityIndicator" = ${qualityIndicator}`;
     }
 
-    const results = await prisma.$queryRaw<SearchResult[]>`
-      SELECT
-        id,
-        code,
-        "criterionName",
-        excellent,
-        good,
-        pass,
-        "belowPass",
-        "skillName",
-        sector,
-        category,
-        tags,
-        "qualityIndicator",
-        ts_rank_cd(
-          setweight(to_tsvector('english', coalesce("criterionName", '')), 'A') ||
-          setweight(to_tsvector('english', coalesce("excellent", '')), 'B') ||
-          setweight(to_tsvector('english', coalesce("good", '')), 'B') ||
-          setweight(to_tsvector('english', coalesce("pass", '')), 'B') ||
-          setweight(to_tsvector('english', coalesce("belowPass", '')), 'B'),
-          websearch_to_tsquery('english', ${query.trim()}),
-          32
-        ) as rank
-      FROM "Descriptor"
-      WHERE
-        websearch_to_tsquery('english', ${query.trim()}) @@ (
-          setweight(to_tsvector('english', coalesce("criterionName", '')), 'A') ||
-          setweight(to_tsvector('english', coalesce("excellent", '')), 'B') ||
-          setweight(to_tsvector('english', coalesce("good", '')), 'B') ||
-          setweight(to_tsvector('english', coalesce("pass", '')), 'B') ||
-          setweight(to_tsvector('english', coalesce("belowPass", '')), 'B')
-        )
-        AND "deletedAt" IS NULL
-        ${additionalWhere}
-      ORDER BY rank DESC
-      LIMIT ${limit}::int
-      OFFSET ${offset}::int
-    `;
+    // Execute results and count queries in parallel
+    const [results, countResult] = await Promise.all([
+      prisma.$queryRaw<SearchResult[]>`
+        SELECT
+          id,
+          code,
+          "criterionName",
+          excellent,
+          good,
+          pass,
+          "belowPass",
+          "skillName",
+          sector,
+          category,
+          tags,
+          "qualityIndicator",
+          ts_rank_cd(
+            setweight(to_tsvector('english', coalesce("criterionName", '')), 'A') ||
+            setweight(to_tsvector('english', coalesce("excellent", '')), 'B') ||
+            setweight(to_tsvector('english', coalesce("good", '')), 'B') ||
+            setweight(to_tsvector('english', coalesce("pass", '')), 'B') ||
+            setweight(to_tsvector('english', coalesce("belowPass", '')), 'B'),
+            websearch_to_tsquery('english', ${query.trim()}),
+            32
+          ) as rank
+        FROM "Descriptor"
+        WHERE
+          websearch_to_tsquery('english', ${query.trim()}) @@ (
+            setweight(to_tsvector('english', coalesce("criterionName", '')), 'A') ||
+            setweight(to_tsvector('english', coalesce("excellent", '')), 'B') ||
+            setweight(to_tsvector('english', coalesce("good", '')), 'B') ||
+            setweight(to_tsvector('english', coalesce("pass", '')), 'B') ||
+            setweight(to_tsvector('english', coalesce("belowPass", '')), 'B')
+          )
+          AND "deletedAt" IS NULL
+          ${additionalWhere}
+        ORDER BY rank DESC
+        LIMIT ${limit}::int
+        OFFSET ${offset}::int
+      `,
+      prisma.$queryRaw<[{ count: number }]>`
+        SELECT COUNT(*)::int as count
+        FROM "Descriptor"
+        WHERE
+          websearch_to_tsquery('english', ${query.trim()}) @@ (
+            setweight(to_tsvector('english', coalesce("criterionName", '')), 'A') ||
+            setweight(to_tsvector('english', coalesce("excellent", '')), 'B') ||
+            setweight(to_tsvector('english', coalesce("good", '')), 'B') ||
+            setweight(to_tsvector('english', coalesce("pass", '')), 'B') ||
+            setweight(to_tsvector('english', coalesce("belowPass", '')), 'B')
+          )
+          AND "deletedAt" IS NULL
+          ${additionalWhere}
+      `
+    ]);
 
-    return results;
+    const total = countResult[0].count;
+    const hasMore = clampedPage * limit < total;
+
+    return {
+      results,
+      total,
+      page: clampedPage,
+      limit,
+      hasMore
+    };
   } else {
     // No query - browse mode with filters
     let additionalWhere = Prisma.sql``;
@@ -118,29 +158,47 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
       additionalWhere = Prisma.sql`${additionalWhere} AND "qualityIndicator" = ${qualityIndicator}`;
     }
 
-    const results = await prisma.$queryRaw<SearchResult[]>`
-      SELECT
-        id,
-        code,
-        "criterionName",
-        excellent,
-        good,
-        pass,
-        "belowPass",
-        "skillName",
-        sector,
-        category,
-        tags,
-        "qualityIndicator",
-        NULL as rank
-      FROM "Descriptor"
-      WHERE "deletedAt" IS NULL
-        ${additionalWhere}
-      ORDER BY "criterionName" ASC
-      LIMIT ${limit}::int
-      OFFSET ${offset}::int
-    `;
+    // Execute results and count queries in parallel
+    const [results, countResult] = await Promise.all([
+      prisma.$queryRaw<SearchResult[]>`
+        SELECT
+          id,
+          code,
+          "criterionName",
+          excellent,
+          good,
+          pass,
+          "belowPass",
+          "skillName",
+          sector,
+          category,
+          tags,
+          "qualityIndicator",
+          NULL as rank
+        FROM "Descriptor"
+        WHERE "deletedAt" IS NULL
+          ${additionalWhere}
+        ORDER BY "criterionName" ASC
+        LIMIT ${limit}::int
+        OFFSET ${offset}::int
+      `,
+      prisma.$queryRaw<[{ count: number }]>`
+        SELECT COUNT(*)::int as count
+        FROM "Descriptor"
+        WHERE "deletedAt" IS NULL
+          ${additionalWhere}
+      `
+    ]);
 
-    return results;
+    const total = countResult[0].count;
+    const hasMore = clampedPage * limit < total;
+
+    return {
+      results,
+      total,
+      page: clampedPage,
+      limit,
+      hasMore
+    };
   }
 }

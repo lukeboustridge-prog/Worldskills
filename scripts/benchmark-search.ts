@@ -8,10 +8,10 @@ async function benchmark() {
 
   for (const q of queries) {
     const start = Date.now();
-    const results = await searchDescriptors({ query: q, limit: 20 });
+    const response = await searchDescriptors({ query: q, limit: 20 });
     const duration = Date.now() - start;
 
-    console.log(`Query '${q}': ${results.length} results in ${duration}ms`);
+    console.log(`Query '${q}': ${response.results.length} results (${response.total} total) in ${duration}ms`);
 
     if (duration > 100) {
       console.warn(`⚠ Query exceeded 100ms target`);
