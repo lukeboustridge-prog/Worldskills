@@ -23,10 +23,10 @@ export async function getFacetCounts(searchQuery?: string): Promise<Facets> {
     ? Prisma.sql`
         websearch_to_tsquery('english', ${searchQuery}) @@ (
           setweight(to_tsvector('english', coalesce("criterionName", '')), 'A') ||
-          setweight(to_tsvector('english', coalesce("excellent", '')), 'B') ||
-          setweight(to_tsvector('english', coalesce("good", '')), 'B') ||
-          setweight(to_tsvector('english', coalesce("pass", '')), 'B') ||
-          setweight(to_tsvector('english', coalesce("belowPass", '')), 'B')
+          setweight(to_tsvector('english', coalesce(score3, '')), 'B') ||
+          setweight(to_tsvector('english', coalesce(score2, '')), 'B') ||
+          setweight(to_tsvector('english', coalesce(score1, '')), 'B') ||
+          setweight(to_tsvector('english', coalesce(score0, '')), 'B')
         ) AND
       `
     : Prisma.sql``;
