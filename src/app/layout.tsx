@@ -3,6 +3,7 @@ import "./globals.css";
 
 import { Inter } from "next/font/google";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
+import { Toaster } from "@/components/ui/toaster";
 import { auth } from "@/lib/auth";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -19,7 +20,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthSessionProvider session={session}>{children}</AuthSessionProvider>
+        <AuthSessionProvider session={session}>
+          {children}
+          <Toaster />
+        </AuthSessionProvider>
       </body>
     </html>
   );
