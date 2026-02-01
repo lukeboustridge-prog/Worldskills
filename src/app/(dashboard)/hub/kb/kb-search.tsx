@@ -14,6 +14,7 @@ const CATEGORY_LABELS: Record<ResourceCategory, string> = {
   [ResourceCategory.BEST_PRACTICE]: "Best Practice",
   [ResourceCategory.ONBOARDING]: "Onboarding",
   [ResourceCategory.POLICY]: "Policy",
+  [ResourceCategory.EXTERNAL]: "External Link",
 };
 
 interface KBSearchProps {
