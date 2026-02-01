@@ -78,6 +78,11 @@ export async function GET(
     return NextResponse.json({ error: "Meeting not found." }, { status: 404 });
   }
 
+  // Management meetings (skillId: null) require different authorization (Phase 2)
+  if (!meeting.skill) {
+    return NextResponse.json({ error: "Management meeting document access not yet implemented." }, { status: 403 });
+  }
+
   if (
     !canViewSkill(user, {
       saId: meeting.skill.saId,

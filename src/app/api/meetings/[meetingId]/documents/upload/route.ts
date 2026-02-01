@@ -81,6 +81,14 @@ export async function POST(
       );
     }
 
+    // Management meetings (skillId: null) require different authorization (Phase 2)
+    if (!meeting.skill) {
+      return NextResponse.json(
+        { error: "forbidden", message: "Management meeting document access not yet implemented." },
+        { status: 403, headers: NO_STORE_HEADERS },
+      );
+    }
+
     if (
       !canManageSkill(user, {
         saId: meeting.skill.saId,
