@@ -1,144 +1,111 @@
-# Requirements: WorldSkills Competition Management System
+# Requirements: Descriptor Library v1.0
 
+**Project:** WorldSkills Competition Management System
+**Milestone:** v1.0 Descriptor Library
 **Defined:** 2026-02-01
-**Core Value:** Enable Skill Advisors and Competition Managers to coordinate effectively during CPW and throughout the competition cycle
+**Core Value:** Enable SCMs to write better marking schemes by providing searchable access to proven descriptors from WSC2024
 
 ## v1 Requirements
 
-Requirements for management meetings feature. Each maps to roadmap phases.
+### Data Import & Analysis
 
-### Database & Data Model
+- [ ] **IMPORT-01**: Parse all 58 WSC2024 Excel marking schemes from source directory
+- [ ] **IMPORT-02**: Handle Excel file variance (merged cells, varying terminology, inconsistent column structures)
+- [ ] **IMPORT-03**: Extract descriptor text with complete performance levels (Excellent, Good, Pass, Below Pass)
+- [ ] **IMPORT-04**: Normalize extracted text content (convert smart quotes, bullets, handle Unicode artifacts)
+- [ ] **IMPORT-05**: Capture source skill metadata for each descriptor (skill name, sector, WSC2024 attribution)
+- [ ] **IMPORT-06**: Validate data quality during import (detect encoding issues, flag extraction artifacts, log failures)
+- [ ] **IMPORT-07**: Bulk import with transaction safety (all-or-nothing, rollback on failure)
+- [ ] **IMPORT-08**: Manual curation interface for admins to review, edit, and approve imported descriptors
 
-- [ ] **DB-01**: Meeting model supports optional skillId (NULL for management meetings)
-- [ ] **DB-02**: MeetingAttendee junction table stores per-meeting attendee lists
-- [ ] **DB-03**: Migration preserves existing skill meetings without data loss
-- [ ] **DB-04**: Database indexes support efficient queries for both meeting types
+### Descriptor Management (Admin CRUD)
 
-### Access Control & Permissions
+- [ ] **MANAGE-01**: Admin can manually add new descriptor (not just from import - for creating custom descriptors)
+- [ ] **MANAGE-02**: Admin can edit existing descriptor (text content, performance levels, tags, quality indicator, source attribution)
+- [ ] **MANAGE-03**: Admin can delete descriptor from library (with confirmation prompt)
+- [ ] **MANAGE-04**: Soft delete support (mark as deleted, preserve for audit trail, option to restore)
+- [ ] **MANAGE-05**: Descriptor edit form with all fields (criterion name, performance levels, skill area, criterion type, tags, quality indicator)
+- [ ] **MANAGE-06**: Validation for required fields (criterion name, at least one performance level, source skill)
+- [ ] **MANAGE-07**: Duplicate detection when creating descriptors (warn if similar descriptor exists)
 
-- [ ] **AUTH-01**: All Skill Advisors can view all management meetings
-- [ ] **AUTH-02**: Secretariat members can view management meetings they're invited to
-- [ ] **AUTH-03**: Only Admins and Secretariat can create management meetings
-- [ ] **AUTH-04**: Only Admins and Secretariat can edit management meetings
-- [ ] **AUTH-05**: Only Admins and Secretariat can delete management meetings
-- [ ] **AUTH-06**: Existing skill meeting permissions remain unchanged
+### Descriptor Library Structure
 
-### Meeting Creation & Management
+- [ ] **LIBRARY-01**: Store descriptors with performance level grouping (complete criteria, not isolated levels)
+- [ ] **LIBRARY-02**: Support tag-based categorization with flexible multi-dimensional tags (e.g., "teamwork", "safety", "precision")
+- [ ] **LIBRARY-03**: Store quality indicators to mark descriptors as "excellent example" vs "reference only"
+- [ ] **LIBRARY-04**: Schema versioning for descriptors (version field, backward-compatible migrations, rollback support)
+- [ ] **LIBRARY-05**: Database indexes for performance (GIN indexes for full-text search and JSONB tag arrays)
+- [ ] **LIBRARY-06**: Data-driven category/tag taxonomy (emerge from imported corpus, minimum 5+ descriptors per category)
 
-- [ ] **MEET-01**: User can create management meeting with title, time, description
-- [ ] **MEET-02**: User can add meeting link to management meeting
-- [ ] **MEET-03**: User can select specific Secretariat members as attendees per meeting
-- [ ] **MEET-04**: All Skill Advisors are automatically included in management meetings
-- [ ] **MEET-05**: User can attach documents to management meetings
-- [ ] **MEET-06**: User can add external links to management meetings
-- [ ] **MEET-07**: User can add meeting minutes after meeting occurs
-- [ ] **MEET-08**: User can add action points to management meetings
+### Search & Discovery
 
-### Email & Calendar Integration
+- [ ] **SEARCH-01**: Full-text keyword search across descriptor text with relevance ranking (PostgreSQL FTS with ts_rank)
+- [ ] **SEARCH-02**: Multi-criteria filtering (skill area, criterion type, performance level) with faceted filter pattern
+- [ ] **SEARCH-03**: Combine search and filters seamlessly (filters narrow search results, not replace)
+- [ ] **SEARCH-04**: Pagination for search results (default 20 per page, configurable)
+- [ ] **SEARCH-05**: Search performance optimization (<100ms target with GIN indexes, query plan analysis)
+- [ ] **SEARCH-06**: Save frequently used search queries (saved searches with URL persistence)
+- [ ] **SEARCH-07**: Favorite/bookmark descriptors for quick access (personal workspace per SCM)
+- [ ] **SEARCH-08**: Related descriptor suggestions (recommendation engine showing similar descriptors)
 
-- [ ] **EMAIL-01**: Management meetings generate calendar invites (ICS files)
-- [ ] **EMAIL-02**: Invites sent to all SAs + selected Secretariat attendees
-- [ ] **EMAIL-03**: Calendar invites include meeting link, time, and description
-- [ ] **EMAIL-04**: Email templates distinguish management vs skill meetings
-- [ ] **EMAIL-05**: Existing skill meeting email functionality unchanged
+### Library UI
 
-### User Interface
+- [ ] **UI-01**: Search interface with debounced input (300ms delay to reduce server load)
+- [ ] **UI-02**: Faceted filter panels with counts (e.g., "Safety (23)", "Teamwork (15)")
+- [ ] **UI-03**: Preview modal showing complete criterion with all performance levels grouped together
+- [ ] **UI-04**: Copy to clipboard with single-click and visual confirmation (toast: "Copied to clipboard")
+- [ ] **UI-05**: Source attribution display (badge showing origin WSC2024 skill for trust signal)
+- [ ] **UI-06**: Performance level grouping in display (show Excellent/Good/Pass/Below Pass as complete criterion, not isolated)
+- [ ] **UI-07**: Clear visual hierarchy (typography/spacing to separate descriptor content from metadata/tags)
+- [ ] **UI-08**: Responsive design (mobile-friendly search/browse, no horizontal scroll, readable on tablets)
+- [ ] **UI-09**: Comparison view (side-by-side display of 2-3 selected descriptors to aid decision-making)
+- [ ] **UI-10**: Multi-select UI pattern for batch operations (select multiple descriptors for comparison)
 
-- [ ] **UI-01**: Badge displays "Skill Meeting" for skill-specific meetings
-- [ ] **UI-02**: Badge displays "Skill Advisor Meeting" for management meetings
-- [ ] **UI-03**: Meetings hub shows both types in unified interface
-- [ ] **UI-04**: SAs see all management meetings + their skill meetings
-- [ ] **UI-05**: Secretariat sees management meetings they're invited to
-- [ ] **UI-06**: Meeting creation form includes attendee selector for management meetings
-- [ ] **UI-07**: Meeting list can be filtered by type (skill vs management)
-- [ ] **UI-08**: Management meetings display attendee list
+### Access Control
 
-### Data Integrity & Safety
+- [ ] **ACCESS-01**: SCMs can search and view descriptor library (read access to all descriptors)
+- [ ] **ACCESS-02**: Admins can curate library (add, edit, delete descriptors, assign tags/quality indicators)
+- [ ] **ACCESS-03**: Skill Advisors can search and view descriptor library (read access)
+- [ ] **ACCESS-04**: Extend existing permission patterns from skills management (canAccessDescriptorLibrary follows canManageSkill)
 
-- [ ] **SAFE-01**: NULL skill references handled safely in all UI components
-- [ ] **SAFE-02**: Existing skill meetings continue to work without issues
-- [ ] **SAFE-03**: Activity logging works for both meeting types
-- [ ] **SAFE-04**: Database migration is reversible if needed
+## v2 Requirements (Deferred)
 
-## v2 Requirements
+Features explicitly deferred to future versions after v1.0 is validated:
 
-Deferred to future milestones:
-
-### Advanced Features
-- **ADV-01**: Meeting templates for common scenarios
-- **ADV-02**: Smart attendee suggestions based on patterns
-- **ADV-03**: Meeting agenda builder with time allocation
-- **ADV-04**: Attendance tracking and RSVP management
-- **ADV-05**: Meeting recording integration
-- **ADV-06**: Automated meeting notes/transcription
-
-### Integration Features
-- **INT-01**: Integration with CIS (Competition Information System)
-- **INT-02**: Sync with external calendar services (Google Calendar API)
-- **INT-03**: Slack/Teams notifications for meetings
-- **INT-04**: Mobile app for meeting management
+- [ ] **FUTURE-01**: Cross-skill pattern discovery — "See how other skills describe teamwork/safety/precision" (requires mature taxonomy, value unclear without usage data)
+- [ ] **FUTURE-02**: Advanced recommendation engine — ML-powered suggestions based on descriptor similarity scoring (requires data science investment)
+- [ ] **FUTURE-03**: Collaborative contribution workflow — SCMs suggest descriptors → Admin reviews → Approve/Reject (requires submission + moderation system)
+- [ ] **FUTURE-04**: Bulk import UI for admins — CSV upload interface for adding descriptors (manual entry sufficient for v1.0)
+- [ ] **FUTURE-05**: Descriptor usage analytics dashboard — "Most used descriptors", "trending in similar skills" (needs 3+ months of usage data)
+- [ ] **FUTURE-06**: API access for external integrations — REST API for third-party marking scheme tools (not requested, evaluate demand)
 
 ## Out of Scope
 
-Explicitly excluded features with reasoning:
+Features explicitly excluded from v1.0 milestone:
 
 | Feature | Reason |
 |---------|--------|
-| In-app video conferencing | External tools (Zoom, Teams) are sufficient, high complexity to build |
-| Approval workflows for meetings | Unnecessary friction, Admins/Secretariat are trusted |
-| Multi-skill meeting association | Overcomplicated, use management meetings for cross-skill topics |
-| Automatic timezone conversion | CPW is single-location event, not needed |
-| Meeting attendance tracking | Not required per PROJECT.md, may add in v2 |
-| Recurring meeting templates | Each meeting created individually for now |
-| Real-time collaborative meeting notes | Beyond scope, use minutes field post-meeting |
+| In-app marking scheme builder | Marking schemes managed in external systems, users copy/paste descriptors into those tools |
+| Export functionality (Excel/PDF/Word) | Not needed since marking schemes are external |
+| AI-generated descriptors | Quality control nightmare, marking schemes need precision, AI hallucinates measurements/criteria |
+| Collaborative editing of descriptor library | Quality dilution risk, becomes dumping ground without admin curation |
+| Real-time updates via WebSocket | Complexity without value for stable reference data (library is not collaborative document) |
+| Multi-language support | English only for v1.0, defer translation until library proven valuable |
+| Auto-validation of inserted descriptors | False confidence, automation can't judge if descriptor fits skill context |
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
+*This section will be populated by roadmapper to map requirements to phases and success criteria.*
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| DB-01 | Phase 1 | ✓ Complete |
-| DB-02 | Phase 1 | ✓ Complete |
-| DB-03 | Phase 1 | ✓ Complete |
-| DB-04 | Phase 1 | ✓ Complete |
-| AUTH-01 | Phase 2 | ✓ Complete |
-| AUTH-02 | Phase 2 | ✓ Complete |
-| AUTH-03 | Phase 2 | ✓ Complete |
-| AUTH-04 | Phase 2 | ✓ Complete |
-| AUTH-05 | Phase 2 | ✓ Complete |
-| AUTH-06 | Phase 2 | ✓ Complete |
-| MEET-01 | Phase 2 | ✓ Complete |
-| MEET-02 | Phase 2 | ✓ Complete |
-| MEET-03 | Phase 2 | ✓ Complete |
-| MEET-04 | Phase 2 | ✓ Complete |
-| MEET-05 | Phase 2 | ✓ Complete |
-| MEET-06 | Phase 2 | ✓ Complete |
-| MEET-07 | Phase 2 | ✓ Complete |
-| MEET-08 | Phase 2 | ✓ Complete |
-| EMAIL-01 | Phase 2 | ✓ Complete |
-| EMAIL-02 | Phase 2 | ✓ Complete |
-| EMAIL-03 | Phase 2 | ✓ Complete |
-| EMAIL-04 | Phase 2 | ✓ Complete |
-| EMAIL-05 | Phase 2 | ✓ Complete |
-| UI-01 | Phase 3 | Pending |
-| UI-02 | Phase 3 | Pending |
-| UI-03 | Phase 3 | Pending |
-| UI-04 | Phase 3 | Pending |
-| UI-05 | Phase 3 | Pending |
-| UI-06 | Phase 3 | Pending |
-| UI-07 | Phase 3 | Pending |
-| UI-08 | Phase 3 | Pending |
-| SAFE-01 | Phase 4 | Pending |
-| SAFE-02 | Phase 4 | Pending |
-| SAFE-03 | Phase 2 | ✓ Complete |
-| SAFE-04 | Phase 4 | Pending |
+| Requirement | Phase | Success Criteria | Status |
+|-------------|-------|------------------|--------|
+| (To be filled during roadmap creation) | | | |
 
-**Coverage:**
-- v1 requirements: 36 total
-- Mapped to phases: 36 ✓
-- Unmapped: 0 ✓
+**Coverage Summary:**
+- v1 requirements: 39 total across 6 categories
+- v2 requirements: 6 deferred features
+- Out of scope: 7 explicit exclusions
 
 ---
 *Requirements defined: 2026-02-01*
-*Last updated: 2026-02-01 after Phase 2 execution*
+*Last updated: 2026-02-01*
