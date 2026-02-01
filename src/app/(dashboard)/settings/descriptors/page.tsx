@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { requireAdminUser } from "@/lib/auth";
 import { getAllDescriptors, getDescriptorFilterOptions } from "@/lib/descriptors";
 import { DeleteConfirmation } from "@/components/descriptors/delete-confirmation";
@@ -32,6 +33,7 @@ export default async function DescriptorsPage({
     sector?: string;
     category?: string;
     qualityIndicator?: QualityIndicator;
+    tag?: string;
     created?: string;
     updated?: string;
     deleted?: string;
@@ -46,6 +48,7 @@ export default async function DescriptorsPage({
     sector: searchParams?.sector,
     category: searchParams?.category,
     qualityIndicator: searchParams?.qualityIndicator,
+    tag: searchParams?.tag,
   });
 
   const filterOptions = await getDescriptorFilterOptions();
@@ -124,17 +127,21 @@ export default async function DescriptorsPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <form className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-2">
+              <Label htmlFor="search">Search</Label>
               <Input
+                id="search"
                 name="search"
-                placeholder="Search text..."
+                placeholder="Search code, criterion, levels..."
                 defaultValue={searchParams?.search}
               />
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="skillName">Skill</Label>
               <select
+                id="skillName"
                 name="skillName"
                 defaultValue={searchParams?.skillName ?? ""}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -149,7 +156,9 @@ export default async function DescriptorsPage({
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="sector">Sector</Label>
               <select
+                id="sector"
                 name="sector"
                 defaultValue={searchParams?.sector ?? ""}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -164,7 +173,9 @@ export default async function DescriptorsPage({
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
               <select
+                id="category"
                 name="category"
                 defaultValue={searchParams?.category ?? ""}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -179,15 +190,34 @@ export default async function DescriptorsPage({
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="qualityIndicator">Quality</Label>
               <select
+                id="qualityIndicator"
                 name="qualityIndicator"
                 defaultValue={searchParams?.qualityIndicator ?? ""}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <option value="">All Quality Indicators</option>
+                <option value="">All Quality Levels</option>
                 {Object.entries(QUALITY_INDICATOR_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tag">Tag</Label>
+              <select
+                id="tag"
+                name="tag"
+                defaultValue={searchParams?.tag ?? ""}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="">All Tags</option>
+                {filterOptions.tags.map((tag) => (
+                  <option key={tag} value={tag}>
+                    {tag}
                   </option>
                 ))}
               </select>
