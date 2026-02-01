@@ -7,25 +7,60 @@ import { DEFAULT_DELIVERABLE_TEMPLATES, buildCMonthLabel, computeDueDate } from 
 const prisma = new PrismaClient();
 const defaultHostEmail = "luke.boustridge@gmail.com";
 const defaultHostName = "Luke Boustridge";
-const advisorNames = [
-  "Dave Summerville",
-  "Luke Boustridge",
-  "Sue Collins",
-  "Sue Lefort",
-  "Vesa Iltola",
-  "Steve Brooks",
-  "Jeff Boulton",
-  "Arwid Wibom"
+
+// Real Skill Advisors from WSC2026 Competition Preparation Summary
+const SKILL_ADVISORS = [
+  {
+    name: 'Arwid Wibom',
+    email: 'arwid.wibom@worldskills.org',
+    skillNumbers: [12, 18, 19, 38, 48, 58]
+  },
+  {
+    name: 'Vesa Iltola',
+    email: 'vesa.iltola@worldskills.org',
+    skillNumbers: [23, 34, 35, 47, 52, 64]
+  },
+  {
+    name: 'Naomi Zadow',
+    email: 'naomi.zadow@worldskills.org',
+    skillNumbers: [24, 25, 26, 30, 41, 43, 56]
+  },
+  {
+    name: 'Sue Collins',
+    email: 'sue.collins@worldskills.org',
+    skillNumbers: [4, 14, 33, 55, 61, 62]
+  },
+  {
+    name: 'Raili Laas',
+    email: 'raili.laas@worldskills.org',
+    skillNumbers: [15, 20, 21, 22, 37, 46]
+  },
+  {
+    name: 'Luke Boustridge',
+    email: 'luke.boustridge@worldskills.org',
+    skillNumbers: [1, 3, 5, 10, 16, 59, 60]
+  },
+  {
+    name: 'Sue Lefort',
+    email: 'sue.lefort@worldskills.org',
+    skillNumbers: [6, 7, 13, 36, 49, 57]
+  },
+  {
+    name: 'Jeff Boulton',
+    email: 'jeff.boulton@worldskills.org',
+    skillNumbers: [11, 32, 44, 50, 53, 54]
+  },
+  {
+    name: 'David Summerville',
+    email: 'david.summerville@worldskills.org',
+    skillNumbers: [2, 8, 9, 17, 39, 51, 63]
+  },
+  {
+    name: 'Tapio Kattainen',
+    email: 'tapio.kattainen@worldskills.org',
+    skillNumbers: [27, 28, 29, 31, 40, 42, 45]
+  }
 ];
-
-const advisorEmailDomain = "worldskills-sa.test";
-
-function slugifyName(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ".")
-    .replace(/^\.+|\.+$/g, "");
-}
 
 async function main() {
   const hostEmailEnv = process.env.HOST_EMAIL ?? defaultHostEmail;
@@ -99,15 +134,19 @@ async function main() {
     });
   }
 
-  const advisorSeeds = advisorNames
-    .map((name) => ({
-      name,
-      email: `${slugifyName(name)}@${advisorEmailDomain}`
-    }))
-    .filter((advisor) => advisor.name.toLowerCase() !== hostDisplayName.toLowerCase());
+  // Create/update Skill Advisors with real data from WSC2026
+  const advisorMap = new Map<string, { id: string; skillNumbers: number[] }>();
 
-  for (const advisor of advisorSeeds) {
+  for (const advisor of SKILL_ADVISORS) {
     const normalizedEmail = advisor.email.toLowerCase();
+    const isHostSA = normalizedEmail === normalizedHostEmail;
+
+    // Skip if this is the host user (already created above)
+    if (isHostSA) {
+      advisorMap.set(hostUser.id, { id: hostUser.id, skillNumbers: advisor.skillNumbers });
+      continue;
+    }
+
     const existingAdvisor = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existingAdvisor) {
       if (existingAdvisor.name !== advisor.name || existingAdvisor.role !== Role.SA) {
@@ -119,14 +158,16 @@ async function main() {
           }
         });
       }
+      advisorMap.set(existingAdvisor.id, { id: existingAdvisor.id, skillNumbers: advisor.skillNumbers });
     } else {
-      await prisma.user.create({
+      const newAdvisor = await prisma.user.create({
         data: {
           email: normalizedEmail,
           name: advisor.name,
           role: Role.SA
         }
       });
+      advisorMap.set(newAdvisor.id, { id: newAdvisor.id, skillNumbers: advisor.skillNumbers });
     }
   }
 
@@ -151,14 +192,25 @@ async function main() {
 
   const skillSeeds = SKILL_CATALOG;
 
+  // Find which Skill Advisor should be assigned to each skill
+  const skillToAdvisor = new Map<number, string>();
+  for (const [advisorId, advisor] of advisorMap.entries()) {
+    for (const skillNum of advisor.skillNumbers) {
+      skillToAdvisor.set(skillNum, advisorId);
+    }
+  }
+
   for (const skill of skillSeeds) {
+    // Determine which SA should be assigned to this skill
+    const assignedSAId = skillToAdvisor.get(skill.code) ?? hostUser.id;
+
     await prisma.skill.upsert({
       where: { id: skill.id },
       update: {
         name: skill.name,
         sector: skill.sector,
         notes: `Skill Code ${skill.code} — ${skill.sector}`,
-        saId: hostUser.id,
+        saId: assignedSAId,
         scmId: scm.id
       },
       create: {
@@ -166,7 +218,7 @@ async function main() {
         name: skill.name,
         sector: skill.sector,
         notes: `Skill Code ${skill.code} — ${skill.sector}`,
-        saId: hostUser.id,
+        saId: assignedSAId,
         scmId: scm.id
       }
     });
