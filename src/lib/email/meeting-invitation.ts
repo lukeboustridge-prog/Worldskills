@@ -5,7 +5,8 @@ interface MeetingDetails {
   startTime: Date;
   endTime: Date;
   meetingLink?: string | null;
-  skillName: string;
+  skillName?: string | null;
+  meetingType?: "skill" | "management";
 }
 
 interface SendMeetingInvitationParams {
@@ -26,9 +27,18 @@ function generateGoogleCalendarLink(meeting: MeetingDetails): string {
   const start = formatDateForICS(meeting.startTime);
   const end = formatDateForICS(meeting.endTime);
 
-  const details = meeting.meetingLink
-    ? `Skill: ${meeting.skillName}\nJoin: ${meeting.meetingLink}`
-    : `Skill: ${meeting.skillName}`;
+  // Build details based on meeting type
+  let details = "";
+  if (meeting.skillName) {
+    details = meeting.meetingLink
+      ? `Skill: ${meeting.skillName}\nJoin: ${meeting.meetingLink}`
+      : `Skill: ${meeting.skillName}`;
+  } else {
+    // Management meeting
+    details = meeting.meetingLink
+      ? `Management Meeting\nJoin: ${meeting.meetingLink}`
+      : "Management Meeting";
+  }
 
   const params = new URLSearchParams({
     action: "TEMPLATE",
@@ -63,9 +73,18 @@ function generateICS(meeting: MeetingDetails): string {
   const start = formatDateForICS(meeting.startTime);
   const end = formatDateForICS(meeting.endTime);
 
-  const description = meeting.meetingLink
-    ? `Skill: ${meeting.skillName}\\n\\nJoin meeting: ${meeting.meetingLink}`
-    : `Skill: ${meeting.skillName}`;
+  // Build description based on meeting type
+  let description = "";
+  if (meeting.skillName) {
+    description = meeting.meetingLink
+      ? `Skill: ${meeting.skillName}\\n\\nJoin meeting: ${meeting.meetingLink}`
+      : `Skill: ${meeting.skillName}`;
+  } else {
+    // Management meeting
+    description = meeting.meetingLink
+      ? `Management Meeting\\n\\nJoin meeting: ${meeting.meetingLink}`
+      : "Management Meeting";
+  }
 
   const lines = [
     "BEGIN:VCALENDAR",
@@ -98,7 +117,19 @@ export async function sendMeetingInvitation({
   const endDisplay = formatDateForDisplay(meeting.endTime);
   const googleCalendarLink = generateGoogleCalendarLink(meeting);
 
-  const subject = `Meeting Invitation: ${meeting.title} - ${meeting.skillName}`;
+  // Determine meeting type based on explicit flag or skillName presence
+  const meetingType = meeting.meetingType
+    ? meeting.meetingType
+    : meeting.skillName
+      ? "skill"
+      : "management";
+
+  const isManagement = meetingType === "management";
+
+  // Subject line differs by type
+  const subject = isManagement
+    ? `Skill Advisor Meeting: ${meeting.title}`
+    : `Meeting Invitation: ${meeting.title} - ${meeting.skillName}`;
 
   const html = `
     <!DOCTYPE html>
@@ -115,7 +146,7 @@ export async function sendMeetingInvitation({
             <div style="background-color: #2563eb; padding: 24px 24px 18px; text-align: center; border-bottom: 1px solid #1d4ed8;">
               <img src="${logoUrl}" alt="WorldSkills logo" style="height: 48px; width: auto; display: block; margin: 0 auto 16px; border-radius: 8px; background: #f8fafc; padding: 6px;">
               <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">
-                Meeting Invitation
+                ${isManagement ? "Skill Advisor Meeting" : "Meeting Invitation"}
               </h1>
             </div>
 
@@ -125,9 +156,15 @@ export async function sendMeetingInvitation({
                 ${meeting.title}
               </h2>
 
+              ${isManagement ? `
+              <p style="margin-top: 0; margin-bottom: 24px; font-size: 14px; color: #64748b;">
+                <strong>Management Meeting</strong>
+              </p>
+              ` : `
               <p style="margin-top: 0; margin-bottom: 24px; font-size: 14px; color: #64748b;">
                 Skill: <strong>${meeting.skillName}</strong>
               </p>
+              `}
 
               <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
                 <table style="width: 100%; border-collapse: collapse;">
@@ -180,7 +217,21 @@ export async function sendMeetingInvitation({
     </html>
   `;
 
-  const text = `Meeting Invitation: ${meeting.title}
+  const text = isManagement
+    ? `Skill Advisor Meeting: ${meeting.title}
+
+Management Meeting
+
+Start: ${startDisplay}
+End: ${endDisplay}
+${meeting.meetingLink ? `\nJoin meeting: ${meeting.meetingLink}` : ""}
+
+Add to Google Calendar: ${googleCalendarLink}
+
+A calendar file (.ics) is attached for other calendar apps.
+
+Sent via Worldskills Skill Tracker`
+    : `Meeting Invitation: ${meeting.title}
 
 Skill: ${meeting.skillName}
 
