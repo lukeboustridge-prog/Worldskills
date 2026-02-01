@@ -108,31 +108,7 @@ async function main() {
     });
   }
 
-  const scmPassword = "SamplePassword123!";
-  const scmPasswordHash = await bcrypt.hash(scmPassword, 12);
-
-  let scm = await prisma.user.findUnique({ where: { email: "scm@example.com" } });
-  if (scm) {
-    const needsPassword = !scm.passwordHash;
-    if (needsPassword || scm.role !== Role.SCM) {
-      scm = await prisma.user.update({
-        where: { id: scm.id },
-        data: {
-          role: Role.SCM,
-          ...(needsPassword ? { passwordHash: scmPasswordHash } : {})
-        }
-      });
-    }
-  } else {
-    scm = await prisma.user.create({
-      data: {
-        email: "scm@example.com",
-        name: "Sample SCM",
-        role: Role.SCM,
-        passwordHash: scmPasswordHash
-      }
-    });
-  }
+  // Note: SCM users are not seeded - they should be created manually as needed
 
   // Create/update Skill Advisors with real data from WSC2026
   const advisorMap = new Map<string, { id: string; skillNumbers: number[] }>();
@@ -211,7 +187,7 @@ async function main() {
         sector: skill.sector,
         notes: `Skill Code ${skill.code} — ${skill.sector}`,
         saId: assignedSAId,
-        scmId: scm.id
+        scmId: null // SCMs assigned manually as needed
       },
       create: {
         id: skill.id,
@@ -219,7 +195,7 @@ async function main() {
         sector: skill.sector,
         notes: `Skill Code ${skill.code} — ${skill.sector}`,
         saId: assignedSAId,
-        scmId: scm.id
+        scmId: null // SCMs assigned manually as needed
       }
     });
   }
@@ -297,7 +273,7 @@ async function main() {
   }
 
   console.log(
-    `Seed data created. Host admin login: ${hostEmailEnv} (password: ${hostPassword}), SCM login: scm@example.com (password: ${scmPassword}). Seeded ${skillSeeds.length} skills for WSC 2026.`
+    `Seed data created. Host admin login: ${hostEmailEnv} (password: ${hostPassword}). Seeded ${skillSeeds.length} skills for WSC 2026 with ${SKILL_ADVISORS.length} Skill Advisors.`
   );
 }
 
