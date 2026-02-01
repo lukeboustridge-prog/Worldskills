@@ -65,6 +65,7 @@ model User {
   activity            ActivityLog[]
   invitationsCreated  Invitation[]   @relation("InvitationCreator")
   passwordResetTokens PasswordResetToken[]
+  meetingAttendees    MeetingAttendee[]
 }
 
 model Skill {
@@ -209,7 +210,7 @@ model ActivityLog {
 
 model Meeting {
   id           String    @id @default(cuid())
-  skillId      String
+  skillId      String?
   title        String
   startTime    DateTime
   endTime      DateTime
@@ -220,10 +221,25 @@ model Meeting {
   links        Json      @default("[]")
   createdAt    DateTime  @default(now())
 
-  skill Skill @relation(fields: [skillId], references: [id])
+  skill     Skill?             @relation(fields: [skillId], references: [id])
+  attendees MeetingAttendee[]
 
   @@index([skillId])
   @@index([startTime])
+}
+
+model MeetingAttendee {
+  meetingId String
+  userId    String
+  addedAt   DateTime @default(now())
+  addedBy   String?
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([meetingId, userId])
+  @@index([meetingId])
+  @@index([userId])
 }
 
 model Invitation {
