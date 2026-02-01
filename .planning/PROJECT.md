@@ -29,34 +29,52 @@ Existing capabilities already built and deployed:
 - ✓ File storage integration (AWS S3) — existing
 - ✓ Email service integration (Resend) — existing
 
+## Current Milestone: v1.0 Descriptor Library & Marking Scheme Support
+
+**Goal:** Enable SCMs to create high-quality judgment marking schemes using a curated library of proven descriptors extracted from WSC2024 marking schemes.
+
+**Target features:**
+- Analyze 58 WSC2024 marking schemes to extract excellent descriptor examples
+- Build searchable descriptor library with categorization (skill area, criterion type, performance level)
+- Create marking scheme builder interface for SCMs
+- Enable search, filter, and insert descriptors into marking schemes
+- Support exporting marking schemes to Excel/PDF
+
 ### Active
 
-Current milestone - Management Meetings feature:
+Current milestone requirements:
 
-- [ ] Management meetings not tied to specific skills
-- [ ] Management meetings visible to all Skill Advisors
-- [ ] Per-meeting attendee selection for Secretariat members
-- [ ] Admins and Secretariat can create/edit management meetings
-- [ ] Management meetings support all fields (title, time, meeting link, minutes, action points, documents, links)
-- [ ] Management meetings generate calendar invites and email notifications (preserve existing functionality)
-- [ ] Visual badges distinguish "Skill Meeting" vs "Skill Advisor Meeting"
-- [ ] Meetings page shows both skill meetings and management meetings together
-- [ ] Skill Advisors see all management meetings + their skill team meetings
-- [ ] Secretariat members see management meetings they're invited to
+- [ ] Analyze all WSC2024 marking schemes and extract descriptor patterns
+- [ ] Identify excellent descriptor examples (clear, measurable, differentiated)
+- [ ] Identify poor descriptor anti-patterns
+- [ ] Find common criterion types across skills
+- [ ] Database schema for descriptor library with metadata (skill, criterion, tags)
+- [ ] Full-text search across descriptors
+- [ ] Filter descriptors by skill area, criterion type, performance level
+- [ ] Tag-based organization for flexible categorization
+- [ ] SCM can browse descriptor library
+- [ ] SCM can search descriptors by keyword
+- [ ] SCM can view descriptor with full context (skill, criterion, performance levels)
+- [ ] SCM can copy descriptor to clipboard
+- [ ] SCM can create marking schemes in the system
+- [ ] SCM can search and insert descriptors directly into marking scheme forms
+- [ ] Export marking schemes to Excel format
+- [ ] Export marking schemes to PDF format
 
 ### Out of Scope
 
 Features explicitly excluded from current milestone:
 
-- Meeting attendance tracking — not needed yet, may add in future
-- In-app notifications/alerts — email is sufficient for now
-- Recurring meeting templates — each meeting created individually
-- Meeting agenda builder — keep it simple, use description/minutes fields
-- Video conferencing integration — external meeting links are sufficient
-- Test Project management — future milestone
-- Marking Scheme workflows — future milestone
+- AI-generated descriptors — focus on curated library from proven examples
+- Automated marking scheme validation — manual review sufficient for v1.0
+- Collaborative editing of marking schemes — single-author workflow sufficient
+- Version history for marking schemes — defer to future milestone
+- Descriptor rating/voting system — admin-curated library sufficient
+- Multi-language descriptor support — English only for v1.0
+- Test Project management workflows — future milestone
 - Issue/Dispute tracking — future milestone
-- CIS integration beyond external links — future milestone
+- Full CIS integration — future milestone
+- Management meetings (phases 3-4) — deferred, focus on descriptor library
 
 ## Context
 
@@ -99,4 +117,4 @@ Features explicitly excluded from current milestone:
 | Preserve all existing meeting functionality | Email/calendar invites already working, users expect this | — Pending |
 
 ---
-*Last updated: 2026-02-01 after initialization*
+*Last updated: 2026-02-01 after v1.0 milestone start*

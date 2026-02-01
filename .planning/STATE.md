@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-01)
 
 **Core value:** Enable Skill Advisors and Competition Managers to coordinate effectively during CPW and throughout the competition cycle
-**Current focus:** UI Integration & Components
+**Current focus:** v1.0 Descriptor Library & Marking Scheme Support
 
 ## Current Position
 
-Phase: 3 of 4 (UI Integration & Components)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-01 — Phase 2 complete and verified
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v1.0 milestone
+Last activity: 2026-02-01 — Milestone v1.0 (Descriptor Library) started
 
-Progress: [█████░░░░░] 50%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
