@@ -8,8 +8,8 @@ import { z } from "zod";
 import { requireAdminUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// Zod schema for descriptor validation
-const descriptorSchema = z.object({
+// Base Zod schema for descriptor fields (without validation refine)
+const baseDescriptorSchema = z.object({
   code: z.string().min(1, "Code is required"),
   criterionName: z.string().min(3, "Criterion name must be at least 3 characters"),
   excellent: z.string().optional(),
@@ -21,14 +21,21 @@ const descriptorSchema = z.object({
   category: z.string().optional(),
   tags: z.string().optional(), // Comma-separated, parsed below
   qualityIndicator: z.nativeEnum(QualityIndicator).optional(),
-}).refine(
+});
+
+// Create schema with validation refine for creation
+const descriptorSchema = baseDescriptorSchema.refine(
   (data) => data.criterionName.length >= 5 && (data.excellent || data.good || data.pass || data.belowPass),
   { message: "Criterion name must be 5+ characters AND at least one performance level is required" }
 );
 
-const updateDescriptorSchema = descriptorSchema.extend({
+// Update schema extends base then adds refine
+const updateDescriptorSchema = baseDescriptorSchema.extend({
   id: z.string().min(1, "Descriptor ID is required"),
-});
+}).refine(
+  (data) => data.criterionName.length >= 5 && (data.excellent || data.good || data.pass || data.belowPass),
+  { message: "Criterion name must be 5+ characters AND at least one performance level is required" }
+);
 
 const deleteDescriptorSchema = z.object({
   id: z.string().min(1, "Descriptor ID is required"),
