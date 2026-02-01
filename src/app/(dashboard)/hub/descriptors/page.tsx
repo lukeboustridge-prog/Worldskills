@@ -1,6 +1,10 @@
 import { Suspense } from "react";
+import Link from "next/link";
+import { ClipboardCheck } from "lucide-react";
 import { searchDescriptors } from "@/lib/search-descriptors";
 import { getFacetCounts } from "@/lib/queries/facet-counts";
+import { getCurrentUser } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 import { SearchInput } from "./components/SearchInput";
 import { FilterPanel } from "./components/FilterPanel";
 import { DescriptorList } from "./components/DescriptorList";
@@ -22,6 +26,10 @@ export default async function DescriptorsPage({ searchParams }: PageProps) {
   const page = Number(params.page) || 1;
   const limit = 20;
 
+  // Check if user can review
+  const user = await getCurrentUser();
+  const canReview = user && ["SA", "SCM", "Secretariat", "Admin"].includes(user.role);
+
   // Fetch search results and facet counts in parallel
   const [searchResponse, facets] = await Promise.all([
     searchDescriptors({
@@ -36,33 +44,37 @@ export default async function DescriptorsPage({ searchParams }: PageProps) {
   ]);
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8">
-      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Descriptor Library</h1>
+    <div className="container mx-auto px-4 py-6 md:py-8 max-w-4xl">
+      <div className="flex items-center justify-between mb-4 md:mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">Descriptor Library</h1>
+        {canReview && (
+          <Button asChild variant="outline">
+            <Link href="/hub/descriptors/review">
+              <ClipboardCheck className="h-4 w-4 mr-2" />
+              Review Templates
+            </Link>
+          </Button>
+        )}
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
-        {/* Mobile: FilterPanel renders its own trigger button */}
-        {/* Desktop: FilterPanel renders in sidebar */}
-        <aside className="md:col-span-1">
-          <FilterPanel facets={facets} />
-        </aside>
+      <div className="space-y-4">
+        <SearchInput />
 
-        <main className="md:col-span-3">
-          <SearchInput />
+        <FilterPanel facets={facets} />
 
-          <div className="mt-3 md:mt-4 text-sm text-muted-foreground">
-            {searchResponse.total} descriptor{searchResponse.total !== 1 ? "s" : ""} found
-          </div>
+        <div className="text-sm text-muted-foreground">
+          {searchResponse.total} descriptor{searchResponse.total !== 1 ? "s" : ""} found
+        </div>
 
-          <Suspense fallback={<div className="py-8">Loading...</div>}>
-            <DescriptorList results={searchResponse.results} />
-          </Suspense>
+        <Suspense fallback={<div className="py-8">Loading...</div>}>
+          <DescriptorList results={searchResponse.results} />
+        </Suspense>
 
-          <Pagination
-            currentPage={page}
-            totalPages={Math.ceil(searchResponse.total / limit)}
-            hasMore={searchResponse.hasMore}
-          />
-        </main>
+        <Pagination
+          currentPage={page}
+          totalPages={Math.ceil(searchResponse.total / limit)}
+          hasMore={searchResponse.hasMore}
+        />
       </div>
     </div>
   );
