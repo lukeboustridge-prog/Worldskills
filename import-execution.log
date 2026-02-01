@@ -1,0 +1,36 @@
+=== WSC2024 Descriptor Import ===
+Start time: 2026-02-01T09:26:43.789Z
+Source: C:\Users\LukeBoustridge\Dropbox\WSI standards and assessment\WSC2024\Skill Advisors\Final MS by Skill
+
+prisma:error 
+Invalid `prisma.descriptor.count()` invocation in
+C:\Users\LukeBoustridge\Projects\Worldskills\src\lib\import\importer.ts:135:28
+
+  132  * Counts existing descriptors by source.
+  133  */
+  134 export async function countDescriptors(source?: string): Promise<number> {
+→ 135   return prisma.descriptor.count(
+Can't reach database server at `ep-hidden-math-adwx8rwe-pooler.c-2.us-east-1.aws.neon.tech:5432`
+
+Please make sure your database server is running at `ep-hidden-math-adwx8rwe-pooler.c-2.us-east-1.aws.neon.tech:5432`.
+
+=== IMPORT FAILED ===
+PrismaClientInitializationError: 
+Invalid `prisma.descriptor.count()` invocation in
+C:\Users\LukeBoustridge\Projects\Worldskills\src\lib\import\importer.ts:135:28
+
+  132  * Counts existing descriptors by source.
+  133  */
+  134 export async function countDescriptors(source?: string): Promise<number> {
+→ 135   return prisma.descriptor.count(
+Can't reach database server at `ep-hidden-math-adwx8rwe-pooler.c-2.us-east-1.aws.neon.tech:5432`
+
+Please make sure your database server is running at `ep-hidden-math-adwx8rwe-pooler.c-2.us-east-1.aws.neon.tech:5432`.
+    at $n.handleRequestError (C:\Users\LukeBoustridge\Projects\Worldskills\node_modules\.pnpm\@prisma+client@5.22.0_prisma@5.22.0\node_modules\@prisma\client\runtime\library.js:121:7615)
+    at $n.handleAndLogRequestError (C:\Users\LukeBoustridge\Projects\Worldskills\node_modules\.pnpm\@prisma+client@5.22.0_prisma@5.22.0\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\LukeBoustridge\Projects\Worldskills\node_modules\.pnpm\@prisma+client@5.22.0_prisma@5.22.0\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\LukeBoustridge\Projects\Worldskills\node_modules\.pnpm\@prisma+client@5.22.0_prisma@5.22.0\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async runImport (C:\Users\LukeBoustridge\Projects\Worldskills\src\scripts\import-wsc2024-descriptors.ts:38:25) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}

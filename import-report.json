@@ -1,0 +1,575 @@
+{
+  "startTime": "2026-02-01T09:45:31.235Z",
+  "endTime": "2026-02-01T09:46:32.001Z",
+  "duration": "60.8s",
+  "sourceDirectory": "C:\\Users\\LukeBoustridge\\Projects\\Workinprogress\\Marking Schemes",
+  "fileResults": [
+    {
+      "fileName": "01_Industrial_Mechanics_marking_scheme (f).xlsx",
+      "descriptorCount": 22,
+      "validCount": 22,
+      "invalidCount": 0,
+      "warnings": 22,
+      "errors": []
+    },
+    {
+      "fileName": "02_Information_Network_Cabling_marking_scheme.xlsx",
+      "descriptorCount": 26,
+      "validCount": 26,
+      "invalidCount": 0,
+      "warnings": 26,
+      "errors": []
+    },
+    {
+      "fileName": "03_Manufacturing_Team_Challenge_marking_scheme.xlsx",
+      "descriptorCount": 23,
+      "validCount": 23,
+      "invalidCount": 0,
+      "warnings": 23,
+      "errors": []
+    },
+    {
+      "fileName": "04_Mechatronics_marking_scheme_20240808.xlsx",
+      "descriptorCount": 21,
+      "validCount": 21,
+      "invalidCount": 0,
+      "warnings": 21,
+      "errors": []
+    },
+    {
+      "fileName": "05_Mechanical_Engineering_CAD_marking_scheme.xlsx",
+      "descriptorCount": 21,
+      "validCount": 21,
+      "invalidCount": 0,
+      "warnings": 21,
+      "errors": []
+    },
+    {
+      "fileName": "06_CNC_Turning_marking_scheme.xlsx",
+      "descriptorCount": 17,
+      "validCount": 17,
+      "invalidCount": 0,
+      "warnings": 17,
+      "errors": []
+    },
+    {
+      "fileName": "07_CNC_Milling_marking_scheme (2).xlsx",
+      "descriptorCount": 22,
+      "validCount": 22,
+      "invalidCount": 0,
+      "warnings": 22,
+      "errors": []
+    },
+    {
+      "fileName": "08_Mobile_Applications_Development_marking_scheme.xlsx",
+      "descriptorCount": 22,
+      "validCount": 22,
+      "invalidCount": 0,
+      "warnings": 22,
+      "errors": []
+    },
+    {
+      "fileName": "09_IT_Software_Solutions_for_Business_marking_scheme.xlsx",
+      "descriptorCount": 23,
+      "validCount": 23,
+      "invalidCount": 0,
+      "warnings": 23,
+      "errors": []
+    },
+    {
+      "fileName": "10_Welding_WSC2024_marking_scheme - PC 16072024.xlsx",
+      "descriptorCount": 15,
+      "validCount": 15,
+      "invalidCount": 0,
+      "warnings": 15,
+      "errors": []
+    },
+    {
+      "fileName": "12_Wall_and_Floor_Tiling_marking_scheme.xlsx",
+      "descriptorCount": 24,
+      "validCount": 24,
+      "invalidCount": 0,
+      "warnings": 24,
+      "errors": []
+    },
+    {
+      "fileName": "14_Aircraft_Maintenance_marking_scheme (10).xlsx",
+      "descriptorCount": 18,
+      "validCount": 18,
+      "invalidCount": 0,
+      "warnings": 18,
+      "errors": []
+    },
+    {
+      "fileName": "15_Plumbing_and_Heating_marking_scheme.xlsx",
+      "descriptorCount": 19,
+      "validCount": 19,
+      "invalidCount": 0,
+      "warnings": 19,
+      "errors": []
+    },
+    {
+      "fileName": "16_Electronics_marking_scheme (1).xlsx",
+      "descriptorCount": 19,
+      "validCount": 19,
+      "invalidCount": 0,
+      "warnings": 19,
+      "errors": []
+    },
+    {
+      "fileName": "17_Web_Technologies_marking_scheme.xlsx",
+      "descriptorCount": 23,
+      "validCount": 23,
+      "invalidCount": 0,
+      "warnings": 23,
+      "errors": []
+    },
+    {
+      "fileName": "18_Electrical_Installations_marking_scheme.xlsx",
+      "descriptorCount": 20,
+      "validCount": 20,
+      "invalidCount": 0,
+      "warnings": 20,
+      "errors": []
+    },
+    {
+      "fileName": "19_Industrial_Control_marking_scheme.xlsx",
+      "descriptorCount": 26,
+      "validCount": 26,
+      "invalidCount": 0,
+      "warnings": 26,
+      "errors": []
+    },
+    {
+      "fileName": "20_Bricklaying_marking_scheme (2).xlsx",
+      "descriptorCount": 14,
+      "validCount": 14,
+      "invalidCount": 0,
+      "warnings": 14,
+      "errors": []
+    },
+    {
+      "fileName": "21_Plastering_and_Drywall_Systems_marking_scheme.xlsx",
+      "descriptorCount": 27,
+      "validCount": 27,
+      "invalidCount": 0,
+      "warnings": 27,
+      "errors": []
+    },
+    {
+      "fileName": "22_Painting_and_Decorating_marking_scheme-4.xlsx",
+      "descriptorCount": 17,
+      "validCount": 17,
+      "invalidCount": 0,
+      "warnings": 17,
+      "errors": []
+    },
+    {
+      "fileName": "23_Autonomous_Mobile_Robotics_marking_scheme.xlsx",
+      "descriptorCount": 29,
+      "validCount": 29,
+      "invalidCount": 0,
+      "warnings": 29,
+      "errors": []
+    },
+    {
+      "fileName": "24_Cabinetmaking_marking_scheme.xlsx",
+      "descriptorCount": 20,
+      "validCount": 20,
+      "invalidCount": 0,
+      "warnings": 20,
+      "errors": []
+    },
+    {
+      "fileName": "25_Joinery_marking_scheme.xlsx",
+      "descriptorCount": 27,
+      "validCount": 27,
+      "invalidCount": 0,
+      "warnings": 27,
+      "errors": []
+    },
+    {
+      "fileName": "26_Carpentry_marking_scheme.xlsx",
+      "descriptorCount": 20,
+      "validCount": 20,
+      "invalidCount": 0,
+      "warnings": 20,
+      "errors": []
+    },
+    {
+      "fileName": "27_Jewellery_marking_scheme.xlsx",
+      "descriptorCount": 24,
+      "validCount": 24,
+      "invalidCount": 0,
+      "warnings": 24,
+      "errors": []
+    },
+    {
+      "fileName": "28_Floristry_marking_scheme (2) 0909.xlsx",
+      "descriptorCount": 19,
+      "validCount": 19,
+      "invalidCount": 0,
+      "warnings": 19,
+      "errors": []
+    },
+    {
+      "fileName": "29_Hairdressing_marking_scheme 18.8 with calc.xlsx",
+      "descriptorCount": 25,
+      "validCount": 25,
+      "invalidCount": 0,
+      "warnings": 25,
+      "errors": []
+    },
+    {
+      "fileName": "30_Beauty_Therapy_marking_scheme(1).xlsx",
+      "descriptorCount": 24,
+      "validCount": 24,
+      "invalidCount": 0,
+      "warnings": 24,
+      "errors": []
+    },
+    {
+      "fileName": "31_Fashion_Technology_marking_scheme (1).xlsx",
+      "descriptorCount": 22,
+      "validCount": 22,
+      "invalidCount": 0,
+      "warnings": 22,
+      "errors": []
+    },
+    {
+      "fileName": "32_Pâtisserie_and_Confectionery_marking_scheme(1).xlsx",
+      "descriptorCount": 25,
+      "validCount": 25,
+      "invalidCount": 0,
+      "warnings": 25,
+      "errors": []
+    },
+    {
+      "fileName": "33_Automobile_Technology_marking_scheme (10).xlsx",
+      "descriptorCount": 22,
+      "validCount": 22,
+      "invalidCount": 0,
+      "warnings": 22,
+      "errors": []
+    },
+    {
+      "fileName": "34_Cooking_marking_scheme.xlsx",
+      "descriptorCount": 20,
+      "validCount": 20,
+      "invalidCount": 0,
+      "warnings": 20,
+      "errors": []
+    },
+    {
+      "fileName": "35_Restaurant_Service_marking_scheme.xlsx",
+      "descriptorCount": 24,
+      "validCount": 24,
+      "invalidCount": 0,
+      "warnings": 24,
+      "errors": []
+    },
+    {
+      "fileName": "36_Car_Painting_marking_scheme (15).xlsx",
+      "descriptorCount": 25,
+      "validCount": 25,
+      "invalidCount": 0,
+      "warnings": 25,
+      "errors": []
+    },
+    {
+      "fileName": "37_Landscape_Gardening_marking_scheme.xlsx",
+      "descriptorCount": 18,
+      "validCount": 18,
+      "invalidCount": 0,
+      "warnings": 18,
+      "errors": []
+    },
+    {
+      "fileName": "38_Refrigeration_and_Air_Conditioning_marking_schemeV2.xlsx",
+      "descriptorCount": 21,
+      "validCount": 21,
+      "invalidCount": 0,
+      "warnings": 21,
+      "errors": []
+    },
+    {
+      "fileName": "39_IT_Network_Systems_Administration_marking_scheme.xlsx",
+      "descriptorCount": 21,
+      "validCount": 21,
+      "invalidCount": 0,
+      "warnings": 21,
+      "errors": []
+    },
+    {
+      "fileName": "40_Graphic_Design_Technology_marking_scheme_GROUPS_OK.xlsx",
+      "descriptorCount": 16,
+      "validCount": 16,
+      "invalidCount": 0,
+      "warnings": 16,
+      "errors": []
+    },
+    {
+      "fileName": "41_Health_and_Social_Care_marking_scheme calc 27.8.2024.xlsx",
+      "descriptorCount": 22,
+      "validCount": 22,
+      "invalidCount": 0,
+      "warnings": 22,
+      "errors": []
+    },
+    {
+      "fileName": "42TEST_Construction_Steel_Work_-_Calculations_TEST_marking_scheme.xlsx",
+      "descriptorCount": 24,
+      "validCount": 24,
+      "invalidCount": 0,
+      "warnings": 24,
+      "errors": []
+    },
+    {
+      "fileName": "44_Visual_Merchandising_marking_scheme_updated_20082024 (1) JL notes_V05.xlsx",
+      "descriptorCount": 23,
+      "validCount": 23,
+      "invalidCount": 0,
+      "warnings": 23,
+      "errors": []
+    },
+    {
+      "fileName": "46_Concrete_Construction_Work_marking_scheme.xlsx",
+      "descriptorCount": 19,
+      "validCount": 19,
+      "invalidCount": 0,
+      "warnings": 19,
+      "errors": []
+    },
+    {
+      "fileName": "47_Bakery_marking_scheme 6.8.2024.xlsx",
+      "descriptorCount": 25,
+      "validCount": 25,
+      "invalidCount": 0,
+      "warnings": 25,
+      "errors": []
+    },
+    {
+      "fileName": "48_Industry_4.0_marking_scheme.xlsx",
+      "descriptorCount": 23,
+      "validCount": 23,
+      "invalidCount": 0,
+      "warnings": 23,
+      "errors": []
+    },
+    {
+      "fileName": "49_Heavy_Vehicle_Technology_marking_scheme (final).xlsx",
+      "descriptorCount": 20,
+      "validCount": 20,
+      "invalidCount": 0,
+      "warnings": 20,
+      "errors": []
+    },
+    {
+      "fileName": "50_3D_Digital_Game_Art_marking_scheme.xlsx",
+      "descriptorCount": 27,
+      "validCount": 27,
+      "invalidCount": 0,
+      "warnings": 27,
+      "errors": []
+    },
+    {
+      "fileName": "51_Logistics_and_Freight_Forwarding_marking_scheme (11).xlsx",
+      "descriptorCount": 18,
+      "validCount": 18,
+      "invalidCount": 0,
+      "warnings": 18,
+      "errors": []
+    },
+    {
+      "fileName": "52_Chemical_Laboratory_Technology_marking_scheme.xlsx",
+      "descriptorCount": 24,
+      "validCount": 24,
+      "invalidCount": 0,
+      "warnings": 24,
+      "errors": []
+    },
+    {
+      "fileName": "53_Cloud_Computing_marking_scheme.xlsx",
+      "descriptorCount": 26,
+      "validCount": 26,
+      "invalidCount": 0,
+      "warnings": 26,
+      "errors": []
+    },
+    {
+      "fileName": "54_Cyber_Security_marking_scheme.xlsx",
+      "descriptorCount": 23,
+      "validCount": 23,
+      "invalidCount": 0,
+      "warnings": 23,
+      "errors": []
+    },
+    {
+      "fileName": "55_Water_Technology_marking_scheme.xlsx",
+      "descriptorCount": 19,
+      "validCount": 19,
+      "invalidCount": 0,
+      "warnings": 19,
+      "errors": []
+    },
+    {
+      "fileName": "56 WSC2024_56_Hotel_Reception_marking_scheme-final.xlsx",
+      "descriptorCount": 26,
+      "validCount": 26,
+      "invalidCount": 0,
+      "warnings": 26,
+      "errors": []
+    },
+    {
+      "fileName": "57_Additive_Manufacturing_marking_scheme.xlsx",
+      "descriptorCount": 18,
+      "validCount": 18,
+      "invalidCount": 0,
+      "warnings": 18,
+      "errors": []
+    },
+    {
+      "fileName": "58_Digital_Construction_marking_scheme (1).xlsx",
+      "descriptorCount": 17,
+      "validCount": 17,
+      "invalidCount": 0,
+      "warnings": 17,
+      "errors": []
+    },
+    {
+      "fileName": "59_Industrial_Design_Technology_marking_scheme.xlsx",
+      "descriptorCount": 23,
+      "validCount": 23,
+      "invalidCount": 0,
+      "warnings": 23,
+      "errors": []
+    },
+    {
+      "fileName": "60_Optoelectronic_Technology_marking_scheme.xlsx",
+      "descriptorCount": 19,
+      "validCount": 19,
+      "invalidCount": 0,
+      "warnings": 19,
+      "errors": []
+    },
+    {
+      "fileName": "62_Renewable_Energy_marking_scheme (2).xlsx",
+      "descriptorCount": 18,
+      "validCount": 18,
+      "invalidCount": 0,
+      "warnings": 18,
+      "errors": []
+    },
+    {
+      "fileName": "63_Robot_Systems_Integration_marking_scheme.xlsx",
+      "descriptorCount": 20,
+      "validCount": 20,
+      "invalidCount": 0,
+      "warnings": 20,
+      "errors": []
+    }
+  ],
+  "totalDescriptors": 1255,
+  "validDescriptors": 1255,
+  "invalidDescriptors": 0,
+  "importResult": {
+    "totalProcessed": 1255,
+    "successCount": 611,
+    "failedCount": 0,
+    "duplicateCount": 644,
+    "batches": [
+      {
+        "batchNumber": 1,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 48,
+        "duration": 4139
+      },
+      {
+        "batchNumber": 2,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 49,
+        "duration": 4225
+      },
+      {
+        "batchNumber": 3,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 56,
+        "duration": 3561
+      },
+      {
+        "batchNumber": 4,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 50,
+        "duration": 4131
+      },
+      {
+        "batchNumber": 5,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 49,
+        "duration": 3461
+      },
+      {
+        "batchNumber": 6,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 50,
+        "duration": 3423
+      },
+      {
+        "batchNumber": 7,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 45,
+        "duration": 3440
+      },
+      {
+        "batchNumber": 8,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 56,
+        "duration": 3446
+      },
+      {
+        "batchNumber": 9,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 54,
+        "duration": 4188
+      },
+      {
+        "batchNumber": 10,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 43,
+        "duration": 3402
+      },
+      {
+        "batchNumber": 11,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 44,
+        "duration": 3430
+      },
+      {
+        "batchNumber": 12,
+        "recordCount": 100,
+        "success": true,
+        "insertedCount": 40,
+        "duration": 3447
+      },
+      {
+        "batchNumber": 13,
+        "recordCount": 55,
+        "success": true,
+        "insertedCount": 27,
+        "duration": 3408
+      }
+    ]
+  },
+  "databaseCount": 611
+}

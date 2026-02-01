@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import type { DescriptorImport } from './validator';
 
-const BATCH_SIZE = 500; // Avoid long-running transactions
+const BATCH_SIZE = 100; // Smaller batches for Neon pgbouncer compatibility
 
 export interface ImportResult {
   totalProcessed: number;
@@ -55,28 +55,24 @@ export async function importDescriptors(
     const startTime = Date.now();
 
     try {
-      // Use transaction for atomic batch insert
-      const result = await prisma.$transaction(async (tx) => {
-        // createMany with skipDuplicates handles composite unique constraint
-        const created = await tx.descriptor.createMany({
-          data: batch.map(d => ({
-            code: d.code,
-            criterionName: d.criterionName,
-            excellent: d.excellent,
-            good: d.good,
-            pass: d.pass,
-            belowPass: d.belowPass,
-            category: d.category,
-            skillName: d.skillName,
-            sector: d.sector,
-            source: d.source,
-            version: d.version,
-            tags: d.tags
-          })),
-          skipDuplicates: true // Skip [skillName, code] duplicates
-        });
-
-        return created;
+      // createMany is already atomic (single INSERT statement)
+      // No explicit transaction needed - works with Neon's pgbouncer mode
+      const result = await prisma.descriptor.createMany({
+        data: batch.map(d => ({
+          code: d.code,
+          criterionName: d.criterionName,
+          excellent: d.excellent,
+          good: d.good,
+          pass: d.pass,
+          belowPass: d.belowPass,
+          category: d.category,
+          skillName: d.skillName,
+          sector: d.sector,
+          source: d.source,
+          version: d.version,
+          tags: d.tags
+        })),
+        skipDuplicates: true // Skip [skillName, code] duplicates
       });
 
       const duration = Date.now() - startTime;
