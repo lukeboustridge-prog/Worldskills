@@ -331,3 +331,67 @@ export async function updateManagementMeetingMinutesAction(formData: FormData) {
 
   return { success: true };
 }
+
+const deleteManagementMeetingSchema = z.object({
+  meetingId: z.string().min(1)
+});
+
+export async function deleteManagementMeetingAction(formData: FormData) {
+  const user = await requireUser();
+
+  const parsed = deleteManagementMeetingSchema.safeParse({
+    meetingId: formData.get("meetingId")
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((e) => e.message).join(", "));
+  }
+
+  const meeting = await prisma.meeting.findUnique({
+    where: { id: parsed.data.meetingId }
+  });
+
+  if (!meeting) {
+    throw new Error("Meeting not found");
+  }
+
+  if (meeting.skillId !== null) {
+    throw new Error("This action is only for management meetings");
+  }
+
+  if (!canManageMeeting(user, meeting)) {
+    throw new Error("Only Admins and Secretariat can delete management meetings");
+  }
+
+  // Get documents for storage cleanup
+  const existingDocuments = normaliseMeetingDocuments(meeting.documents);
+
+  // Delete meeting (cascade deletes MeetingAttendee records)
+  await prisma.meeting.delete({
+    where: { id: parsed.data.meetingId }
+  });
+
+  // Clean up storage for each document (non-blocking, log errors)
+  for (const doc of existingDocuments) {
+    try {
+      await deleteStoredObject(doc.storageKey);
+    } catch (error) {
+      console.error("Failed to delete document from storage", { storageKey: doc.storageKey, error });
+    }
+  }
+
+  await logActivity({
+    skillId: null,
+    userId: user.id,
+    action: "ManagementMeetingDeleted",
+    payload: {
+      meetingId: meeting.id,
+      title: meeting.title
+    }
+  });
+
+  revalidatePath("/meetings");
+  revalidatePath("/hub/meetings");
+
+  return { success: true };
+}
