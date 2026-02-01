@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs';
+import * as ExcelJS from 'exceljs';
 import { normalizeDescriptorText, detectEncodingIssues, extractSkillNameFromFilename } from './text-normalizer';
 
 export interface ParsedDescriptor {
