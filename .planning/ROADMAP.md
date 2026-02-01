@@ -28,10 +28,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. MeetingAttendee records persist for management meetings with selected Secretariat members
   3. Existing skill meetings remain functional with no data loss after migration
   4. TypeScript types reflect optional Meeting.skill relation throughout codebase
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD during planning
+- [ ] 01-01-PLAN.md — Schema update for optional skillId and MeetingAttendee junction table
+- [ ] 01-02-PLAN.md — TypeScript codebase updates for null-safe skill access
 
 ### Phase 2: Permission & Business Logic Layer
 **Goal**: Backend correctly authorizes, emails, and filters meetings based on role and meeting type
@@ -84,11 +85,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Database Foundation & Type System | 0/TBD | Not started | - |
+| 1. Database Foundation & Type System | 0/2 | Planned | - |
 | 2. Permission & Business Logic Layer | 0/TBD | Not started | - |
 | 3. UI Integration & Components | 0/TBD | Not started | - |
 | 4. Deployment & Validation | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-01*
-*Last updated: 2026-02-01 after initial creation*
+*Last updated: 2026-02-01 after Phase 1 planning*
