@@ -36,10 +36,12 @@ export default async function DescriptorsPage({ searchParams }: PageProps) {
   ]);
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Descriptor Library</h1>
+    <div className="container mx-auto px-4 py-6 md:py-8">
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Descriptor Library</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+        {/* Mobile: FilterPanel renders its own trigger button */}
+        {/* Desktop: FilterPanel renders in sidebar */}
         <aside className="md:col-span-1">
           <FilterPanel facets={facets} />
         </aside>
@@ -47,7 +49,7 @@ export default async function DescriptorsPage({ searchParams }: PageProps) {
         <main className="md:col-span-3">
           <SearchInput />
 
-          <div className="mt-4 text-sm text-muted-foreground">
+          <div className="mt-3 md:mt-4 text-sm text-muted-foreground">
             {searchResponse.total} descriptor{searchResponse.total !== 1 ? "s" : ""} found
           </div>
 
