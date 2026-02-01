@@ -44,10 +44,10 @@ enum ResourceCategory {
 }
 
 enum QualityIndicator {
-  EXCELLENT      // Exemplary descriptor, showcase quality
-  GOOD           // Solid descriptor, ready for use
-  REFERENCE      // Use as reference, may need refinement
-  NEEDS_REVIEW   // Imported, requires admin review
+  EXCELLENT // Exemplary descriptor, showcase quality
+  GOOD // Solid descriptor, ready for use
+  REFERENCE // Use as reference, may need refinement
+  NEEDS_REVIEW // Imported, requires admin review
 }
 
 enum GateScheduleType {
@@ -66,14 +66,15 @@ model User {
 
   accounts            Account[]
   sessions            Session[]
-  skillsAsSA          Skill[]        @relation("SkillSA")
-  skillsAsSCM         Skill[]        @relation("SkillSCM")
+  skillsAsSA          Skill[]              @relation("SkillSA")
+  skillsAsSCM         Skill[]              @relation("SkillSCM")
   skillMemberships    SkillMember[]
   messages            Message[]
   activity            ActivityLog[]
-  invitationsCreated  Invitation[]   @relation("InvitationCreator")
+  invitationsCreated  Invitation[]         @relation("InvitationCreator")
   passwordResetTokens PasswordResetToken[]
   meetingAttendees    MeetingAttendee[]
+  favoriteDescriptors DescriptorFavorite[]
 }
 
 model Skill {
@@ -96,9 +97,9 @@ model Skill {
   meetings     Meeting[]
   teamMembers  SkillMember[]
 
+  @@unique([name])
   @@index([scmId])
   @@index([saId])
-  @@unique([name])
 }
 
 model SkillMember {
@@ -116,21 +117,21 @@ model SkillMember {
 }
 
 model DeliverableTemplate {
-  id             String                   @id @default(cuid())
-  key            String                   @unique
-  label          String
-  offsetMonths   Int?
+  id              String                  @id @default(cuid())
+  key             String                  @unique
+  label           String
+  offsetMonths    Int?
   calendarDueDate DateTime?
-  scheduleType   DeliverableScheduleType @default(CMonth)
-  position       Int                      @default(0)
-  createdAt      DateTime                 @default(now())
-  updatedAt      DateTime                 @updatedAt
+  scheduleType    DeliverableScheduleType @default(CMonth)
+  position        Int                     @default(0)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
 
   deliverables Deliverable[]
 }
 
 model Deliverable {
-  id                String                   @id @default(cuid())
+  id                String                  @id @default(cuid())
   skillId           String
   key               String
   templateKey       String?
@@ -147,33 +148,33 @@ model Deliverable {
   overdueNotifiedAt DateTime?
   isHidden          Boolean                 @default(false)
 
-  skill    Skill               @relation(fields: [skillId], references: [id])
+  skill    Skill                @relation(fields: [skillId], references: [id])
   template DeliverableTemplate? @relation(fields: [templateKey], references: [key])
 
-  @@index([skillId])
   @@unique([skillId, key])
+  @@index([skillId])
 }
 
 model GateTemplate {
-  id             String           @id @default(cuid())
-  key            String           @unique
-  name           String
-  offsetMonths   Int?
+  id              String           @id @default(cuid())
+  key             String           @unique
+  name            String
+  offsetMonths    Int?
   calendarDueDate DateTime?
-  scheduleType   GateScheduleType @default(CMonth)
-  position       Int              @default(0)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  scheduleType    GateScheduleType @default(CMonth)
+  position        Int              @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   gates Gate[]
 }
 
 model Gate {
-  id           String     @id @default(cuid())
+  id           String           @id @default(cuid())
   skillId      String
   name         String
   dueDate      DateTime
-  status       GateStatus @default(Open)
+  status       GateStatus       @default(Open)
   completedBy  String?
   completedAt  DateTime?
   templateKey  String?
@@ -181,7 +182,7 @@ model Gate {
   cMonthOffset Int?
   cMonthLabel  String?
 
-  skill Skill @relation(fields: [skillId], references: [id])
+  skill    Skill         @relation(fields: [skillId], references: [id])
   template GateTemplate? @relation(fields: [templateKey], references: [key])
 
   @@index([skillId])
@@ -217,19 +218,19 @@ model ActivityLog {
 }
 
 model Meeting {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   skillId      String?
   title        String
   startTime    DateTime
   endTime      DateTime
   meetingLink  String?
-  minutes      String?   @db.Text
-  actionPoints String?   @db.Text
-  documents    Json      @default("[]")
-  links        Json      @default("[]")
-  createdAt    DateTime  @default(now())
+  minutes      String?  @db.Text
+  actionPoints String?  @db.Text
+  documents    Json     @default("[]")
+  links        Json     @default("[]")
+  createdAt    DateTime @default(now())
 
-  skill     Skill?             @relation(fields: [skillId], references: [id])
+  skill     Skill?            @relation(fields: [skillId], references: [id])
   attendees MeetingAttendee[]
 
   @@index([skillId])
@@ -251,16 +252,16 @@ model MeetingAttendee {
 }
 
 model Invitation {
-  id          String   @id @default(cuid())
-  name        String
-  email       String
-  role        Role
-  isAdmin     Boolean  @default(false)
-  token       String   @unique
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
-  createdBy   String?
-  acceptedAt  DateTime?
+  id         String    @id @default(cuid())
+  name       String
+  email      String
+  role       Role
+  isAdmin    Boolean   @default(false)
+  token      String    @unique
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  createdBy  String?
+  acceptedAt DateTime?
 
   createdByUser User? @relation("InvitationCreator", fields: [createdBy], references: [id])
 
@@ -283,13 +284,13 @@ model PasswordResetToken {
 }
 
 model AppSettings {
-  id                Int      @id @default(1)
-  competitionName   String
-  competitionStart  DateTime
-  competitionEnd    DateTime
-  keyDates          Json     @default("{}")
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id               Int      @id @default(1)
+  competitionName  String
+  competitionStart DateTime
+  competitionEnd   DateTime
+  keyDates         Json     @default("{}")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Account {
@@ -344,46 +345,61 @@ model ResourceLink {
 }
 
 model Descriptor {
-  id          String   @id @default(cuid())
-  code        String   // Criterion code from marking scheme (e.g., "A1", "B2.1")
+  id            String @id @default(cuid())
+  code          String // Criterion code from marking scheme (e.g., "A1", "B2.1")
   criterionName String // Name of the criterion/aspect
 
   // Performance level descriptions (grouped together, not separate records)
-  excellent   String?  @db.Text
-  good        String?  @db.Text
-  pass        String?  @db.Text
-  belowPass   String?  @db.Text
+  excellent String? @db.Text
+  good      String? @db.Text
+  pass      String? @db.Text
+  belowPass String? @db.Text
 
   // Source metadata
-  source      String   // "WSC2024" for imported, "Manual" for admin-added
-  skillName   String   // Name of the skill (e.g., "Welding", "Bricklaying")
-  sector      String?  // Sector category if available
+  source    String // "WSC2024" for imported, "Manual" for admin-added
+  skillName String // Name of the skill (e.g., "Welding", "Bricklaying")
+  sector    String? // Sector category if available
 
   // Categories and tags (for future filtering)
-  category    String?  // Criterion type/category
-  tags        String[] @default([]) // JSONB array for flexible tagging
+  category String? // Criterion type/category
+  tags     String[] @default([]) // JSONB array for flexible tagging
 
   // Schema versioning for future migrations
-  version     Int      @default(1)
+  version Int @default(1)
 
   // Quality control
   qualityIndicator QualityIndicator @default(NEEDS_REVIEW)
 
   // Soft delete
-  deletedAt   DateTime?
-  deletedBy   String?
+  deletedAt DateTime?
+  deletedBy String?
 
   // Audit timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User favorites
+  favoritedBy DescriptorFavorite[]
 
   // Composite unique constraint: code unique within a skill
   @@unique([skillName, code])
-
   // B-tree indexes for common filters (GIN indexes added after import)
   @@index([source])
   @@index([skillName])
   @@index([sector])
   @@index([category])
   @@index([version])
+}
+
+model DescriptorFavorite {
+  userId       String
+  descriptorId String
+  createdAt    DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  descriptor Descriptor @relation(fields: [descriptorId], references: [id], onDelete: Cascade)
+
+  @@id([userId, descriptorId])
+  @@index([userId])
+  @@index([descriptorId])
 }
