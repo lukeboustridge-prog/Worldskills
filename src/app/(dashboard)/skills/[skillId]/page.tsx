@@ -113,6 +113,13 @@ export default async function SkillDetailPage({
       deliverables: { orderBy: { dueDate: "asc" } },
       gates: { orderBy: { dueDate: "asc" } },
       messages: {
+        where: {
+          NOT: {
+            body: {
+              startsWith: "System:"
+            }
+          }
+        },
         include: { author: true },
         orderBy: { createdAt: "desc" }
       },
