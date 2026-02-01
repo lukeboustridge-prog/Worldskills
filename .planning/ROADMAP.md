@@ -33,11 +33,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 5 plans
 
 Plans:
-- [ ] 01-01-PLAN.md - Database schema and ExcelJS installation
-- [ ] 01-02-PLAN.md - Survey all 58 Excel files for structure variance
-- [ ] 01-03-PLAN.md - Excel parser with text normalization and validation
-- [ ] 01-04-PLAN.md - Bulk import with batched transactions
-- [ ] 01-05-PLAN.md - GIN indexes for full-text search and verification
+- [x] 01-01-PLAN.md - Database schema and ExcelJS installation
+- [x] 01-02-PLAN.md - Survey all 58 Excel files for structure variance
+- [x] 01-03-PLAN.md - Excel parser with text normalization and validation
+- [x] 01-04-PLAN.md - Bulk import with batched transactions
+- [x] 01-05-PLAN.md - GIN indexes for full-text search and verification
 
 ### Phase 2: Admin Curation
 **Goal**: Enable admins to manually create, edit, delete, and quality-control descriptors in the library
@@ -66,11 +66,14 @@ Plans:
   3. Search completes in under 100ms for typical queries (tested with 12K+ descriptor corpus)
   4. Users can save frequently used search queries via URL persistence
   5. Search relevance validated with 10 real SCM test queries (top 3 results are relevant)
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md - Functional GIN index migration and base search function with relevance ranking
+- [ ] 03-02-PLAN.md - DescriptorFavorite schema and toggle/query functions for bookmarks
+- [ ] 03-03-PLAN.md - Enhanced search with pagination and faceted filter counts
+- [ ] 03-04-PLAN.md - Related descriptors recommendations using pg_trgm similarity
+- [ ] 03-05-PLAN.md - URL-based search state persistence with nuqs and search UI components
 
 ### Phase 4: Library UI
 **Goal**: Build search interface with faceted filtering, preview modals, and clipboard integration
@@ -112,10 +115,10 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Data Import & Foundation | 5/5 | Complete | 2026-02-01 |
 | 2. Admin Curation | 3/3 | Complete | 2026-02-02 |
-| 3. Search & Discovery | 0/TBD | Not started | - |
+| 3. Search & Discovery | 0/5 | Planned | - |
 | 4. Library UI | 0/TBD | Not started | - |
 | 5. Access Control & Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-01*
-*Last updated: 2026-02-02 after Phase 2 execution*
+*Last updated: 2026-02-02 after Phase 3 planning*
