@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Copy, Check } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DescriptorModal } from "./DescriptorModal";
 import { ComparisonBar } from "./ComparisonBar";
@@ -64,7 +62,7 @@ export function DescriptorList({ results }: { results: SearchResult[] }) {
 
   return (
     <>
-      <div className="space-y-4 mt-4">
+      <div className="space-y-2 mt-4">
         {results.map((descriptor) => (
           <DescriptorCard
             key={descriptor.id}
@@ -109,161 +107,90 @@ function DescriptorCard({
   onSelect: (e: React.MouseEvent) => void;
   onClick: () => void;
 }) {
-  const { toast } = useToast();
-  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
-  const copyToClipboard = async (
-    e: React.MouseEvent,
-    text: string,
-    field: string,
-    label: string
-  ) => {
+  const toggleExpand = (e: React.MouseEvent) => {
     e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedField(field);
-      toast({
-        title: "Copied to clipboard",
-        description: `${label} copied successfully`,
-      });
-      setTimeout(() => setCopiedField(null), 2000);
-    } catch (err) {
-      toast({
-        title: "Copy failed",
-        description: "Could not copy to clipboard",
-        variant: "destructive",
-      });
-    }
+    setExpanded(!expanded);
   };
 
-  const CopyButton = ({
-    text,
-    field,
-    label,
-  }: {
-    text: string;
-    field: string;
-    label: string;
-  }) => (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-      onClick={(e) => copyToClipboard(e, text, field, label)}
-      title="Copy to clipboard"
-    >
-      {copiedField === field ? (
-        <Check className="h-3 w-3 text-green-500" />
-      ) : (
-        <Copy className="h-3 w-3" />
-      )}
-    </Button>
-  );
-
   return (
-    <Card
-      className={`cursor-pointer transition-colors ${
+    <div
+      className={`border rounded-lg transition-colors ${
         isSelected
           ? "border-primary bg-primary/5"
-          : "hover:border-primary/50"
+          : "hover:border-primary/50 bg-card"
       }`}
-      onClick={onClick}
     >
-      <CardHeader className="pb-2">
-        <div className="flex items-start gap-3">
-          <div
-            className="pt-1"
-            onClick={onSelect}
-          >
-            <Checkbox
-              checked={isSelected}
-              className="data-[state=checked]:bg-primary"
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-4">
-              <div className="group flex items-start gap-2 min-w-0 flex-1">
-                <div className="min-w-0 flex-1">
-                  <CardTitle className="text-lg">{descriptor.criterionName}</CardTitle>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    {descriptor.source && (
-                      <Badge
-                        variant="outline"
-                        className="bg-blue-50 text-blue-700 border-blue-200 text-xs"
-                      >
-                        {descriptor.source}
-                      </Badge>
-                    )}
-                    <span className="text-sm text-muted-foreground">
-                      {descriptor.skillName} - {descriptor.code}
-                    </span>
-                  </div>
-                </div>
-                <CopyButton
-                  text={descriptor.criterionName}
-                  field="criterion"
-                  label="Criterion name"
-                />
-              </div>
-              <div className="flex gap-2 flex-wrap justify-end shrink-0">
-                {descriptor.category && (
-                  <Badge variant="outline" className="whitespace-nowrap">{descriptor.category}</Badge>
-                )}
-                <Badge
-                  variant={
-                    descriptor.qualityIndicator === "EXCELLENT" ? "default" : "outline"
-                  }
-                  className="whitespace-nowrap"
-                >
-                  {QUALITY_LABELS[descriptor.qualityIndicator] || descriptor.qualityIndicator}
-                </Badge>
-              </div>
-            </div>
-          </div>
+      {/* Main row - always visible */}
+      <div className="flex items-center gap-3 p-3 cursor-pointer" onClick={onClick}>
+        <div onClick={onSelect}>
+          <Checkbox
+            checked={isSelected}
+            className="data-[state=checked]:bg-primary"
+          />
         </div>
-      </CardHeader>
-      <CardContent className="space-y-2 ml-7">
-        {descriptor.score3 && (
-          <div className="group flex items-start gap-2 text-sm">
-            <div className="flex-1">
-              <span className="font-medium text-green-700">Score 3:</span>{" "}
-              {descriptor.score3.substring(0, 150)}
-              {descriptor.score3.length > 150 && "..."}
-            </div>
-            <CopyButton
-              text={descriptor.score3}
-              field="score3"
-              label="Score 3"
-            />
-          </div>
-        )}
-        {descriptor.score2 && (
-          <div className="group flex items-start gap-2 text-sm">
-            <div className="flex-1">
-              <span className="font-medium text-blue-700">Score 2:</span>{" "}
-              {descriptor.score2.substring(0, 150)}
-              {descriptor.score2.length > 150 && "..."}
-            </div>
-            <CopyButton text={descriptor.score2} field="score2" label="Score 2" />
-          </div>
-        )}
-        {descriptor.score1 && (
-          <div className="group flex items-start gap-2 text-sm">
-            <div className="flex-1">
-              <span className="font-medium text-yellow-700">Score 1:</span>{" "}
-              {descriptor.score1.substring(0, 150)}
-              {descriptor.score1.length > 150 && "..."}
-            </div>
-            <CopyButton text={descriptor.score1} field="score1" label="Score 1" />
-          </div>
-        )}
-        <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
-          <span>Click to view full details</span>
-          {descriptor.rank !== null && (
-            <span>Relevance: {(descriptor.rank * 100).toFixed(0)}%</span>
+
+        <button
+          onClick={toggleExpand}
+          className="text-muted-foreground hover:text-foreground shrink-0"
+        >
+          {expanded ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
           )}
+        </button>
+
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-sm leading-tight">
+            {descriptor.criterionName}
+          </h3>
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Badge
+            variant={descriptor.qualityIndicator === "EXCELLENT" ? "default" : "outline"}
+            className="text-xs"
+          >
+            {QUALITY_LABELS[descriptor.qualityIndicator] || descriptor.qualityIndicator}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Expanded details */}
+      {expanded && (
+        <div className="px-3 pb-3 pt-0 ml-14 border-t mt-0 pt-3 space-y-2">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            {descriptor.source && (
+              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                {descriptor.source}
+              </Badge>
+            )}
+            <span>{descriptor.skillName}</span>
+            <span>•</span>
+            <span>{descriptor.code}</span>
+            {descriptor.category && (
+              <>
+                <span>•</span>
+                <span>{descriptor.category}</span>
+              </>
+            )}
+          </div>
+
+          {descriptor.score3 && (
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium text-green-700">Score 3:</span>{" "}
+              {descriptor.score3.substring(0, 100)}
+              {descriptor.score3.length > 100 && "..."}
+            </p>
+          )}
+
+          <p className="text-xs text-primary cursor-pointer hover:underline" onClick={onClick}>
+            Click to view full details →
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
