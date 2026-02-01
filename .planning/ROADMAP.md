@@ -30,11 +30,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Text content normalized (smart quotes, bullets, Unicode artifacts converted to clean text)
   4. Source skill metadata captured for every descriptor (skill name, sector, WSC2024 attribution visible)
   5. Database schema includes version field and rollback capability for future migrations
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md - Database schema and ExcelJS installation
+- [ ] 01-02-PLAN.md - Survey all 58 Excel files for structure variance
+- [ ] 01-03-PLAN.md - Excel parser with text normalization and validation
+- [ ] 01-04-PLAN.md - Bulk import with batched transactions
+- [ ] 01-05-PLAN.md - GIN indexes for full-text search and verification
 
 ### Phase 2: Admin Curation
 **Goal**: Enable admins to manually create, edit, delete, and quality-control descriptors in the library
@@ -106,7 +109,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Import & Foundation | 0/TBD | Not started | - |
+| 1. Data Import & Foundation | 0/5 | Ready | - |
 | 2. Admin Curation | 0/TBD | Not started | - |
 | 3. Search & Discovery | 0/TBD | Not started | - |
 | 4. Library UI | 0/TBD | Not started | - |
@@ -114,4 +117,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 ---
 *Roadmap created: 2026-02-01*
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-01 after Phase 1 planning*
