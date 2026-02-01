@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "ResourceCategory" ADD VALUE IF NOT EXISTS 'EXTERNAL';

@@ -39,6 +39,10 @@ const CATEGORY_CONFIG: Record<
     title: "Policies",
     description: "Official policies and procedures",
   },
+  [ResourceCategory.EXTERNAL]: {
+    title: "External Links",
+    description: "Useful external websites and tools for Skill Advisors",
+  },
 };
 
 const CATEGORY_ORDER: ResourceCategory[] = [
@@ -57,6 +61,8 @@ export default async function KnowledgeBasePage() {
   }
 
   const resources = await getAllResources();
+
+  const externalLinks = resources.filter((r) => r.category === ResourceCategory.EXTERNAL);
 
   const resourcesByCategory = CATEGORY_ORDER.map((category) => ({
     category,
@@ -87,7 +93,7 @@ export default async function KnowledgeBasePage() {
 
       <KBSearch resources={resources} />
 
-      {(user.role === Role.SA || user.isAdmin) && (
+      {(user.role === Role.SA || user.isAdmin) && externalLinks.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -100,24 +106,28 @@ export default async function KnowledgeBasePage() {
           </CardHeader>
           <CardContent>
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <li>
-                <a
-                  href="https://worldskillscis.show/sa_test"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-muted"
-                >
-                  <ExternalLink className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium leading-tight">
-                      CIS (Competition Information System)
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                      Test and play with the marking schemes
-                    </p>
-                  </div>
-                </a>
-              </li>
+              {externalLinks.map((resource) => (
+                <li key={resource.id}>
+                  <a
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-muted"
+                  >
+                    <ExternalLink className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium leading-tight">
+                        {resource.title}
+                      </p>
+                      {resource.description && (
+                        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                          {resource.description}
+                        </p>
+                      )}
+                    </div>
+                  </a>
+                </li>
+              ))}
             </ul>
           </CardContent>
         </Card>
