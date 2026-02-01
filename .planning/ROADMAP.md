@@ -52,7 +52,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md - Database schema extensions (QualityIndicator enum, soft delete, pg_trgm)
+- [x] 02-01-PLAN.md - Database schema extensions (QualityIndicator enum, soft delete, pg_trgm)
 - [ ] 02-02-PLAN.md - Server Actions and query functions (CRUD, duplicate detection)
 - [ ] 02-03-PLAN.md - Admin UI (list, create, edit pages, delete confirmation)
 
@@ -110,12 +110,12 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Import & Foundation | 0/5 | Ready | - |
-| 2. Admin Curation | 0/3 | Ready | - |
+| 1. Data Import & Foundation | 5/5 | Complete | 2026-02-01 |
+| 2. Admin Curation | 1/3 | In progress | - |
 | 3. Search & Discovery | 0/TBD | Not started | - |
 | 4. Library UI | 0/TBD | Not started | - |
 | 5. Access Control & Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-01*
-*Last updated: 2026-02-02 after Phase 2 planning*
+*Last updated: 2026-02-01 after completing 02-01-PLAN.md*
