@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-01)
 ## Current Position
 
 Phase: 2 of 4 (Permission & Business Logic Layer)
-Plan: 1 of TBD in current phase
+Plan: 2 of TBD in current phase
 Status: In progress
-Last activity: 2026-02-01 — Completed 02-01-PLAN.md (Authorization Foundation)
+Last activity: 2026-02-01 — Completed 02-02-PLAN.md (Management Meeting Actions & Queries)
 
-Progress: [███░░░░░░░] 30%
+Progress: [████░░░░░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 8 min
-- Total execution time: 0.38 hours
+- Total plans completed: 4
+- Average duration: 7 min
+- Total execution time: 0.47 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Database Foundation | 2/2 | 19min | 10min |
-| 2. Permission & Business Logic | 1/TBD | 4min | 4min |
+| 2. Permission & Business Logic | 2/TBD | 9min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (15min), 01-02 (4min), 02-01 (4min)
-- Trend: Accelerating (improving familiarity with codebase)
+- Last 5 plans: 01-01 (15min), 01-02 (4min), 02-01 (4min), 02-02 (5min)
+- Trend: Stable at ~4-5 min per plan (highly focused scope)
 
 *Updated after each plan completion*
 
@@ -56,6 +56,10 @@ Recent decisions affecting current work:
 | Secretariat can view management meetings only if attendee | 02-01 | Principle of least privilege vs SA who can view all |
 | Lightweight permission interfaces without Prisma imports | 02-01 | Tree-shakeable, testable permission functions |
 | Meeting type determined by explicit flag or skillName presence | 02-01 | Backward compatible email template with explicit override option |
+| All server actions validate meeting.skillId === null | 02-02 | Prevents cross-contamination between management and skill meetings |
+| Email invitations to all SAs plus selected Secretariat | 02-02 | SAs always notified, Secretariat opt-in via attendee selection |
+| SA role sees all management meetings automatically | 02-02 | No MeetingAttendee record needed for SA visibility |
+| Secretariat sees only management meetings they're invited to | 02-02 | Principle of least privilege for non-SA roles |
 
 ### Pending Todos
 
@@ -69,10 +73,10 @@ None - Phase 2 in progress.
 
 ## Session Continuity
 
-Last session: 2026-02-01T03:13:38Z
-Stopped at: Completed 02-01-PLAN.md (Authorization foundation for management meetings)
+Last session: 2026-02-01T03:21:30Z
+Stopped at: Completed 02-02-PLAN.md (Management meeting actions and queries)
 Resume file: None
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-01 after completing 02-01-PLAN.md*
+*Last updated: 2026-02-01 after completing 02-02-PLAN.md*
