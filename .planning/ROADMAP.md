@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Admin Curation** - Enable admin CRUD for descriptor library management
 - [x] **Phase 3: Search & Discovery** - Implement full-text search with relevance tuning
 - [x] **Phase 4: Library UI** - Build search interface with preview and clipboard integration
-- [ ] **Phase 5: Access Control & Polish** - Integrate permissions and finalize library
+- [x] **Phase 5: Access Control & Polish** - Integrate permissions and finalize library
 
 ## Phase Details
 
@@ -105,7 +105,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 05-01: TBD
+- [x] 05-01-PLAN.md - Move library to authenticated routes and add navigation
 
 ## Progress
 
@@ -118,7 +118,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Admin Curation | 3/3 | Complete | 2026-02-02 |
 | 3. Search & Discovery | 5/5 | Complete | 2026-02-02 |
 | 4. Library UI | 3/3 | Complete | 2026-02-02 |
-| 5. Access Control & Polish | 0/TBD | Not started | - |
+| 5. Access Control & Polish | 1/1 | Complete | 2026-02-02 |
 
 ---
 *Roadmap created: 2026-02-01*
