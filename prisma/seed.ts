@@ -7,6 +7,7 @@ import { DEFAULT_DELIVERABLE_TEMPLATES, buildCMonthLabel, computeDueDate } from 
 const prisma = new PrismaClient();
 const defaultHostEmail = "luke.boustridge@gmail.com";
 const defaultHostName = "Luke Boustridge";
+const defaultSAPassword = "Tomatoes"; // Default password for all Skill Advisors
 
 // Real Skill Advisors from WSC2026 Competition Preparation Summary
 const SKILL_ADVISORS = [
@@ -81,6 +82,9 @@ async function main() {
   const hostPassword = process.env.HOST_INITIAL_PASSWORD ?? "ChangeMe123!";
   const hostPasswordHash = await bcrypt.hash(hostPassword, 12);
 
+  // Hash default SA password
+  const saPasswordHash = await bcrypt.hash(defaultSAPassword, 12);
+
   let hostUser = await prisma.user.findUnique({
     where: { email: normalizedHostEmail }
   });
@@ -125,12 +129,14 @@ async function main() {
 
     const existingAdvisor = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existingAdvisor) {
-      if (existingAdvisor.name !== advisor.name || existingAdvisor.role !== Role.SA) {
+      const needsPassword = !existingAdvisor.passwordHash;
+      if (existingAdvisor.name !== advisor.name || existingAdvisor.role !== Role.SA || needsPassword) {
         await prisma.user.update({
           where: { id: existingAdvisor.id },
           data: {
             name: advisor.name,
-            role: Role.SA
+            role: Role.SA,
+            ...(needsPassword ? { passwordHash: saPasswordHash } : {})
           }
         });
       }
@@ -140,7 +146,8 @@ async function main() {
         data: {
           email: normalizedEmail,
           name: advisor.name,
-          role: Role.SA
+          role: Role.SA,
+          passwordHash: saPasswordHash
         }
       });
       advisorMap.set(newAdvisor.id, { id: newAdvisor.id, skillNumbers: advisor.skillNumbers });
@@ -273,7 +280,7 @@ async function main() {
   }
 
   console.log(
-    `Seed data created. Host admin login: ${hostEmailEnv} (password: ${hostPassword}). Seeded ${skillSeeds.length} skills for WSC 2026 with ${SKILL_ADVISORS.length} Skill Advisors.`
+    `Seed data created. Host admin login: ${hostEmailEnv} (password: ${hostPassword}). Seeded ${skillSeeds.length} skills for WSC 2026 with ${SKILL_ADVISORS.length} Skill Advisors (password: ${defaultSAPassword}).`
   );
 }
 
