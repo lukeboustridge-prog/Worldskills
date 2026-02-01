@@ -16,26 +16,26 @@
 - [ ] **IMPORT-05**: Capture source skill metadata for each descriptor (skill name, sector, WSC2024 attribution)
 - [ ] **IMPORT-06**: Validate data quality during import (detect encoding issues, flag extraction artifacts, log failures)
 - [ ] **IMPORT-07**: Bulk import with transaction safety (all-or-nothing, rollback on failure)
-- [ ] **IMPORT-08**: Manual curation interface for admins to review, edit, and approve imported descriptors
+- [x] **IMPORT-08**: Manual curation interface for admins to review, edit, and approve imported descriptors
 
 ### Descriptor Management (Admin CRUD)
 
-- [ ] **MANAGE-01**: Admin can manually add new descriptor (not just from import - for creating custom descriptors)
-- [ ] **MANAGE-02**: Admin can edit existing descriptor (text content, performance levels, tags, quality indicator, source attribution)
-- [ ] **MANAGE-03**: Admin can delete descriptor from library (with confirmation prompt)
-- [ ] **MANAGE-04**: Soft delete support (mark as deleted, preserve for audit trail, option to restore)
-- [ ] **MANAGE-05**: Descriptor edit form with all fields (criterion name, performance levels, skill area, criterion type, tags, quality indicator)
-- [ ] **MANAGE-06**: Validation for required fields (criterion name, at least one performance level, source skill)
-- [ ] **MANAGE-07**: Duplicate detection when creating descriptors (warn if similar descriptor exists)
+- [x] **MANAGE-01**: Admin can manually add new descriptor (not just from import - for creating custom descriptors)
+- [x] **MANAGE-02**: Admin can edit existing descriptor (text content, performance levels, tags, quality indicator, source attribution)
+- [x] **MANAGE-03**: Admin can delete descriptor from library (with confirmation prompt)
+- [x] **MANAGE-04**: Soft delete support (mark as deleted, preserve for audit trail, option to restore)
+- [x] **MANAGE-05**: Descriptor edit form with all fields (criterion name, performance levels, skill area, criterion type, tags, quality indicator)
+- [x] **MANAGE-06**: Validation for required fields (criterion name, at least one performance level, source skill)
+- [x] **MANAGE-07**: Duplicate detection when creating descriptors (warn if similar descriptor exists)
 
 ### Descriptor Library Structure
 
 - [ ] **LIBRARY-01**: Store descriptors with performance level grouping (complete criteria, not isolated levels)
-- [ ] **LIBRARY-02**: Support tag-based categorization with flexible multi-dimensional tags (e.g., "teamwork", "safety", "precision")
-- [ ] **LIBRARY-03**: Store quality indicators to mark descriptors as "excellent example" vs "reference only"
+- [x] **LIBRARY-02**: Support tag-based categorization with flexible multi-dimensional tags (e.g., "teamwork", "safety", "precision")
+- [x] **LIBRARY-03**: Store quality indicators to mark descriptors as "excellent example" vs "reference only"
 - [ ] **LIBRARY-04**: Schema versioning for descriptors (version field, backward-compatible migrations, rollback support)
 - [ ] **LIBRARY-05**: Database indexes for performance (GIN indexes for full-text search and JSONB tag arrays)
-- [ ] **LIBRARY-06**: Data-driven category/tag taxonomy (emerge from imported corpus, minimum 5+ descriptors per category)
+- [x] **LIBRARY-06**: Data-driven category/tag taxonomy (emerge from imported corpus, minimum 5+ descriptors per category)
 
 ### Search & Discovery
 
@@ -104,20 +104,20 @@ Features explicitly excluded from v1.0 milestone:
 | IMPORT-05 | Phase 1 | Pending |
 | IMPORT-06 | Phase 1 | Pending |
 | IMPORT-07 | Phase 1 | Pending |
-| IMPORT-08 | Phase 2 | Pending |
-| MANAGE-01 | Phase 2 | Pending |
-| MANAGE-02 | Phase 2 | Pending |
-| MANAGE-03 | Phase 2 | Pending |
-| MANAGE-04 | Phase 2 | Pending |
-| MANAGE-05 | Phase 2 | Pending |
-| MANAGE-06 | Phase 2 | Pending |
-| MANAGE-07 | Phase 2 | Pending |
+| IMPORT-08 | Phase 2 | Complete |
+| MANAGE-01 | Phase 2 | Complete |
+| MANAGE-02 | Phase 2 | Complete |
+| MANAGE-03 | Phase 2 | Complete |
+| MANAGE-04 | Phase 2 | Complete |
+| MANAGE-05 | Phase 2 | Complete |
+| MANAGE-06 | Phase 2 | Complete |
+| MANAGE-07 | Phase 2 | Complete |
 | LIBRARY-01 | Phase 1 | Pending |
-| LIBRARY-02 | Phase 2 | Pending |
-| LIBRARY-03 | Phase 2 | Pending |
+| LIBRARY-02 | Phase 2 | Complete |
+| LIBRARY-03 | Phase 2 | Complete |
 | LIBRARY-04 | Phase 1 | Pending |
 | LIBRARY-05 | Phase 1 | Pending |
-| LIBRARY-06 | Phase 2 | Pending |
+| LIBRARY-06 | Phase 2 | Complete |
 | SEARCH-01 | Phase 3 | Pending |
 | SEARCH-02 | Phase 3 | Pending |
 | SEARCH-03 | Phase 3 | Pending |
