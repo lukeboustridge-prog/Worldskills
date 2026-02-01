@@ -13,7 +13,7 @@ The management meetings feature extends the existing skill meeting system to sup
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Database Foundation & Type System** - Schema changes for optional skill association and attendee tracking
-- [ ] **Phase 2: Permission & Business Logic Layer** - Authorization, email generation, and visibility rules for both meeting types
+- [x] **Phase 2: Permission & Business Logic Layer** - Authorization, email generation, and visibility rules for both meeting types
 - [ ] **Phase 3: UI Integration & Components** - Meeting creation, display, and filtering with visual distinction
 - [ ] **Phase 4: Deployment & Validation** - Production deployment with data migration validation and rollback capability
 
@@ -47,8 +47,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Authorization foundation (permission helpers, email template, activity logging)
-- [ ] 02-02-PLAN.md — Management meeting server actions and visibility queries
+- [x] 02-01-PLAN.md — Authorization foundation (permission helpers, email template, activity logging)
+- [x] 02-02-PLAN.md — Management meeting server actions and visibility queries
 
 ### Phase 3: UI Integration & Components
 **Goal**: Users can create, view, filter, and distinguish between skill and management meetings in unified interface
@@ -87,10 +87,10 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Database Foundation & Type System | 2/2 | ✓ Complete | 2026-02-01 |
-| 2. Permission & Business Logic Layer | 0/2 | Planned | - |
+| 2. Permission & Business Logic Layer | 2/2 | ✓ Complete | 2026-02-01 |
 | 3. UI Integration & Components | 0/TBD | Not started | - |
 | 4. Deployment & Validation | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-01*
-*Last updated: 2026-02-01 after Phase 2 planning*
+*Last updated: 2026-02-01 after Phase 2 execution*
