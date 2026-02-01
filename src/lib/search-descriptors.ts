@@ -74,7 +74,7 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
     }
 
     if (qualityIndicator) {
-      additionalWhere = Prisma.sql`${additionalWhere} AND "qualityIndicator" = ${qualityIndicator}`;
+      additionalWhere = Prisma.sql`${additionalWhere} AND "qualityIndicator" = ${qualityIndicator}::"QualityIndicator"`;
     }
 
     // Execute results and count queries in parallel
@@ -157,7 +157,7 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
     }
 
     if (qualityIndicator) {
-      additionalWhere = Prisma.sql`${additionalWhere} AND "qualityIndicator" = ${qualityIndicator}`;
+      additionalWhere = Prisma.sql`${additionalWhere} AND "qualityIndicator" = ${qualityIndicator}::"QualityIndicator"`;
     }
 
     // Execute results and count queries in parallel
