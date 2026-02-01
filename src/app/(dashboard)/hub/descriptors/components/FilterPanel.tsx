@@ -128,6 +128,7 @@ function FilterSection({
             size="sm"
             className="w-full justify-between text-left h-auto py-2 px-3"
             onClick={() => onSelect(name)}
+            title={name}
           >
             <span className="truncate text-sm">{name}</span>
             <Badge variant="outline" className="ml-2 shrink-0">

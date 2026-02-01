@@ -23,6 +23,7 @@ export interface SearchResult {
   category: string | null;
   tags: string[];
   qualityIndicator: QualityIndicator;
+  source: string | null;
   rank: number | null;
 }
 
@@ -92,6 +93,7 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
           category,
           tags,
           "qualityIndicator",
+          source,
           ts_rank_cd(
             setweight(to_tsvector('english', coalesce("criterionName", '')), 'A') ||
             setweight(to_tsvector('english', coalesce(score3, '')), 'B') ||
@@ -174,6 +176,7 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
           category,
           tags,
           "qualityIndicator",
+          source,
           NULL as rank
         FROM "Descriptor"
         WHERE "deletedAt" IS NULL

@@ -13,6 +13,13 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import type { SearchResult } from "@/lib/search-descriptors";
 
+const QUALITY_LABELS: Record<string, string> = {
+  EXCELLENT: "Excellent",
+  GOOD: "Good",
+  REFERENCE: "Reference",
+  NEEDS_REVIEW: "Needs Review",
+};
+
 interface DescriptorModalProps {
   descriptor: SearchResult | null;
   open: boolean;
@@ -78,7 +85,12 @@ export function DescriptorModal({ descriptor, open, onOpenChange }: DescriptorMo
           <div className="flex flex-col gap-2">
             <DialogTitle className="text-xl pr-8">{descriptor.criterionName}</DialogTitle>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              {descriptor.source && (
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  {descriptor.source}
+                </Badge>
+              )}
+              <Badge variant="outline">
                 {descriptor.skillName}
               </Badge>
               {descriptor.category && (
@@ -87,7 +99,7 @@ export function DescriptorModal({ descriptor, open, onOpenChange }: DescriptorMo
               <Badge
                 variant={descriptor.qualityIndicator === "EXCELLENT" ? "default" : "outline"}
               >
-                {descriptor.qualityIndicator}
+                {QUALITY_LABELS[descriptor.qualityIndicator] || descriptor.qualityIndicator}
               </Badge>
             </div>
           </div>
@@ -153,7 +165,7 @@ export function DescriptorModal({ descriptor, open, onOpenChange }: DescriptorMo
           )}
 
           <div className="text-xs text-muted-foreground pt-2 border-t">
-            Code: {descriptor.code} | Sector: {descriptor.sector || "N/A"}
+            Code: {descriptor.code} | Sector: {descriptor.sector || "N/A"} | Source: {descriptor.source || "N/A"}
           </div>
         </div>
       </DialogContent>

@@ -14,6 +14,13 @@ import type { SearchResult } from "@/lib/search-descriptors";
 
 const MAX_COMPARE = 3;
 
+const QUALITY_LABELS: Record<string, string> = {
+  EXCELLENT: "Excellent",
+  GOOD: "Good",
+  REFERENCE: "Reference",
+  NEEDS_REVIEW: "Needs Review",
+};
+
 export function DescriptorList({ results }: { results: SearchResult[] }) {
   const { toast } = useToast();
   const [selectedDescriptor, setSelectedDescriptor] = useState<SearchResult | null>(null);
@@ -173,18 +180,20 @@ function DescriptorCard({
               className="data-[state=checked]:bg-primary"
             />
           </div>
-          <div className="flex-1">
-            <div className="flex items-start justify-between">
-              <div className="group flex items-start gap-2">
-                <div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-4">
+              <div className="group flex items-start gap-2 min-w-0 flex-1">
+                <div className="min-w-0 flex-1">
                   <CardTitle className="text-lg">{descriptor.criterionName}</CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge
-                      variant="outline"
-                      className="bg-blue-50 text-blue-700 border-blue-200 text-xs"
-                    >
-                      WSC2024
-                    </Badge>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    {descriptor.source && (
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-50 text-blue-700 border-blue-200 text-xs"
+                      >
+                        {descriptor.source}
+                      </Badge>
+                    )}
                     <span className="text-sm text-muted-foreground">
                       {descriptor.skillName} - {descriptor.code}
                     </span>
@@ -196,16 +205,17 @@ function DescriptorCard({
                   label="Criterion name"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap justify-end shrink-0">
                 {descriptor.category && (
-                  <Badge variant="outline">{descriptor.category}</Badge>
+                  <Badge variant="outline" className="whitespace-nowrap">{descriptor.category}</Badge>
                 )}
                 <Badge
                   variant={
                     descriptor.qualityIndicator === "EXCELLENT" ? "default" : "outline"
                   }
+                  className="whitespace-nowrap"
                 >
-                  {descriptor.qualityIndicator}
+                  {QUALITY_LABELS[descriptor.qualityIndicator] || descriptor.qualityIndicator}
                 </Badge>
               </div>
             </div>
