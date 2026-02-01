@@ -8,6 +8,7 @@ import {
   Book,
   Calendar,
   Sparkles,
+  Library,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,7 @@ const navItems = [
   { href: "/hub", label: "Skills Hub", icon: Home },
   { href: "/hub/qc", label: "Skills Matrix", icon: CheckCircle },
   { href: "/hub/kb", label: "Knowledge Base", icon: Book },
+  { href: "/hub/descriptors", label: "Descriptor Library", icon: Library },
   { href: "/hub/meetings", label: "Meetings", icon: Calendar },
   { href: "/hub/onboarding", label: "Getting Started", icon: Sparkles, highlighted: true },
 ];
