@@ -25,6 +25,8 @@ const QUALITY_LABELS: Record<string, string> = {
   NEEDS_REVIEW: "Needs Review",
 };
 
+const ALL_VALUE = "__all__";
+
 export function FilterPanel({ facets }: { facets: Facets }) {
   const [skill, setSkill] = useQueryState("skill", { shallow: false });
   const [category, setCategory] = useQueryState("category", { shallow: false });
@@ -38,19 +40,31 @@ export function FilterPanel({ facets }: { facets: Facets }) {
     setQuality(null);
   };
 
+  const handleSkillChange = (value: string) => {
+    setSkill(value === ALL_VALUE ? null : value);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setCategory(value === ALL_VALUE ? null : value);
+  };
+
+  const handleQualityChange = (value: string) => {
+    setQuality(value === ALL_VALUE ? null : value);
+  };
+
   return (
     <div className="space-y-3">
       {/* Filter dropdowns row */}
       <div className="flex flex-wrap gap-2">
         <Select
-          value={skill || ""}
-          onValueChange={(value) => setSkill(value || null)}
+          value={skill || ALL_VALUE}
+          onValueChange={handleSkillChange}
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Skills" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Skills</SelectItem>
+            <SelectItem value={ALL_VALUE}>All Skills</SelectItem>
             {facets.skillAreas.map(({ name, count }) => (
               <SelectItem key={name} value={name}>
                 {name} ({count})
@@ -60,14 +74,14 @@ export function FilterPanel({ facets }: { facets: Facets }) {
         </Select>
 
         <Select
-          value={category || ""}
-          onValueChange={(value) => setCategory(value || null)}
+          value={category || ALL_VALUE}
+          onValueChange={handleCategoryChange}
         >
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value={ALL_VALUE}>All Categories</SelectItem>
             {facets.categories.map(({ name, count }) => (
               <SelectItem key={name} value={name}>
                 {name} ({count})
@@ -77,14 +91,14 @@ export function FilterPanel({ facets }: { facets: Facets }) {
         </Select>
 
         <Select
-          value={quality || ""}
-          onValueChange={(value) => setQuality(value || null)}
+          value={quality || ALL_VALUE}
+          onValueChange={handleQualityChange}
         >
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="All Quality" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Quality</SelectItem>
+            <SelectItem value={ALL_VALUE}>All Quality</SelectItem>
             {facets.qualities.map(({ name, count }) => (
               <SelectItem key={name} value={name}>
                 {QUALITY_LABELS[name] || name} ({count})
