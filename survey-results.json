@@ -1,0 +1,6680 @@
+{
+  "surveyDate": "2026-02-01T08:26:29.504Z",
+  "sourceDirectory": "C:\\Users\\LukeBoustridge\\Projects\\Workinprogress\\Marking Schemes",
+  "totalFiles": 58,
+  "filesWithErrors": 0,
+  "filesWithMergedCells": 58,
+  "uniqueColumnNames": [
+    "01 industrial mechanics",
+    "02 information network cabling",
+    "03 manufacturing team challenge",
+    "04 mechatronics",
+    "05 mechanical engineering cad",
+    "06 cnc turning",
+    "07 cnc milling",
+    "08 mobile applications development",
+    "09 it software solutions for business",
+    "10 welding - wsc2024",
+    "12 wall and floor tiling",
+    "14 aircraft maintenance",
+    "15 plumbing and heating",
+    "16 electronics",
+    "17 web technologies",
+    "19 industrial control",
+    "20 bricklaying",
+    "21 plastering and drywall systems",
+    "22 painting and decorating",
+    "23 autonomous mobile robotics",
+    "24 cabinetmaking",
+    "25 joinery",
+    "26 carpentry",
+    "27 jewellery",
+    "28 floristry",
+    "29 hairdressing",
+    "30 beauty therapy",
+    "31 fashion technology",
+    "32 pâtisserie and confectionery",
+    "33 automobile technology",
+    "34 cooking",
+    "35 restaurant service",
+    "36 car painting",
+    "37 landscape gardening",
+    "38 refrigeration and air conditioning",
+    "39 it network systems administration",
+    "40 mediendesigner",
+    "41 health and social care",
+    "42test construction steel work - calculations test",
+    "46 concrete construction work",
+    "47 bakery",
+    "48 industry 4.0",
+    "49 heavy vehicle technology",
+    "50 3d digital game art",
+    "51 logistics and freight forwarding",
+    "52 chemical laboratory technology",
+    "53 cloud computing",
+    "54 cyber security",
+    "55 water technology",
+    "56 hotel reception",
+    "57 additive manufacturing",
+    "58 digital construction",
+    "59 industrial design technology",
+    "60 optoelectronic technology",
+    "62 renewable energy",
+    "63 robot systems integration",
+    "ll44 visual merchandising - preparation",
+    "sc18 electrical installations - calculations"
+  ],
+  "files": [
+    {
+      "fileName": "01_Industrial_Mechanics_marking_scheme (f).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 350,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "01 Industrial Mechanics",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "01 Industrial Mechanics",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management "
+          ]
+        },
+        {
+          "name": "01 Industrial Mechanics",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management "
+          ]
+        },
+        {
+          "name": "01 Industrial Mechanics",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management "
+          ]
+        },
+        {
+          "name": "01 Industrial Mechanics",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management "
+          ]
+        },
+        {
+          "name": "01 Industrial Mechanics",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management "
+          ]
+        },
+        {
+          "name": "01 Industrial Mechanics",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management "
+          ]
+        },
+        {
+          "name": "01 Industrial Mechanics",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management "
+          ]
+        },
+        {
+          "name": "01 Industrial Mechanics",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "01 Industrial Mechanics",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "4.300000000000001"
+          ]
+        },
+        {
+          "name": "01 Industrial Mechanics",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.6999999999999993"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "02_Information_Network_Cabling_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 440,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 24,
+      "columns": [
+        {
+          "name": "02 Information Network Cabling",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "02 Information Network Cabling",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "02 Information Network Cabling",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "02 Information Network Cabling",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "02 Information Network Cabling",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "02 Information Network Cabling",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "02 Information Network Cabling",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "02 Information Network Cabling",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "02 Information Network Cabling",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "02 Information Network Cabling",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "02 Information Network Cabling",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "03_Manufacturing_Team_Challenge_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 250,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "03 Manufacturing Team Challenge",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "03 Manufacturing Team Challenge",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "03 Manufacturing Team Challenge",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "03 Manufacturing Team Challenge",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "03 Manufacturing Team Challenge",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "03 Manufacturing Team Challenge",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "03 Manufacturing Team Challenge",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "03 Manufacturing Team Challenge",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "03 Manufacturing Team Challenge",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "03 Manufacturing Team Challenge",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "03 Manufacturing Team Challenge",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "04_Mechatronics_marking_scheme_20240808.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 518,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "04 Mechatronics",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "04 Mechatronics",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "04 Mechatronics",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "04 Mechatronics",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "04 Mechatronics",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "04 Mechatronics",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "04 Mechatronics",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "04 Mechatronics",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "04 Mechatronics",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "04 Mechatronics",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "9.750000000000002"
+          ]
+        },
+        {
+          "name": "04 Mechatronics",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.24999999999999822"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "05_Mechanical_Engineering_CAD_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 347,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 21,
+      "columns": [
+        {
+          "name": "05 Mechanical Engineering CAD",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "05 Mechanical Engineering CAD",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            " Work organization and management"
+          ]
+        },
+        {
+          "name": "05 Mechanical Engineering CAD",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            " Work organization and management"
+          ]
+        },
+        {
+          "name": "05 Mechanical Engineering CAD",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            " Work organization and management"
+          ]
+        },
+        {
+          "name": "05 Mechanical Engineering CAD",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            " Work organization and management"
+          ]
+        },
+        {
+          "name": "05 Mechanical Engineering CAD",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            " Work organization and management"
+          ]
+        },
+        {
+          "name": "05 Mechanical Engineering CAD",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            " Work organization and management"
+          ]
+        },
+        {
+          "name": "05 Mechanical Engineering CAD",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            " Work organization and management"
+          ]
+        },
+        {
+          "name": "05 Mechanical Engineering CAD",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "05 Mechanical Engineering CAD",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "05 Mechanical Engineering CAD",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "06_CNC_Turning_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 285,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "06 CNC Turning",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "06 CNC Turning",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "06 CNC Turning",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "06 CNC Turning",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "06 CNC Turning",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "06 CNC Turning",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "06 CNC Turning",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "06 CNC Turning",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "06 CNC Turning",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "06 CNC Turning",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "5.05"
+          ]
+        },
+        {
+          "name": "06 CNC Turning",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.0500000000000007"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "07_CNC_Milling_marking_scheme (2).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 340,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "07 CNC Milling",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "07 CNC Milling",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "07 CNC Milling",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "07 CNC Milling",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "07 CNC Milling",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "07 CNC Milling",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "07 CNC Milling",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "07 CNC Milling",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "07 CNC Milling",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "07 CNC Milling",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "10.599999999999998"
+          ]
+        },
+        {
+          "name": "07 CNC Milling",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.5999999999999979"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "08_Mobile_Applications_Development_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 246,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "08 Mobile Applications Development",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "08 Mobile Applications Development",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management  "
+          ]
+        },
+        {
+          "name": "08 Mobile Applications Development",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management  "
+          ]
+        },
+        {
+          "name": "08 Mobile Applications Development",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management  "
+          ]
+        },
+        {
+          "name": "08 Mobile Applications Development",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management  "
+          ]
+        },
+        {
+          "name": "08 Mobile Applications Development",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management  "
+          ]
+        },
+        {
+          "name": "08 Mobile Applications Development",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management  "
+          ]
+        },
+        {
+          "name": "08 Mobile Applications Development",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management  "
+          ]
+        },
+        {
+          "name": "08 Mobile Applications Development",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "8"
+          ]
+        },
+        {
+          "name": "08 Mobile Applications Development",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "08 Mobile Applications Development",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "09_IT_Software_Solutions_for_Business_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 582,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 21,
+      "columns": [
+        {
+          "name": "09 IT Software Solutions for Business",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "09 IT Software Solutions for Business",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Development of software solutions"
+          ]
+        },
+        {
+          "name": "09 IT Software Solutions for Business",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Development of software solutions"
+          ]
+        },
+        {
+          "name": "09 IT Software Solutions for Business",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Development of software solutions"
+          ]
+        },
+        {
+          "name": "09 IT Software Solutions for Business",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Development of software solutions"
+          ]
+        },
+        {
+          "name": "09 IT Software Solutions for Business",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Development of software solutions"
+          ]
+        },
+        {
+          "name": "09 IT Software Solutions for Business",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Development of software solutions"
+          ]
+        },
+        {
+          "name": "09 IT Software Solutions for Business",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Development of software solutions"
+          ]
+        },
+        {
+          "name": "09 IT Software Solutions for Business",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "40"
+          ]
+        },
+        {
+          "name": "09 IT Software Solutions for Business",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "09 IT Software Solutions for Business",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "10_Welding_WSC2024_marking_scheme - PC 16072024.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 240,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "10 Welding - WSC2024 ",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "10 Welding - WSC2024 ",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "10 Welding - WSC2024 ",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "10 Welding - WSC2024 ",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "10 Welding - WSC2024 ",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "10 Welding - WSC2024 ",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "10 Welding - WSC2024 ",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "10 Welding - WSC2024 ",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "10 Welding - WSC2024 ",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "10 Welding - WSC2024 ",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "9.9"
+          ]
+        },
+        {
+          "name": "10 Welding - WSC2024 ",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.0999999999999979"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "12_Wall_and_Floor_Tiling_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 289,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "12 Wall and Floor Tiling",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "12 Wall and Floor Tiling",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management    Timetable Deli"
+          ]
+        },
+        {
+          "name": "12 Wall and Floor Tiling",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management    Timetable Deli"
+          ]
+        },
+        {
+          "name": "12 Wall and Floor Tiling",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management    Timetable Deli"
+          ]
+        },
+        {
+          "name": "12 Wall and Floor Tiling",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management    Timetable Deli"
+          ]
+        },
+        {
+          "name": "12 Wall and Floor Tiling",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management    Timetable Deli"
+          ]
+        },
+        {
+          "name": "12 Wall and Floor Tiling",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management    Timetable Deli"
+          ]
+        },
+        {
+          "name": "12 Wall and Floor Tiling",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management    Timetable Deli"
+          ]
+        },
+        {
+          "name": "12 Wall and Floor Tiling",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "12 Wall and Floor Tiling",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "4.38"
+          ]
+        },
+        {
+          "name": "12 Wall and Floor Tiling",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.6200000000000001"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "14_Aircraft_Maintenance_marking_scheme (10).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 315,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 24,
+      "columns": [
+        {
+          "name": "14 Aircraft Maintenance",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "14 Aircraft Maintenance",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "14 Aircraft Maintenance",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "14 Aircraft Maintenance",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "14 Aircraft Maintenance",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "14 Aircraft Maintenance",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "14 Aircraft Maintenance",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "14 Aircraft Maintenance",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "14 Aircraft Maintenance",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "14 Aircraft Maintenance",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "4.549999999999999"
+          ]
+        },
+        {
+          "name": "14 Aircraft Maintenance",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.45000000000000107"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "15_Plumbing_and_Heating_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 292,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 21,
+      "columns": [
+        {
+          "name": "15 Plumbing and Heating",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "15 Plumbing and Heating",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organisation and management"
+          ]
+        },
+        {
+          "name": "15 Plumbing and Heating",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organisation and management"
+          ]
+        },
+        {
+          "name": "15 Plumbing and Heating",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organisation and management"
+          ]
+        },
+        {
+          "name": "15 Plumbing and Heating",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organisation and management"
+          ]
+        },
+        {
+          "name": "15 Plumbing and Heating",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organisation and management"
+          ]
+        },
+        {
+          "name": "15 Plumbing and Heating",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organisation and management"
+          ]
+        },
+        {
+          "name": "15 Plumbing and Heating",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organisation and management"
+          ]
+        },
+        {
+          "name": "15 Plumbing and Heating",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "15 Plumbing and Heating",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "10.8"
+          ]
+        },
+        {
+          "name": "15 Plumbing and Heating",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.8000000000000007"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "16_Electronics_marking_scheme (1).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 299,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 21,
+      "columns": [
+        {
+          "name": "16 Electronics",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "16 Electronics",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "16 Electronics",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "16 Electronics",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "16 Electronics",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "16 Electronics",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "16 Electronics",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "16 Electronics",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "16 Electronics",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "16 Electronics",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "8.149999999999999"
+          ]
+        },
+        {
+          "name": "16 Electronics",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "1.8500000000000014"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "17_Web_Technologies_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 331,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 20,
+      "columns": [
+        {
+          "name": "17 Web Technologies",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "17 Web Technologies",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "17 Web Technologies",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "17 Web Technologies",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "17 Web Technologies",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "17 Web Technologies",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "17 Web Technologies",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "17 Web Technologies",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "17 Web Technologies",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "17 Web Technologies",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "17 Web Technologies",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "18_Electrical_Installations_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 243,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "SC18 Electrical Installations - Calculations",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "SC18 Electrical Installations - Calculations",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "SC18 Electrical Installations - Calculations",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "SC18 Electrical Installations - Calculations",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "SC18 Electrical Installations - Calculations",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "SC18 Electrical Installations - Calculations",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "SC18 Electrical Installations - Calculations",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "SC18 Electrical Installations - Calculations",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "SC18 Electrical Installations - Calculations",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "SC18 Electrical Installations - Calculations",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "SC18 Electrical Installations - Calculations",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "1"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "19_Industrial_Control_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 341,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 21,
+      "columns": [
+        {
+          "name": "19 Industrial Control",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "19 Industrial Control",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "19 Industrial Control",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "19 Industrial Control",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "19 Industrial Control",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "19 Industrial Control",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "19 Industrial Control",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "19 Industrial Control",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "19 Industrial Control",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "19 Industrial Control",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "19 Industrial Control",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "20_Bricklaying_marking_scheme (2).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 319,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 20,
+      "columns": [
+        {
+          "name": "20 Bricklaying",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "20 Bricklaying",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "20 Bricklaying",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "20 Bricklaying",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "20 Bricklaying",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "20 Bricklaying",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "20 Bricklaying",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "20 Bricklaying",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "20 Bricklaying",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "15"
+          ]
+        },
+        {
+          "name": "20 Bricklaying",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "15"
+          ]
+        },
+        {
+          "name": "20 Bricklaying",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "21_Plastering_and_Drywall_Systems_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 336,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "21 Plastering and Drywall Systems",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "21 Plastering and Drywall Systems",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "21 Plastering and Drywall Systems",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "21 Plastering and Drywall Systems",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "21 Plastering and Drywall Systems",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "21 Plastering and Drywall Systems",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "21 Plastering and Drywall Systems",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "21 Plastering and Drywall Systems",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "21 Plastering and Drywall Systems",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "21 Plastering and Drywall Systems",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "21 Plastering and Drywall Systems",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "22_Painting_and_Decorating_marking_scheme-4.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 238,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 24,
+      "columns": [
+        {
+          "name": "22 Painting and Decorating",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "22 Painting and Decorating",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "22 Painting and Decorating",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "22 Painting and Decorating",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "22 Painting and Decorating",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "22 Painting and Decorating",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "22 Painting and Decorating",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "22 Painting and Decorating",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "22 Painting and Decorating",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "22 Painting and Decorating",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "4.5"
+          ]
+        },
+        {
+          "name": "22 Painting and Decorating",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.5"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "23_Autonomous_Mobile_Robotics_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 210,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 24,
+      "columns": [
+        {
+          "name": "23 Autonomous Mobile Robotics",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "23 Autonomous Mobile Robotics",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "23 Autonomous Mobile Robotics",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "23 Autonomous Mobile Robotics",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "23 Autonomous Mobile Robotics",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "23 Autonomous Mobile Robotics",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "23 Autonomous Mobile Robotics",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "23 Autonomous Mobile Robotics",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "23 Autonomous Mobile Robotics",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "23 Autonomous Mobile Robotics",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "23 Autonomous Mobile Robotics",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "24_Cabinetmaking_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 602,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "24 Cabinetmaking",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "24 Cabinetmaking",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "24 Cabinetmaking",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "24 Cabinetmaking",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "24 Cabinetmaking",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "24 Cabinetmaking",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "24 Cabinetmaking",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "24 Cabinetmaking",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "24 Cabinetmaking",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "24 Cabinetmaking",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "24 Cabinetmaking",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.25"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "25_Joinery_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 497,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 25,
+      "columns": [
+        {
+          "name": "25 Joinery",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "25 Joinery",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "25 Joinery",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "25 Joinery",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "25 Joinery",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "25 Joinery",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "25 Joinery",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "25 Joinery",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "25 Joinery",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "25 Joinery",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "25 Joinery",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "26_Carpentry_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 267,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "26 Carpentry",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "26 Carpentry",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safe work, organization and management"
+          ]
+        },
+        {
+          "name": "26 Carpentry",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safe work, organization and management"
+          ]
+        },
+        {
+          "name": "26 Carpentry",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safe work, organization and management"
+          ]
+        },
+        {
+          "name": "26 Carpentry",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safe work, organization and management"
+          ]
+        },
+        {
+          "name": "26 Carpentry",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safe work, organization and management"
+          ]
+        },
+        {
+          "name": "26 Carpentry",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safe work, organization and management"
+          ]
+        },
+        {
+          "name": "26 Carpentry",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safe work, organization and management"
+          ]
+        },
+        {
+          "name": "26 Carpentry",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "26 Carpentry",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "26 Carpentry",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.15000000000000036"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "27_Jewellery_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 579,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 21,
+      "columns": [
+        {
+          "name": "27 Jewellery",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "27 Jewellery",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "27 Jewellery",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "27 Jewellery",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "27 Jewellery",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "27 Jewellery",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "27 Jewellery",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "27 Jewellery",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "27 Jewellery",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "20"
+          ]
+        },
+        {
+          "name": "27 Jewellery",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "27 Jewellery",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "28_Floristry_marking_scheme (2) 0909.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 380,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 24,
+      "columns": [
+        {
+          "name": "28 Floristry",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "28 Floristry",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "28 Floristry",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "28 Floristry",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "28 Floristry",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "28 Floristry",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "28 Floristry",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "28 Floristry",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "28 Floristry",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "13"
+          ]
+        },
+        {
+          "name": "28 Floristry",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "14.65"
+          ]
+        },
+        {
+          "name": "28 Floristry",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "1.6500000000000004"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "29_Hairdressing_marking_scheme 18.8 with calc.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 358,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "29 Hairdressing",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "29 Hairdressing",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "29 Hairdressing",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "29 Hairdressing",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "29 Hairdressing",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "29 Hairdressing",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "29 Hairdressing",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "29 Hairdressing",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "29 Hairdressing",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "14"
+          ]
+        },
+        {
+          "name": "29 Hairdressing",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "29 Hairdressing",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "30_Beauty_Therapy_marking_scheme(1).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 337,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "30 Beauty Therapy",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "30 Beauty Therapy",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "30 Beauty Therapy",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "30 Beauty Therapy",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "30 Beauty Therapy",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "30 Beauty Therapy",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "30 Beauty Therapy",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "30 Beauty Therapy",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "30 Beauty Therapy",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "8"
+          ]
+        },
+        {
+          "name": "30 Beauty Therapy",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "30 Beauty Therapy",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "31_Fashion_Technology_marking_scheme (1).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 456,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "31 Fashion Technology",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "31 Fashion Technology",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "31 Fashion Technology",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "31 Fashion Technology",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "31 Fashion Technology",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "31 Fashion Technology",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "31 Fashion Technology",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "31 Fashion Technology",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "31 Fashion Technology",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "6"
+          ]
+        },
+        {
+          "name": "31 Fashion Technology",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "31 Fashion Technology",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "32_Pâtisserie_and_Confectionery_marking_scheme(1).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 474,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "32 Pâtisserie and Confectionery",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "32 Pâtisserie and Confectionery",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "32 Pâtisserie and Confectionery",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "32 Pâtisserie and Confectionery",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "32 Pâtisserie and Confectionery",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "32 Pâtisserie and Confectionery",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "32 Pâtisserie and Confectionery",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "32 Pâtisserie and Confectionery",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "32 Pâtisserie and Confectionery",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "12"
+          ]
+        },
+        {
+          "name": "32 Pâtisserie and Confectionery",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "32 Pâtisserie and Confectionery",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "33_Automobile_Technology_marking_scheme (10).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 350,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 20,
+      "columns": [
+        {
+          "name": "33 Automobile Technology",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "33 Automobile Technology",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization, management and safety"
+          ]
+        },
+        {
+          "name": "33 Automobile Technology",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization, management and safety"
+          ]
+        },
+        {
+          "name": "33 Automobile Technology",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization, management and safety"
+          ]
+        },
+        {
+          "name": "33 Automobile Technology",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization, management and safety"
+          ]
+        },
+        {
+          "name": "33 Automobile Technology",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization, management and safety"
+          ]
+        },
+        {
+          "name": "33 Automobile Technology",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization, management and safety"
+          ]
+        },
+        {
+          "name": "33 Automobile Technology",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization, management and safety"
+          ]
+        },
+        {
+          "name": "33 Automobile Technology",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "33 Automobile Technology",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "5.25"
+          ]
+        },
+        {
+          "name": "33 Automobile Technology",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.25"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "34_Cooking_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 555,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "34 Cooking",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "34 Cooking",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "34 Cooking",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "34 Cooking",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "34 Cooking",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "34 Cooking",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "34 Cooking",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "34 Cooking",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "34 Cooking",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "34 Cooking",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "5.000000000000001"
+          ]
+        },
+        {
+          "name": "34 Cooking",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "8.881784197001252e-16"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "35_Restaurant_Service_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 476,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "35 Restaurant Service",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "35 Restaurant Service",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and (Self) -Management"
+          ]
+        },
+        {
+          "name": "35 Restaurant Service",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and (Self) -Management"
+          ]
+        },
+        {
+          "name": "35 Restaurant Service",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and (Self) -Management"
+          ]
+        },
+        {
+          "name": "35 Restaurant Service",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and (Self) -Management"
+          ]
+        },
+        {
+          "name": "35 Restaurant Service",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and (Self) -Management"
+          ]
+        },
+        {
+          "name": "35 Restaurant Service",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and (Self) -Management"
+          ]
+        },
+        {
+          "name": "35 Restaurant Service",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and (Self) -Management"
+          ]
+        },
+        {
+          "name": "35 Restaurant Service",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "35 Restaurant Service",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "35 Restaurant Service",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "36_Car_Painting_marking_scheme (15).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 303,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 24,
+      "columns": [
+        {
+          "name": "36 Car Painting",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "36 Car Painting",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "36 Car Painting",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "36 Car Painting",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "36 Car Painting",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "36 Car Painting",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "36 Car Painting",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "36 Car Painting",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "36 Car Painting",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "36 Car Painting",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "4.25"
+          ]
+        },
+        {
+          "name": "36 Car Painting",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.75"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "37_Landscape_Gardening_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 403,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 24,
+      "columns": [
+        {
+          "name": "37 Landscape Gardening",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "37 Landscape Gardening",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "37 Landscape Gardening",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "37 Landscape Gardening",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "37 Landscape Gardening",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "37 Landscape Gardening",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "37 Landscape Gardening",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "37 Landscape Gardening",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "37 Landscape Gardening",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "37 Landscape Gardening",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "10.700000000000001"
+          ]
+        },
+        {
+          "name": "37 Landscape Gardening",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.7000000000000011"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "38_Refrigeration_and_Air_Conditioning_marking_schemeV2.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 486,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 21,
+      "columns": [
+        {
+          "name": "38 Refrigeration and Air Conditioning",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "38 Refrigeration and Air Conditioning",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "38 Refrigeration and Air Conditioning",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "38 Refrigeration and Air Conditioning",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "38 Refrigeration and Air Conditioning",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "38 Refrigeration and Air Conditioning",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "38 Refrigeration and Air Conditioning",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "38 Refrigeration and Air Conditioning",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "38 Refrigeration and Air Conditioning",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "38 Refrigeration and Air Conditioning",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "10.1"
+          ]
+        },
+        {
+          "name": "38 Refrigeration and Air Conditioning",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.09999999999999964"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "39_IT_Network_Systems_Administration_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 385,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 21,
+      "columns": [
+        {
+          "name": "39 IT Network Systems Administration",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "39 IT Network Systems Administration",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "39 IT Network Systems Administration",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "39 IT Network Systems Administration",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "39 IT Network Systems Administration",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "39 IT Network Systems Administration",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "39 IT Network Systems Administration",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "39 IT Network Systems Administration",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "39 IT Network Systems Administration",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "39 IT Network Systems Administration",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "39 IT Network Systems Administration",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "40_Graphic_Design_Technology_marking_scheme_GROUPS_OK.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 339,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 20,
+      "columns": [
+        {
+          "name": "40 Mediendesigner",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Standards Specification",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "40 Mediendesigner",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Standards Specification",
+            "WSSS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "40 Mediendesigner",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Standards Specification",
+            "WSSS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "40 Mediendesigner",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Standards Specification",
+            "WSSS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "40 Mediendesigner",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Standards Specification",
+            "WSSS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "40 Mediendesigner",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Standards Specification",
+            "WSSS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "40 Mediendesigner",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Standards Specification",
+            "WSSS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "40 Mediendesigner",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Standards Specification",
+            "WSSS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "40 Mediendesigner",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Standards Specification",
+            "WSSS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "40 Mediendesigner",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Standards Specification",
+            "Aspect Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "40 Mediendesigner",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Standards Specification",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "41_Health_and_Social_Care_marking_scheme calc 27.8.2024.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 394,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 21,
+      "columns": [
+        {
+          "name": "41 Health and Social Care",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "41 Health and Social Care",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "41 Health and Social Care",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "41 Health and Social Care",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "41 Health and Social Care",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "41 Health and Social Care",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "41 Health and Social Care",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "41 Health and Social Care",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organisation and Management"
+          ]
+        },
+        {
+          "name": "41 Health and Social Care",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "41 Health and Social Care",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "41 Health and Social Care",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "42TEST_Construction_Steel_Work_-_Calculations_TEST_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 399,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "42TEST Construction Steel Work - Calculations TEST",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "42TEST Construction Steel Work - Calculations TEST",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "42TEST Construction Steel Work - Calculations TEST",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "42TEST Construction Steel Work - Calculations TEST",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "42TEST Construction Steel Work - Calculations TEST",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "42TEST Construction Steel Work - Calculations TEST",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "42TEST Construction Steel Work - Calculations TEST",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "42TEST Construction Steel Work - Calculations TEST",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "42TEST Construction Steel Work - Calculations TEST",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "42TEST Construction Steel Work - Calculations TEST",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "5.25"
+          ]
+        },
+        {
+          "name": "42TEST Construction Steel Work - Calculations TEST",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.25"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "44_Visual_Merchandising_marking_scheme_updated_20082024 (1) JL notes_V05.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 324,
+      "columnCount": 25,
+      "hasMergedCells": true,
+      "mergedCellCount": 21,
+      "columns": [
+        {
+          "name": "LL44 Visual Merchandising - Preparation",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "LL44 Visual Merchandising - Preparation",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "LL44 Visual Merchandising - Preparation",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "LL44 Visual Merchandising - Preparation",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "LL44 Visual Merchandising - Preparation",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "LL44 Visual Merchandising - Preparation",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "LL44 Visual Merchandising - Preparation",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "LL44 Visual Merchandising - Preparation",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "LL44 Visual Merchandising - Preparation",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "LL44 Visual Merchandising - Preparation",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "LL44 Visual Merchandising - Preparation",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "46_Concrete_Construction_Work_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 240,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "46 Concrete Construction Work",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "46 Concrete Construction Work",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "46 Concrete Construction Work",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "46 Concrete Construction Work",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "46 Concrete Construction Work",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "46 Concrete Construction Work",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "46 Concrete Construction Work",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "46 Concrete Construction Work",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "46 Concrete Construction Work",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "46 Concrete Construction Work",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "46 Concrete Construction Work",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "47_Bakery_marking_scheme 6.8.2024.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 366,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "47 Bakery",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "47 Bakery",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and communication"
+          ]
+        },
+        {
+          "name": "47 Bakery",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and communication"
+          ]
+        },
+        {
+          "name": "47 Bakery",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and communication"
+          ]
+        },
+        {
+          "name": "47 Bakery",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and communication"
+          ]
+        },
+        {
+          "name": "47 Bakery",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and communication"
+          ]
+        },
+        {
+          "name": "47 Bakery",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and communication"
+          ]
+        },
+        {
+          "name": "47 Bakery",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and communication"
+          ]
+        },
+        {
+          "name": "47 Bakery",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "8"
+          ]
+        },
+        {
+          "name": "47 Bakery",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "47 Bakery",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "48_Industry_4.0_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 336,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "48 Industry 4.0",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "48 Industry 4.0",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "48 Industry 4.0",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "48 Industry 4.0",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "48 Industry 4.0",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "48 Industry 4.0",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "48 Industry 4.0",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "48 Industry 4.0",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "48 Industry 4.0",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "48 Industry 4.0",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "48 Industry 4.0",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "49_Heavy_Vehicle_Technology_marking_scheme (final).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 231,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "49 Heavy Vehicle Technology",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "49 Heavy Vehicle Technology",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safety"
+          ]
+        },
+        {
+          "name": "49 Heavy Vehicle Technology",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safety"
+          ]
+        },
+        {
+          "name": "49 Heavy Vehicle Technology",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safety"
+          ]
+        },
+        {
+          "name": "49 Heavy Vehicle Technology",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safety"
+          ]
+        },
+        {
+          "name": "49 Heavy Vehicle Technology",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safety"
+          ]
+        },
+        {
+          "name": "49 Heavy Vehicle Technology",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safety"
+          ]
+        },
+        {
+          "name": "49 Heavy Vehicle Technology",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Safety"
+          ]
+        },
+        {
+          "name": "49 Heavy Vehicle Technology",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "49 Heavy Vehicle Technology",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "49 Heavy Vehicle Technology",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "50_3D_Digital_Game_Art_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 305,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "50 3D Digital Game Art",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "50 3D Digital Game Art",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "50 3D Digital Game Art",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "50 3D Digital Game Art",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "50 3D Digital Game Art",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "50 3D Digital Game Art",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "50 3D Digital Game Art",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "50 3D Digital Game Art",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "50 3D Digital Game Art",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "50 3D Digital Game Art",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "50 3D Digital Game Art",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "51_Logistics_and_Freight_Forwarding_marking_scheme (11).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 235,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "51 Logistics and Freight Forwarding",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "51 Logistics and Freight Forwarding",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "51 Logistics and Freight Forwarding",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "51 Logistics and Freight Forwarding",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "51 Logistics and Freight Forwarding",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "51 Logistics and Freight Forwarding",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "51 Logistics and Freight Forwarding",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "51 Logistics and Freight Forwarding",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "51 Logistics and Freight Forwarding",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "51 Logistics and Freight Forwarding",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "51 Logistics and Freight Forwarding",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.10000000000000142"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "52_Chemical_Laboratory_Technology_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 300,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "52 Chemical Laboratory Technology",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "52 Chemical Laboratory Technology",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "52 Chemical Laboratory Technology",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "52 Chemical Laboratory Technology",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "52 Chemical Laboratory Technology",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "52 Chemical Laboratory Technology",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "52 Chemical Laboratory Technology",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "52 Chemical Laboratory Technology",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "52 Chemical Laboratory Technology",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "52 Chemical Laboratory Technology",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "52 Chemical Laboratory Technology",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "53_Cloud_Computing_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 179,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "53 Cloud Computing",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "53 Cloud Computing",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "53 Cloud Computing",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "53 Cloud Computing",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "53 Cloud Computing",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "53 Cloud Computing",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "53 Cloud Computing",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "53 Cloud Computing",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "53 Cloud Computing",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "53 Cloud Computing",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "53 Cloud Computing",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "54_Cyber_Security_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 262,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "54 Cyber Security",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "54 Cyber Security",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "1 - Work Organization and Management"
+          ]
+        },
+        {
+          "name": "54 Cyber Security",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "1 - Work Organization and Management"
+          ]
+        },
+        {
+          "name": "54 Cyber Security",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "1 - Work Organization and Management"
+          ]
+        },
+        {
+          "name": "54 Cyber Security",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "1 - Work Organization and Management"
+          ]
+        },
+        {
+          "name": "54 Cyber Security",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "1 - Work Organization and Management"
+          ]
+        },
+        {
+          "name": "54 Cyber Security",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "1 - Work Organization and Management"
+          ]
+        },
+        {
+          "name": "54 Cyber Security",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "1 - Work Organization and Management"
+          ]
+        },
+        {
+          "name": "54 Cyber Security",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "54 Cyber Security",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "54 Cyber Security",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "55_Water_Technology_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 263,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "55 Water Technology",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "55 Water Technology",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "55 Water Technology",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "55 Water Technology",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "55 Water Technology",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "55 Water Technology",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "55 Water Technology",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "55 Water Technology",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "55 Water Technology",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "55 Water Technology",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "10.7"
+          ]
+        },
+        {
+          "name": "55 Water Technology",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.6999999999999993"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "56 WSC2024_56_Hotel_Reception_marking_scheme-final.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 334,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 24,
+      "columns": [
+        {
+          "name": "56 Hotel Reception",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "56 Hotel Reception",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and self-management"
+          ]
+        },
+        {
+          "name": "56 Hotel Reception",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and self-management"
+          ]
+        },
+        {
+          "name": "56 Hotel Reception",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and self-management"
+          ]
+        },
+        {
+          "name": "56 Hotel Reception",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and self-management"
+          ]
+        },
+        {
+          "name": "56 Hotel Reception",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and self-management"
+          ]
+        },
+        {
+          "name": "56 Hotel Reception",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and self-management"
+          ]
+        },
+        {
+          "name": "56 Hotel Reception",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and self-management"
+          ]
+        },
+        {
+          "name": "56 Hotel Reception",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "15"
+          ]
+        },
+        {
+          "name": "56 Hotel Reception",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "56 Hotel Reception",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "57_Additive_Manufacturing_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 352,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "57 Additive Manufacturing",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "57 Additive Manufacturing",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "57 Additive Manufacturing",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "57 Additive Manufacturing",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "57 Additive Manufacturing",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "57 Additive Manufacturing",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "57 Additive Manufacturing",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "57 Additive Manufacturing",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "57 Additive Manufacturing",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "57 Additive Manufacturing",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "4.75"
+          ]
+        },
+        {
+          "name": "57 Additive Manufacturing",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.25"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "58_Digital_Construction_marking_scheme (1).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 185,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 23,
+      "columns": [
+        {
+          "name": "58 Digital Construction",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "58 Digital Construction",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "58 Digital Construction",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "58 Digital Construction",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "58 Digital Construction",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "58 Digital Construction",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "58 Digital Construction",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "58 Digital Construction",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "58 Digital Construction",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "58 Digital Construction",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "11"
+          ]
+        },
+        {
+          "name": "58 Digital Construction",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "1"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "59_Industrial_Design_Technology_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 337,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "59 Industrial Design Technology",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "59 Industrial Design Technology",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "59 Industrial Design Technology",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "59 Industrial Design Technology",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "59 Industrial Design Technology",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "59 Industrial Design Technology",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "59 Industrial Design Technology",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "59 Industrial Design Technology",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "59 Industrial Design Technology",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "59 Industrial Design Technology",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "59 Industrial Design Technology",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "60_Optoelectronic_Technology_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 375,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 21,
+      "columns": [
+        {
+          "name": "60 Optoelectronic Technology",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "60 Optoelectronic Technology",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "60 Optoelectronic Technology",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "60 Optoelectronic Technology",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "60 Optoelectronic Technology",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "60 Optoelectronic Technology",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "60 Optoelectronic Technology",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "60 Optoelectronic Technology",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work Organization and Management"
+          ]
+        },
+        {
+          "name": "60 Optoelectronic Technology",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "10"
+          ]
+        },
+        {
+          "name": "60 Optoelectronic Technology",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks"
+          ]
+        },
+        {
+          "name": "60 Optoelectronic Technology",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "62_Renewable_Energy_marking_scheme (2).xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 372,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "62 Renewable Energy",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "62 Renewable Energy",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "62 Renewable Energy",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "62 Renewable Energy",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "62 Renewable Energy",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "62 Renewable Energy",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "62 Renewable Energy",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "62 Renewable Energy",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "62 Renewable Energy",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "62 Renewable Energy",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "5.35"
+          ]
+        },
+        {
+          "name": "62 Renewable Energy",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.34999999999999964"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    },
+    {
+      "fileName": "63_Robot_Systems_Integration_marking_scheme.xlsx",
+      "sheetNames": [
+        "CIS Marking Scheme Import",
+        "Calculations"
+      ],
+      "headerRow": 1,
+      "rowCount": 460,
+      "columnCount": 14,
+      "hasMergedCells": true,
+      "mergedCellCount": 22,
+      "columns": [
+        {
+          "name": "63 Robot Systems Integration",
+          "index": 1,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Section",
+            "1"
+          ]
+        },
+        {
+          "name": "63 Robot Systems Integration",
+          "index": 2,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "63 Robot Systems Integration",
+          "index": 3,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "63 Robot Systems Integration",
+          "index": 4,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "63 Robot Systems Integration",
+          "index": 5,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "63 Robot Systems Integration",
+          "index": 6,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "63 Robot Systems Integration",
+          "index": 7,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "63 Robot Systems Integration",
+          "index": 8,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "Work organization and management"
+          ]
+        },
+        {
+          "name": "63 Robot Systems Integration",
+          "index": 9,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "WSOS Marks",
+            "5"
+          ]
+        },
+        {
+          "name": "63 Robot Systems Integration",
+          "index": 10,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Aspect Marks",
+            "4.5"
+          ]
+        },
+        {
+          "name": "63 Robot Systems Integration",
+          "index": 11,
+          "sampleValues": [
+            "WorldSkills Occupational Standards",
+            "Variation",
+            "0.5"
+          ]
+        }
+      ],
+      "encoding": "UTF-8",
+      "errors": []
+    }
+  ]
+}
