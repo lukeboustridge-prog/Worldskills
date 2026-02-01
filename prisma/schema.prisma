@@ -43,6 +43,13 @@ enum ResourceCategory {
   EXTERNAL
 }
 
+enum QualityIndicator {
+  EXCELLENT      // Exemplary descriptor, showcase quality
+  GOOD           // Solid descriptor, ready for use
+  REFERENCE      // Use as reference, may need refinement
+  NEEDS_REVIEW   // Imported, requires admin review
+}
+
 enum GateScheduleType {
   Calendar
   CMonth
@@ -358,6 +365,13 @@ model Descriptor {
 
   // Schema versioning for future migrations
   version     Int      @default(1)
+
+  // Quality control
+  qualityIndicator QualityIndicator @default(NEEDS_REVIEW)
+
+  // Soft delete
+  deletedAt   DateTime?
+  deletedBy   String?
 
   // Audit timestamps
   createdAt   DateTime @default(now())
