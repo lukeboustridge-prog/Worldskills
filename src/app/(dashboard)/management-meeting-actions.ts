@@ -395,3 +395,155 @@ export async function deleteManagementMeetingAction(formData: FormData) {
 
   return { success: true };
 }
+
+// Document Actions
+
+const addManagementMeetingDocumentSchema = z.object({
+  meetingId: z.string().min(1),
+  storageKey: z.string().min(1),
+  fileName: z.string().min(1),
+  fileSize: z.number().int().positive(),
+  mimeType: z.string().min(1)
+});
+
+export async function addManagementMeetingDocumentAction(
+  meetingId: string,
+  fileData: { storageKey: string; fileName: string; fileSize: number; mimeType: string },
+  _undefined?: undefined
+) {
+  const user = await requireUser();
+
+  const parsed = addManagementMeetingDocumentSchema.safeParse({
+    meetingId,
+    ...fileData
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((e) => e.message).join(", "));
+  }
+
+  const meeting = await prisma.meeting.findUnique({
+    where: { id: meetingId }
+  });
+
+  if (!meeting) {
+    throw new Error("Meeting not found");
+  }
+
+  if (meeting.skillId !== null) {
+    throw new Error("This action is only for management meetings");
+  }
+
+  if (!canManageMeeting(user, meeting)) {
+    throw new Error("Only Admins and Secretariat can add documents to management meetings");
+  }
+
+  const existingDocuments = normaliseMeetingDocuments(meeting.documents);
+  const newDocument: MeetingDocument = {
+    id: createId(),
+    fileName: parsed.data.fileName,
+    storageKey: parsed.data.storageKey,
+    fileSize: parsed.data.fileSize,
+    mimeType: parsed.data.mimeType,
+    uploadedAt: new Date().toISOString()
+  };
+
+  await prisma.meeting.update({
+    where: { id: meetingId },
+    data: {
+      documents: serialiseMeetingDocuments([...existingDocuments, newDocument])
+    }
+  });
+
+  await logActivity({
+    skillId: null,
+    userId: user.id,
+    action: "ManagementMeetingDocumentAdded",
+    payload: {
+      meetingId,
+      documentId: newDocument.id,
+      fileName: newDocument.fileName
+    }
+  });
+
+  revalidatePath("/meetings");
+  revalidatePath("/hub/meetings");
+
+  return { success: true, documentId: newDocument.id };
+}
+
+const deleteManagementMeetingDocumentSchema = z.object({
+  meetingId: z.string().min(1),
+  docId: z.string().min(1)
+});
+
+export async function deleteManagementMeetingDocumentAction(
+  meetingId: string,
+  docId: string
+) {
+  const user = await requireUser();
+
+  const parsed = deleteManagementMeetingDocumentSchema.safeParse({
+    meetingId,
+    docId
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((e) => e.message).join(", "));
+  }
+
+  const meeting = await prisma.meeting.findUnique({
+    where: { id: meetingId }
+  });
+
+  if (!meeting) {
+    throw new Error("Meeting not found");
+  }
+
+  if (meeting.skillId !== null) {
+    throw new Error("This action is only for management meetings");
+  }
+
+  if (!canManageMeeting(user, meeting)) {
+    throw new Error("Only Admins and Secretariat can delete documents from management meetings");
+  }
+
+  const existingDocuments = normaliseMeetingDocuments(meeting.documents);
+  const documentToDelete = existingDocuments.find((doc) => doc.id === docId);
+
+  if (!documentToDelete) {
+    throw new Error("Document not found");
+  }
+
+  const updatedDocuments = existingDocuments.filter((doc) => doc.id !== docId);
+
+  await prisma.meeting.update({
+    where: { id: meetingId },
+    data: {
+      documents: serialiseMeetingDocuments(updatedDocuments)
+    }
+  });
+
+  // Delete from storage (non-blocking)
+  try {
+    await deleteStoredObject(documentToDelete.storageKey);
+  } catch (error) {
+    console.error("Failed to delete document from storage", error);
+  }
+
+  await logActivity({
+    skillId: null,
+    userId: user.id,
+    action: "ManagementMeetingDocumentDeleted",
+    payload: {
+      meetingId,
+      documentId: docId,
+      fileName: documentToDelete.fileName
+    }
+  });
+
+  revalidatePath("/meetings");
+  revalidatePath("/hub/meetings");
+
+  return { success: true };
+}
