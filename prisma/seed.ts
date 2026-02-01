@@ -185,7 +185,7 @@ async function main() {
 
   for (const skill of skillSeeds) {
     // Determine which SA should be assigned to this skill
-    const assignedSAId = skillToAdvisor.get(skill.code) ?? hostUser.id;
+    const assignedSAId = skillToAdvisor.get(Number(skill.code)) ?? hostUser.id;
 
     await prisma.skill.upsert({
       where: { id: skill.id },
