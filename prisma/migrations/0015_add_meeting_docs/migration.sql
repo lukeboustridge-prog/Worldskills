@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Meeting" ADD COLUMN "documents" JSONB NOT NULL DEFAULT '[]';
-ALTER TABLE "Meeting" ADD COLUMN "links" JSONB NOT NULL DEFAULT '[]';
