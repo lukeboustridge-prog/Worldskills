@@ -52,6 +52,8 @@ export default async function DashboardLayout({
     navItems.push({ href: "/storage-debug", label: "Storage debug" });
   }
 
+  navItems.push({ href: "/change-password", label: "Change password" });
+
   return (
     <div className="min-h-screen bg-muted/30">
       <header className="border-b bg-background">
