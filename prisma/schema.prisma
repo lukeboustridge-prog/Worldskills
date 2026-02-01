@@ -335,3 +335,41 @@ model ResourceLink {
   @@index([category])
   @@index([isFeatured])
 }
+
+model Descriptor {
+  id          String   @id @default(cuid())
+  code        String   // Criterion code from marking scheme (e.g., "A1", "B2.1")
+  criterionName String // Name of the criterion/aspect
+
+  // Performance level descriptions (grouped together, not separate records)
+  excellent   String?  @db.Text
+  good        String?  @db.Text
+  pass        String?  @db.Text
+  belowPass   String?  @db.Text
+
+  // Source metadata
+  source      String   // "WSC2024" for imported, "Manual" for admin-added
+  skillName   String   // Name of the skill (e.g., "Welding", "Bricklaying")
+  sector      String?  // Sector category if available
+
+  // Categories and tags (for future filtering)
+  category    String?  // Criterion type/category
+  tags        String[] @default([]) // JSONB array for flexible tagging
+
+  // Schema versioning for future migrations
+  version     Int      @default(1)
+
+  // Audit timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Composite unique constraint: code unique within a skill
+  @@unique([skillName, code])
+
+  // B-tree indexes for common filters (GIN indexes added after import)
+  @@index([source])
+  @@index([skillName])
+  @@index([sector])
+  @@index([category])
+  @@index([version])
+}
