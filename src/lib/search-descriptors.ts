@@ -14,10 +14,10 @@ export interface SearchResult {
   id: string;
   code: string;
   criterionName: string;
-  excellent: string | null;
-  good: string | null;
-  pass: string | null;
-  belowPass: string | null;
+  score3: string | null;
+  score2: string | null;
+  score1: string | null;
+  score0: string | null;
   skillName: string;
   sector: string | null;
   category: string | null;
@@ -83,10 +83,10 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
           id,
           code,
           "criterionName",
-          excellent,
-          good,
-          pass,
-          "belowPass",
+          score3,
+          score2,
+          score1,
+          score0,
           "skillName",
           sector,
           category,
@@ -94,10 +94,10 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
           "qualityIndicator",
           ts_rank_cd(
             setweight(to_tsvector('english', coalesce("criterionName", '')), 'A') ||
-            setweight(to_tsvector('english', coalesce("excellent", '')), 'B') ||
-            setweight(to_tsvector('english', coalesce("good", '')), 'B') ||
-            setweight(to_tsvector('english', coalesce("pass", '')), 'B') ||
-            setweight(to_tsvector('english', coalesce("belowPass", '')), 'B'),
+            setweight(to_tsvector('english', coalesce(score3, '')), 'B') ||
+            setweight(to_tsvector('english', coalesce(score2, '')), 'B') ||
+            setweight(to_tsvector('english', coalesce(score1, '')), 'B') ||
+            setweight(to_tsvector('english', coalesce(score0, '')), 'B'),
             websearch_to_tsquery('english', ${query.trim()}),
             32
           ) as rank
@@ -105,10 +105,10 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
         WHERE
           websearch_to_tsquery('english', ${query.trim()}) @@ (
             setweight(to_tsvector('english', coalesce("criterionName", '')), 'A') ||
-            setweight(to_tsvector('english', coalesce("excellent", '')), 'B') ||
-            setweight(to_tsvector('english', coalesce("good", '')), 'B') ||
-            setweight(to_tsvector('english', coalesce("pass", '')), 'B') ||
-            setweight(to_tsvector('english', coalesce("belowPass", '')), 'B')
+            setweight(to_tsvector('english', coalesce(score3, '')), 'B') ||
+            setweight(to_tsvector('english', coalesce(score2, '')), 'B') ||
+            setweight(to_tsvector('english', coalesce(score1, '')), 'B') ||
+            setweight(to_tsvector('english', coalesce(score0, '')), 'B')
           )
           AND "deletedAt" IS NULL
           ${additionalWhere}
@@ -122,10 +122,10 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
         WHERE
           websearch_to_tsquery('english', ${query.trim()}) @@ (
             setweight(to_tsvector('english', coalesce("criterionName", '')), 'A') ||
-            setweight(to_tsvector('english', coalesce("excellent", '')), 'B') ||
-            setweight(to_tsvector('english', coalesce("good", '')), 'B') ||
-            setweight(to_tsvector('english', coalesce("pass", '')), 'B') ||
-            setweight(to_tsvector('english', coalesce("belowPass", '')), 'B')
+            setweight(to_tsvector('english', coalesce(score3, '')), 'B') ||
+            setweight(to_tsvector('english', coalesce(score2, '')), 'B') ||
+            setweight(to_tsvector('english', coalesce(score1, '')), 'B') ||
+            setweight(to_tsvector('english', coalesce(score0, '')), 'B')
           )
           AND "deletedAt" IS NULL
           ${additionalWhere}
@@ -165,10 +165,10 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
           id,
           code,
           "criterionName",
-          excellent,
-          good,
-          pass,
-          "belowPass",
+          score3,
+          score2,
+          score1,
+          score0,
           "skillName",
           sector,
           category,

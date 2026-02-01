@@ -349,11 +349,11 @@ model Descriptor {
   code          String // Criterion code from marking scheme (e.g., "A1", "B2.1")
   criterionName String // Name of the criterion/aspect
 
-  // Performance level descriptions (grouped together, not separate records)
-  excellent String? @db.Text
-  good      String? @db.Text
-  pass      String? @db.Text
-  belowPass String? @db.Text
+  // Performance level descriptions (0-3 scoring scale)
+  score0 String? @db.Text // Below standard - 0 points
+  score1 String? @db.Text // Acceptable - 1 point
+  score2 String? @db.Text // Good - 2 points
+  score3 String? @db.Text // Excellent - 3 points
 
   // Source metadata
   source    String // "WSC2024" for imported, "Manual" for admin-added

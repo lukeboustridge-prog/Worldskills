@@ -61,32 +61,32 @@ export function ComparisonModal({ descriptors, open, onOpenChange }: ComparisonM
 
               {/* Performance Levels */}
               <LevelSection
-                label="Excellent"
-                text={d.excellent}
+                label="Score 3"
+                text={d.score3}
                 color="green"
-                onCopy={() => d.excellent && copyLevel(d.excellent, `${d.id}-excellent`)}
-                copied={copiedId === `${d.id}-excellent`}
+                onCopy={() => d.score3 && copyLevel(d.score3, `${d.id}-score3`)}
+                copied={copiedId === `${d.id}-score3`}
               />
               <LevelSection
-                label="Good"
-                text={d.good}
+                label="Score 2"
+                text={d.score2}
                 color="blue"
-                onCopy={() => d.good && copyLevel(d.good, `${d.id}-good`)}
-                copied={copiedId === `${d.id}-good`}
+                onCopy={() => d.score2 && copyLevel(d.score2, `${d.id}-score2`)}
+                copied={copiedId === `${d.id}-score2`}
               />
               <LevelSection
-                label="Pass"
-                text={d.pass}
+                label="Score 1"
+                text={d.score1}
                 color="yellow"
-                onCopy={() => d.pass && copyLevel(d.pass, `${d.id}-pass`)}
-                copied={copiedId === `${d.id}-pass`}
+                onCopy={() => d.score1 && copyLevel(d.score1, `${d.id}-score1`)}
+                copied={copiedId === `${d.id}-score1`}
               />
               <LevelSection
-                label="Below Pass"
-                text={d.belowPass}
+                label="Score 0"
+                text={d.score0}
                 color="red"
-                onCopy={() => d.belowPass && copyLevel(d.belowPass, `${d.id}-below`)}
-                copied={copiedId === `${d.id}-below`}
+                onCopy={() => d.score0 && copyLevel(d.score0, `${d.id}-score0`)}
+                copied={copiedId === `${d.id}-score0`}
               />
             </div>
           ))}

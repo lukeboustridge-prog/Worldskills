@@ -213,38 +213,38 @@ function DescriptorCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-2 ml-7">
-        {descriptor.excellent && (
+        {descriptor.score3 && (
           <div className="group flex items-start gap-2 text-sm">
             <div className="flex-1">
-              <span className="font-medium text-green-700">Excellent:</span>{" "}
-              {descriptor.excellent.substring(0, 150)}
-              {descriptor.excellent.length > 150 && "..."}
+              <span className="font-medium text-green-700">Score 3:</span>{" "}
+              {descriptor.score3.substring(0, 150)}
+              {descriptor.score3.length > 150 && "..."}
             </div>
             <CopyButton
-              text={descriptor.excellent}
-              field="excellent"
-              label="Excellent level"
+              text={descriptor.score3}
+              field="score3"
+              label="Score 3"
             />
           </div>
         )}
-        {descriptor.good && (
+        {descriptor.score2 && (
           <div className="group flex items-start gap-2 text-sm">
             <div className="flex-1">
-              <span className="font-medium text-blue-700">Good:</span>{" "}
-              {descriptor.good.substring(0, 150)}
-              {descriptor.good.length > 150 && "..."}
+              <span className="font-medium text-blue-700">Score 2:</span>{" "}
+              {descriptor.score2.substring(0, 150)}
+              {descriptor.score2.length > 150 && "..."}
             </div>
-            <CopyButton text={descriptor.good} field="good" label="Good level" />
+            <CopyButton text={descriptor.score2} field="score2" label="Score 2" />
           </div>
         )}
-        {descriptor.pass && (
+        {descriptor.score1 && (
           <div className="group flex items-start gap-2 text-sm">
             <div className="flex-1">
-              <span className="font-medium text-yellow-700">Pass:</span>{" "}
-              {descriptor.pass.substring(0, 150)}
-              {descriptor.pass.length > 150 && "..."}
+              <span className="font-medium text-yellow-700">Score 1:</span>{" "}
+              {descriptor.score1.substring(0, 150)}
+              {descriptor.score1.length > 150 && "..."}
             </div>
-            <CopyButton text={descriptor.pass} field="pass" label="Pass level" />
+            <CopyButton text={descriptor.score1} field="score1" label="Score 1" />
           </div>
         )}
         <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">

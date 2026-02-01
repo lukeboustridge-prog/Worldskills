@@ -278,9 +278,9 @@ export default async function DescriptorsPage({
                       </p>
                     )}
 
-                    {descriptor.excellent && (
+                    {descriptor.score3 && (
                       <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                        {descriptor.excellent}
+                        {descriptor.score3}
                       </p>
                     )}
                   </div>

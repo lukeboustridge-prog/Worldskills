@@ -1,0 +1,1094 @@
+[
+  {
+    "code": "T-001",
+    "criterionName": "Logical organization and layout of dashboard pages",
+    "category": "Work Organization",
+    "sector": "Technology & IT",
+    "score0": "The dashboard's layout is characterized by a lack of navigational logic, rendering data retrieval and comprehension an arduous task for users",
+    "score1": "The dashboard exhibits an initial attempt at organization, yet its layout lacks the sophistication required for intuitive data navigation, presenting as a preliminary draft in need of refinement",
+    "score2": "The dashboard demonstrates a methodical organization, providing a structured pathway through data, though it occasionally lacks in optimizing user interaction for maximum efficiency",
+    "score3": "The dashboard exemplifies a pinnacle of user-centric design, where each element is strategically placed to facilitate effortless data navigation and interpretation, adhering to principles of visual hierarchy and user engagement.",
+    "tags": [
+      "Work Organization"
+    ]
+  },
+  {
+    "code": "T-002",
+    "criterionName": "Organization of Work Patterns, Logistics and Teamwork 15.00-15.30",
+    "category": "Work Organization",
+    "sector": "Construction & Building",
+    "score0": "They are working randomly, there is no teamwork when it is needed",
+    "score1": "Logical order of the work, team members support each other if needed",
+    "score2": "Work flow and selection of tasks evident and purposeful, sequence of steps are logical and thought out beforehand. Team members assist each other when required.",
+    "score3": "Work flow and selection of tasks evident and purposeful, sequence of steps logical and thought out beforehand. They do not start / stop project segments without a cause, complete a section and move on. Team members assist each other when required and have coordinated cooperation.",
+    "tags": [
+      "Work Organization"
+    ]
+  },
+  {
+    "code": "T-003",
+    "criterionName": "Organizing the workbench",
+    "category": "Work Organization",
+    "sector": "General",
+    "score0": "Absence of glassware labelling, spillovers of liquids, materials and equipment are disordered. Chemicals are left at the site of the previous operation",
+    "score1": "Workbench is cleaned only after performing the work, labelling of glassware is not complete, equipment and materials are relatively ordered. Chemicals were returned to the site after use",
+    "score2": "Workbench is always clean during and after work, labelling of glassware is full, equipment and materials are well ordered. Chemicals were returned to the site after use.",
+    "score3": "Workbench is always clean during and after work, labelling of glassware is full, equipment and materials are ideally ordered for efficient work. Chemicals were returned to the site after use.",
+    "tags": [
+      "Work Organization"
+    ]
+  },
+  {
+    "code": "T-004",
+    "criterionName": "Level of Organization with the Wiring of Equipment",
+    "category": "Work Organization",
+    "sector": "Manufacturing & Engineering",
+    "score0": "Show no effort in making the wiring looks organized, the cabling wiring are tangled and left unorganized.",
+    "score1": "Shows some degree of planning in making the wiring organized, but the overall product still looks messy",
+    "score2": "Shows clear pre-planning of the wiring operation, more than 80% of the wires are routed and organized in a clean manner.",
+    "score3": "Shows significant effort in planning the routing of wiring, all wires/cables are routed and organized cleanly.",
+    "tags": [
+      "Work Organization"
+    ]
+  },
+  {
+    "code": "T-005",
+    "criterionName": "Overall session management: Efficient use of time and resources",
+    "category": "Work Organization",
+    "sector": "Technology & IT",
+    "score0": "Inefficient use of resources, and incomplete deliverables",
+    "score1": "Some time management issues, partially efficient use of resources, most deliverables complete",
+    "score2": "Efficient use of resources, all deliverables complete with minor issues",
+    "score3": "Excellent time management, highly efficient use of resources, all deliverables complete and of high quality",
+    "tags": [
+      "Work Organization"
+    ]
+  },
+  {
+    "code": "T-006",
+    "criterionName": "Logical organization and ease of following",
+    "category": "Work Organization",
+    "sector": "Service & Care",
+    "score0": "Disorganized and difficult to follow",
+    "score1": "Basic organization, but flow could be improved",
+    "score2": "Well-organized and generally easy to follow",
+    "score3": "Exceptionally well-organized with clear, logical flow",
+    "tags": [
+      "Work Organization"
+    ]
+  },
+  {
+    "code": "T-007",
+    "criterionName": "Creativity AND clarity of the message - sanitation services",
+    "category": "Safety & Hygiene",
+    "sector": "Creative & Design",
+    "score0": "The poster lacks creativity and fails to clearly communicate the urgency of ensuring universal and equitable access to sanitation services. The message is confusing or unclear, and the design does not effectively highlight the gap between the set target and the estimated progress by 2030.",
+    "score1": "The poster shows a basic level of creativity and communicates the message, but the design is somewhat generic and lacks strong visual appeal. The gap between the target and progress is indicated but not emphasised effectively. The overall message is understandable but not compelling.",
+    "score2": "The poster is creatively designed and clearly communicates the urgency of achieving SDG Target 6.1. The visual elements are engaging and effectively highlight the gap between the target and progress by 2030. The message is clear, encouraging viewers to engage with the #WaterAction #Goal6 initiative.",
+    "score3": "The poster demonstrates exceptional creativity and clarity in communicating the urgency of ensuring universal and equitable access to sanitation services. The design is highly engaging, innovative, and visually compelling, with a clear emphasis on the gap between the target and estimated progress by 2030. The message is powerful and encourages strong engagement with the #WaterAction #Goal6 initiative.",
+    "tags": [
+      "Safety & Hygiene"
+    ]
+  },
+  {
+    "code": "T-008",
+    "criterionName": "Proper and safe use of separatory funnel",
+    "category": "Safety & Hygiene",
+    "sector": "General",
+    "score0": "Spills, difficulties using separatory funnel (too much or little stopcock grease or glass stopper is not hold securely), Beaker not always underneath the funnel or pressure is not removed safely. Pepeatedly minor mistakes or one major mistake of laboratory safety procedures.",
+    "score1": "One or two minor mistakes of laboratory safety procedures mentioned above.",
+    "score2": "No Spills, beaker always undeneath the separatory funnel and venting of the separatory funnel is done succesfully and safely. Good laboratory safety throughout the work.",
+    "score3": "No Spills, beaker always underneath the funnel and venting of the separatory funnel is done succesfully and safely. Starts Shaking gently and after venting few times shakes vigorously. Excellent laboratory safety throughout the work.",
+    "tags": [
+      "Safety & Hygiene"
+    ]
+  },
+  {
+    "code": "T-009",
+    "criterionName": "Cable. Correctly clipped with straight runs and even bends.",
+    "category": "Safety & Hygiene",
+    "sector": "Construction & Building",
+    "score0": "Below professional standard or no attempt: Clips unevenly spaced. Cable not straight and even. Bends too sharp or too long.",
+    "score1": "Meets professional standard.Cable straight and even with good bends but clips not evenly spaced.",
+    "score2": "professional standard with elements of good practice: Cable straight and even with good bending and the majority of cable clips evenly spaced.",
+    "score3": "Excellent in comparison to professional standard: Cable straight and even with good bending and all cable clips evenly spaced.",
+    "tags": [
+      "Safety & Hygiene"
+    ]
+  },
+  {
+    "code": "T-010",
+    "criterionName": "UNIFORM - good posture/stance throughout the day",
+    "category": "Safety & Hygiene",
+    "sector": "Culinary & Hospitality",
+    "score0": "Low standard of posture throughout all tasks, posture illustrates lack of confidence in tasks",
+    "score1": "Average standard of posture throughout all tasks, shows poor posture when finding task challenging",
+    "score2": "Good standard of posture throughout all tasks, shows a good degree of confidence and maintains uniform well",
+    "score3": "Excellent standard of posture throughout all tasks, shows a very high degree of confidence, high level of uniform maintenance",
+    "tags": [
+      "Safety & Hygiene"
+    ]
+  },
+  {
+    "code": "T-011",
+    "criterionName": "Cleanliness and Safety of Site 15.00-15.30",
+    "category": "Safety & Hygiene",
+    "sector": "Construction & Building",
+    "score0": "Tools are lying around and there is a mess",
+    "score1": "Specific tools/ materials on site, at least the specific working area(s) is safe and waste is not disposed of",
+    "score2": "Specific tools/materials only in use and in a working area and waste is not disposed of, all the working area is safe",
+    "score3": "Specific tools/materials only in use and in a working area and all waste is disposed of, and all the working area is safe",
+    "tags": [
+      "Safety & Hygiene"
+    ]
+  },
+  {
+    "code": "T-012",
+    "criterionName": "Teach Pendant cable",
+    "category": "Safety & Hygiene",
+    "sector": "Technology & IT",
+    "score0": "Cable damaged or cable & TP left in uncontrolled position - on floor or table or elsewhere",
+    "score1": "TP hung up but Cable on floor",
+    "score2": "TP hung up and Cable clearly off floor and in controlled position",
+    "score3": "TP hung up and Cable neatly coiled and stored",
+    "tags": [
+      "Safety & Hygiene"
+    ]
+  },
+  {
+    "code": "T-013",
+    "criterionName": "Empathetic Communication (Active Listening)",
+    "category": "Communication & Professionalism",
+    "sector": "Service & Care",
+    "score0": "Does not create a positive working environment around the patient (no interaction with the patient); Uses an unfriendly tone of the voice; Showcases a negative attitude (bothered by questions); Does not give answers to the questions of the patient; Does not use active listening technique (e.g. ignores, looks away, does not repeat the words, does not mirror feelings of patient); Interrupts patient while speaking; Asks inadequate or repeated questions by not paying attention; Expresses no appreciation or encouragement; Directs or gives commands to patient (more than twice)",
+    "score1": "Creates a fairly positive working environment around the patient (interacts with the patient); Uses a neutral tone of the voice; Showcases neutral attitude (sometimes smile, sometimes interested); Gives an answer to one of the questions of the patient; Uses active listening technique sometimes (e.g. repeats the words that the patient is using, nods, sounds, mirror feelings if adequate); Does not interrupt the patient while talking; Asks questions sometimes; Expresses appreciation moderately (shows interest, sometimes praises); Commands the patient (twice)",
+    "score2": "Creates a positive environment around the patient (interacts with the patient); Uses a normal tone of the voice; Showcases fairly friendly attitude (regular smiles, regularly interested; Answers more than one of questions of the patient; Uses active listening technique most of the times (e.g., repeats the words that the patient is using, nods, sounds, mirror feelings if adequate); Does not interrupt the patient when talking; Asks questions most of the times; Expresses appreciation many times (shows interest, encourages); Command the patient (once)",
+    "score3": "Creates an excellently positive environment around the patient (interacts with the patient); Uses a gentle tone of the voice; Showcases positive and friendly attitude (often smiles, very interested); Gives an answer to all the questions of the patient; Uses active listening technique always (e.g. repeats the words that the patient is using, nods, sounds, and mirrors feelings if adequate; Does not interrupt the patient when talking; Asks questions always to validate patients feelings; Expresses appreciation always (shows interest, encourages, appreciates efforts); Never commands the patient",
+    "tags": [
+      "Communication & Professionalism"
+    ]
+  },
+  {
+    "code": "T-014",
+    "criterionName": "Interpersonal skills throughout the service including guest greetings",
+    "category": "Communication & Professionalism",
+    "sector": "Culinary & Hospitality",
+    "score0": "Competitors shows no social skills or guest interaction, no cocktail explanation, lack of skill knowledge or real ability",
+    "score1": "Competitor shows some interaction with guests and an adequate level of confidence to carry out their tasks to an acceptable level.",
+    "score2": "Competitor shows a high level of confidence, good guest interaction, good level of skill and flair and an overall good impression",
+    "score3": "Competitor shows excellent interpersonal skills, great interaction with the guests, top level of service, natural flare and attention to detail",
+    "tags": [
+      "Communication & Professionalism"
+    ]
+  },
+  {
+    "code": "T-015",
+    "criterionName": "- Churn Analysis: Creativity in comparing CLTV for churned and active customers",
+    "category": "Communication & Professionalism",
+    "sector": "Technology & IT",
+    "score0": "No comparison of CLTV between churned and active customers performed",
+    "score1": "Basic comparison of average CLTV between churned and active customers",
+    "score2": "Detailed comparison of CLTV distribution between churned and active customers, with identification of key differences",
+    "score3": "Comprehensive analysis of CLTV differences between churned and active customers, including identification of potential churn predictors and suggested retention strategies",
+    "tags": [
+      "Communication & Professionalism"
+    ]
+  },
+  {
+    "code": "T-016",
+    "criterionName": "Phone Call Roleplay",
+    "category": "Communication & Professionalism",
+    "sector": "General",
+    "score0": "Little or no engagement with customer",
+    "score1": "Limited engagement with customer, no evidence of active listening",
+    "score2": "Good engagement with customer, evidence of active listening, not all questions fully answered no alternative tracking solution provided",
+    "score3": "Excellent engagement with customer, clear evidence of active listening, all questions answered in detail with alternative tracking solutions provided",
+    "tags": [
+      "Communication & Professionalism"
+    ]
+  },
+  {
+    "code": "T-017",
+    "criterionName": "DAY3: confidence with colleagues, positive communication",
+    "category": "Communication & Professionalism",
+    "sector": "Construction & Building",
+    "score0": "Competitor shows no social skills or colleague interaction",
+    "score1": "Competitor shows some interaction with colleagues and an adequate level of confidence to carry out their tasks",
+    "score2": "Competitor shows a high level of confidence, good colleague interaction and an overall good impression",
+    "score3": "Competitor shows excellent communication skills, natural flare and ability and attention to detail",
+    "tags": [
+      "Communication & Professionalism"
+    ]
+  },
+  {
+    "code": "T-018",
+    "criterionName": "Instructions provided on how to run the Test Project",
+    "category": "Communication & Professionalism",
+    "sector": "Technology & IT",
+    "score0": "None / Verbal / Incoherent instructions",
+    "score1": "Documented instructions are limited - vague or indirect explanation given",
+    "score2": "Well documented instructions - as good as Example, suitable for an experienced end user i.e. line operator or technician",
+    "score3": "Very well documented instructions - better than Example, with end user requiring no prior experience to operate",
+    "tags": [
+      "Communication & Professionalism"
+    ]
+  },
+  {
+    "code": "T-019",
+    "criterionName": "Inside Layout: Legibility, White Space, and Font Choice",
+    "category": "Time Management",
+    "sector": "Creative & Design",
+    "score0": "The text is difficult to read due to poor legibility. Inadequate use of white space leads to a cluttered layout. The font choice does not align with the theme and hinders readability.",
+    "score1": "The text is somewhat readable but could be improved. Basic attempt to use white space, but it is not effectively balanced. The font choice is adequate but not fully complementary to the theme.",
+    "score2": "The text is clear and readable. White space is well-utilised, creating a balanced layout. The font choice complements the theme and enhances readability.",
+    "score3": "The text is exceptionally clear and readable. White space is expertly utilised, creating a clean and balanced layout. The font choice is outstanding, perfectly complementing the theme and enhancing",
+    "tags": [
+      "Time Management"
+    ]
+  },
+  {
+    "code": "T-020",
+    "criterionName": "Efficient Use of Materials/Consumables provided in completing the module.",
+    "category": "Time Management",
+    "sector": "Manufacturing & Engineering",
+    "score0": "Excessive Waste: Competitor show no effort in being conservative and sustainable, indicating poor planning and excessive material wastage.",
+    "score1": "Above Average Waste: Competitor showed some sense of management and plan in using the materials and has some consideration of material usage but still resulting in noticeable waste.",
+    "score2": "Minimal Waste: Competitor showed decent management in material consumption, demonstrating good planning and material usage with only minor waste.",
+    "score3": "Optimal Usage: Competitor had serious pre-planning and management of the materials, showing excellent management and material usage with negligible or no waste.",
+    "tags": [
+      "Time Management"
+    ]
+  },
+  {
+    "code": "T-021",
+    "criterionName": "Time management",
+    "category": "Time Management",
+    "sector": "General",
+    "score0": "Disorganized, no planning ahead, The use of time is ineffective",
+    "score1": "The work is finished in time",
+    "score2": "The time management is effective. Waiting times are used well and work is finished in time",
+    "score3": "Excellent forward planning and time management. The work is finished ahead of time",
+    "tags": [
+      "Time Management"
+    ]
+  },
+  {
+    "code": "T-022",
+    "criterionName": "Layout of the planting",
+    "category": "Time Management",
+    "sector": "Construction & Building",
+    "score0": "No consideration given",
+    "score1": "Competitors have taken into consideration use of shape and texture, the layout of plants, contrast between the plants",
+    "score2": "Competitors have taken into consideration use of shape, height and texture to create a visually nice display, have relationship to other plants",
+    "score3": "Competitors demonstrate an understanding of shape and texture to create a visually excellent display",
+    "tags": [
+      "Time Management"
+    ]
+  },
+  {
+    "code": "T-023",
+    "criterionName": "Taxus Baccata are pruned",
+    "category": "Time Management",
+    "sector": "Construction & Building",
+    "score0": "Taxus Bagata is not cut",
+    "score1": "Taxus Bagata is cut, but doesn't represent any simple geometric",
+    "score2": "Taxus Bagata is cut, and represents a geometric form",
+    "score3": "Taxus Bagata is cut, and represents a geometric form, with same sizes or symmetrical shapes",
+    "tags": [
+      "Time Management"
+    ]
+  },
+  {
+    "code": "T-024",
+    "criterionName": "Technical Difficulty Level in time allowed",
+    "category": "Time Management",
+    "sector": "Creative & Design",
+    "score0": "Incomplete or low level of technical complexity in time allowed",
+    "score1": "Simple technical design easily achieved in the time allowed",
+    "score2": "Complex technical design in the time allowed",
+    "score3": "Highly complex technical design in time allowed",
+    "tags": [
+      "Time Management"
+    ]
+  },
+  {
+    "code": "T-025",
+    "criterionName": "3.4.5: OSPF-Default Route",
+    "category": "Problem Solving",
+    "sector": "Technology & IT",
+    "score0": "No 'default inforatmon originate' command under OSPF",
+    "score1": "Default route originate configured only in one router (IR1 or CR4)",
+    "score2": "originate default route without a route-map at CR4",
+    "score3": "All configuration working, and functional check is working: In the normal condition, when you check CR1, it should prefer the default-route learning from CR4 CR1#sh ip route 0.0.0.0 Routing entry for 0.0.0.0/0, supernet Known via \"ospf 100\", distance 110, metric 4000, candidate default path * 10.10.0.118, from 10.10.0.13, 00:00:03 ago, via GigabitEthernet0/4 Route metric is 4000, traffic share count is 1 When you shut down G0/3 interface on CR4 and G0/2 interface on IR2 (in that way 10.10.0.208/30 network won't be on CR4's routing table), you should see CR1 is prefer the defaut-route coming via IR1 CR1#sh ip route 0.0.0.0 Routing entry for 0.0.0.0/0, supernet Known via \"ospf 100\", distance 110, metric 5000, candidate default path * 10.10.0.105, from 10.10.0.1, 00:33:12 ago, via GigabitEthernet0/3 Route metric is 5000, traffic share count is 1",
+    "tags": [
+      "Problem Solving"
+    ]
+  },
+  {
+    "code": "T-026",
+    "criterionName": "Problem-solving for room change request",
+    "category": "Problem Solving",
+    "sector": "Service & Care",
+    "score0": "Unable to offer a solution or dismissed the guest's concerns",
+    "score1": "Offered a basic room change without considering the guest's specific concerns about room orientation",
+    "score2": "Offered a suitable room change, considering the guest's preferences for room orientation",
+    "score3": "Offered an excellent solution, demonstrating knowledge of room orientations and showing genuine empathy for the guest's concerns",
+    "tags": [
+      "Problem Solving"
+    ]
+  },
+  {
+    "code": "T-027",
+    "criterionName": "Design - creativity and innovation Ballot 1 PLEATS/GATHERING",
+    "category": "Problem Solving",
+    "sector": "Creative & Design",
+    "score0": "Design is not very creative and/or innovative",
+    "score1": "Design is fairly creative and/or shows some innovation",
+    "score2": "Design is creative and/or shows good innovation",
+    "score3": "Design shows exceptional innovation and is very creative",
+    "tags": [
+      "Problem Solving"
+    ]
+  },
+  {
+    "code": "T-028",
+    "criterionName": "Design - creativity and innovation Ballot 2 POCKETS",
+    "category": "Problem Solving",
+    "sector": "Creative & Design",
+    "score0": "Design is not very creative and/or innovative",
+    "score1": "Design is fairly creative and/or shows some innovation",
+    "score2": "Design is creative and/or shows good innovation",
+    "score3": "Design shows exceptional innovation and is very creative",
+    "tags": [
+      "Problem Solving"
+    ]
+  },
+  {
+    "code": "T-029",
+    "criterionName": "A technical documentation of the quality database is provided for your young colleague, who will take over the responsibility for maintenance and technical support of the implemented solution soon. The following aspects are considered in the documentation: - Title, team name - Table of contents - Access to the database - Table properties - Columns, descriptions, data types - Example of recorded data The documentation is saved as 4_documentation.pdf.",
+    "category": "Documentation & Labelling",
+    "sector": "General",
+    "score0": "Documentation not provided",
+    "score1": "Optimization / rework necessary: If there is a major deviation or more than a few minor deviations - Title and subtitle are present: No - Main information only, without explanation/clarification - Short sentences, Easy to read - Documentation contains the entire task: The first 40% - Comprehensible: does a third person in technical level understand it?",
+    "score2": "Professional / Still acceptable (~80% Solution): If there are one or a few minor deviations Information provided in details: - Title and subtitle are present: Partly 40-60% - Main information, with basic explanation/clarification - Documentation contains the entire task: Between 40-60%",
+    "score3": "Excellent: The information provided in details: - Table of content - Title and subtitle are present: Yes - Main information, with excellent explanation/clarification not leaving any unclear point - Documentation contains the entire task: Between 60-100% - Direct writing style. No words like \"could, should, would.\" - Benefit for the user: Overall impression what is the aim for this documentation",
+    "tags": [
+      "Documentation & Labelling"
+    ]
+  },
+  {
+    "code": "T-030",
+    "criterionName": "Storage Box - Correct storage of items; labelled and dated and packed away in storage box",
+    "category": "Documentation & Labelling",
+    "sector": "Culinary & Hospitality",
+    "score0": "No labelling or dating at all, or very little. Storage Box messy, cluttered and dirty",
+    "score1": "Mostly labelled and dated. Storage box is clean and organised.",
+    "score2": "Almost everything labelled and dated. Storage box is very clean and organised.",
+    "score3": "Excellent and accurate labelling and dating of all ingredients with excellent attention to detail. Storage box is exceptionally clean and organised.",
+    "tags": [
+      "Documentation & Labelling"
+    ]
+  },
+  {
+    "code": "T-031",
+    "criterionName": "Text Annotations for the Exploded Diagram(sheet 2)",
+    "category": "Documentation & Labelling",
+    "sector": "Creative & Design",
+    "score0": "The text annotations are illegible and done improperly.",
+    "score1": "All text annotations are done carefully and legibly, but could be more detailed or precise.",
+    "score2": "All text annotations are clear, concise, and accurately label each component.",
+    "score3": "All text annotations are stylistically consistent, done carefully, legible, concise, and interacts with sketches in terms of the layout.",
+    "tags": [
+      "Documentation & Labelling"
+    ]
+  },
+  {
+    "code": "T-032",
+    "criterionName": "The Siemens RFID sensor \"RFID 2\" and the Turck Multiprotocol I/O Module for Ethernet of the Smart Sensor Kit are mounted mechanically and electrically according to the technical documentation. The mounting accessories provided shall be used.",
+    "category": "Documentation & Labelling",
+    "sector": "General",
+    "score0": "Not acceptable, installation not done for most of the components",
+    "score1": "Optimization/ rework necessary: If there is a major deviation or more than a few minor deviations, e.g. - Tool left on the stations, chairs, or the floor of workspace - Cable or tube not installed properly",
+    "score2": "Professional/ Still acceptable (~80% Solution): If there are one or a few minor deviations - Tools must not be left on the stations, chairs, or the floor of workspace - Cables and tubes installation could be excellent with a bit more organization",
+    "score3": "Excellent: - Tools must not be left on the stations, chairs, or the floor of workspace - Cables and tubes properly installed",
+    "tags": [
+      "Documentation & Labelling"
+    ]
+  },
+  {
+    "code": "T-033",
+    "criterionName": "The EMB is installed mechanically and electrically inside of the CP Lab trolley according to the technical documentation.",
+    "category": "Documentation & Labelling",
+    "sector": "General",
+    "score0": "Not acceptable, installation not done for most of the components",
+    "score1": "Optimization/ rework necessary: If there is a major deviation or more than a few minor deviations, e.g. - Tool left on the stations, chairs, or the floor of workspace - Cable or tube not installed properly",
+    "score2": "Professional/ Still acceptable (~80% Solution): If there are one or a few minor deviations - Tools must not be left on the stations, chairs, or the floor of workspace - Cables and tubes installation could be excellent with a bit more organization",
+    "score3": "Excellent: - Tools must not be left on the stations, chairs, or the floor of workspace - Cables and tubes properly installed",
+    "tags": [
+      "Documentation & Labelling"
+    ]
+  },
+  {
+    "code": "T-034",
+    "criterionName": "The IIoT Kit Machine Learning is installed mechanically and electrically on the CP Lab Conveyor system according to the technical documentation, so that a workpiece can be detected by the camera when the carrier s[Garment]s at the end of the conveyor belt.",
+    "category": "Documentation & Labelling",
+    "sector": "General",
+    "score0": "Not acceptable, installation not done for most of the components",
+    "score1": "Optimization/ rework necessary: If there is a major deviation or more than a few minor deviations, e.g. - Tool left on the stations, chairs, or the floor of workspace - Cable or tube not installed properly",
+    "score2": "Professional/ Still acceptable (~80% Solution): If there are one or a few minor deviations - Tools must not be left on the stations, chairs, or the floor of workspace - Cables and tubes installation could be excellent with a bit more organization",
+    "score3": "Excellent: - Tools must not be left on the stations, chairs, or the floor of workspace - Cables and tubes properly installed",
+    "tags": [
+      "Documentation & Labelling"
+    ]
+  },
+  {
+    "code": "T-035",
+    "criterionName": "Overall appearance of the natural stone wall",
+    "category": "Presentation & Visual Appeal",
+    "sector": "Construction & Building",
+    "score0": "The wall needs to be redone. Lack of regularity and uniformity in the joints, many small stones. The stones are not aligned or properly adjusted. The structure is not stable as there is no intersection of the stones with the underlying stone by at least 1/3 in more than half of the wall face. Poor overall appearance due to lack of stone selection.",
+    "score1": "The wall has been completed. There is structural stability, the intersection of the stones with the underlying stone is at least 1/3 in at least 75% of the wall. Wall appearance is according to the external standard. The wall face is flat in more than half of the wall. Most of the stones are properly adjusted and aligned.",
+    "score2": "The cornerstones have been selected. The intersection of all stones with the underlying stone by 1/3 is in more than 75% of the wall. Excellent regularity in stone size and joint uniformity. More than 75% of all stones are properly adjusted and aligned. The structure is stable. Perfect visual harmony and appearance integrated with the environment.",
+    "score3": "The cornerstones are specially chosen and are excellent for the corner. The intersection of all stones with the underlying stone is at least 1/3. Extraordinary regularity in stone size and joint uniformity. All stones have been adjusted or chosen to ensure horizontal and vertical alignments, creating a perfect surface without undulations. The structure is very stable. Perfect visual harmony and appearance integrated with the environment, maintaining the same style throughout.",
+    "tags": [
+      "Presentation & Visual Appeal"
+    ]
+  },
+  {
+    "code": "T-036",
+    "criterionName": "Clear Understanding of Visual Storytelling",
+    "category": "Presentation & Visual Appeal",
+    "sector": "Creative & Design",
+    "score0": "The animations lack a clear understanding of visual storytelling. The sequences do not effectively convey the core messages of the posters, and the transitions between slides are confusing or disjointed. The overall impact is weak, failing to engage the audience or communicate the intended message.",
+    "score1": "The animations demonstrate a basic understanding of visual storytelling. The sequences convey the core messages of the posters to some extent, but the storytelling is not fully compelling. The overall impact is moderate, with room for improvement in clarity and engagement.",
+    "score2": "The animations show a good understanding of visual storytelling. The sequences effectively convey the core messages of the posters in a visually compelling manner. Transitions between slides contribute to a coherent narrative. The overall impact is strong, successfully engaging the audience and clearly communicating the intended message.",
+    "score3": "The animations demonstrate an excellent understanding of visual storytelling. The sequences are highly effective in conveying the core messages of the posters, with innovative and visually compelling elements. Transitions between slides enhance the narrative flow. The overall impact is outstanding, deeply engaging the audience and powerfully communicating the intended message.",
+    "tags": [
+      "Presentation & Visual Appeal"
+    ]
+  },
+  {
+    "code": "T-037",
+    "criterionName": "Quality of external rendered image.",
+    "category": "Presentation & Visual Appeal",
+    "sector": "General",
+    "score0": "Materials not applied. Additional scene entourage and/or vegetation not added. Little or no updates to scene lighting. Little or no consideration given to image composition and camera angle.",
+    "score1": "Some materials applied and improvements to base model made. Some Additional scene entourage and/or vegetation added. Some updates to scene lighting. Consideration given to image composition and camera angle.",
+    "score2": "Majority of materials applied and improvements to base model made. Considerable amount of additional scene entourage and vegetation added. Considerable updates made to scene lighting. Consideration given to image composition and camera angle, incorporating concepts such as rule-of-thirds and focal length.",
+    "score3": "Materials applied and improvements to base model made. All Additional scene entourage and vegetation added. Complete updates made to scene lighting. Excellent image composition and camera angle, incorporating concepts such as rule-of-thirds and focal length.",
+    "tags": [
+      "Presentation & Visual Appeal"
+    ]
+  },
+  {
+    "code": "T-038",
+    "criterionName": "Appropriate use of visualization types for different data sets",
+    "category": "Presentation & Visual Appeal",
+    "sector": "Technology & IT",
+    "score0": "The selection of visualization types is inappropriate for the data sets, leading to confusion and misinterpretation, severely impacting data comprehension",
+    "score1": "While some visualization types are suitable for the data, there's a noticeable lack of optimization, suggesting potential for better alignment with data characteristics for improved clarity",
+    "score2": "The visualization types chosen are generally appropriate for the data sets, effectively conveying the information, though there might be minor areas where different visualizations could enhance understanding",
+    "score3": "The report demonstrates an exemplary selection of visualization types, each tailored to the specific nature of the data, significantly enhancing data interpretation and facilitating deep insights",
+    "tags": [
+      "Presentation & Visual Appeal"
+    ]
+  },
+  {
+    "code": "T-039",
+    "criterionName": "Digital Twin representation - same programs in Roboguide and on robot",
+    "category": "Presentation & Visual Appeal",
+    "sector": "Technology & IT",
+    "score0": "The actions depicted in both the simulation and the actual operation conducted in the robot cell exhibit substantial differences.",
+    "score1": "Certain similarities exist alongside discrepancies, including the identification of more than three differences, between the actions depicted in the simulation and those carried out in the real operation within the robot cell.",
+    "score2": "There are few discrepancies, such as recognizing fewer than three differences between the actions depicted in the simulation and those executed in the actual operation within the robot cell.",
+    "score3": "The actions depicted in both the simulation and the actual operation conducted in the robot cell are fundamentally identical, although they demonstrate differences in operational speed.",
+    "tags": [
+      "Presentation & Visual Appeal"
+    ]
+  },
+  {
+    "code": "T-040",
+    "criterionName": "Handling and piping of paste",
+    "category": "Presentation & Visual Appeal",
+    "sector": "Culinary & Hospitality",
+    "score0": "Nor presented or could not effectively pipe rosettes due to paste and or ability. Not fully familiar with the techniques and knowledge required to produce this product.",
+    "score1": "Basic handling techniques with some knowledge, demonstrated piping skills but ingredients not prepared correctly and paste too firm or too soft",
+    "score2": "Good handling techniques with clear knowledge of how to use the various ingredients together to produce acceptable paste. Well piped although with difficulty",
+    "score3": "Expert handling techniques with thorough understanding of making the paste in order to pipe at its optimum. Piped consistent symmetrical rosettes",
+    "tags": [
+      "Presentation & Visual Appeal"
+    ]
+  },
+  {
+    "code": "T-041",
+    "criterionName": "General aspect [Surface], including Tech. conformability",
+    "category": "Technical Accuracy",
+    "sector": "Construction & Building",
+    "score0": "Construction of the wall not completed in accordance with the specification and the design, not positioned square and plumb, not covered in plasterboard. Metal studs are not in the correct place, the plasterboard is not installed or there are large gaps between the plasterboard joints (anything over [X] mm is a large gap). Plasterboards not fitted in correct position.",
+    "score1": "Constructed of the is in accordance with the specification and the design, positioned square and plumb, covered in plasterboard. Plasterboard cut and to size, some visible marks. Metal studs in correct place, the plasterboard is staggered through the system, gaps between the plasterboard joints, plasterboards fitted in the correct position.",
+    "score2": "Construction of the wall is built in accordance with the specification and the design, correctly positioned, square and plumb, correct layer of plasterboard used, plasterboard cut, no visible marks, look's pleasing to the eye. Metal studs in correct place maximum 600 on centre, correct stagger of plasterboard through the system, small gaps between the plasterboard joints, plasterboards fitted in the correct position.",
+    "score3": "Construction of the wall is in accordance with the specification and the design, correctly positioned, square and plumb, correct layer of plasterboard used, plasterboard cut cleanly, no visible marks, look's pleasing to the eye. Metal studs in correct place maximum 600 on centre, correct stagger of plasterboard through the system, no gaps between the plasterboard joints, plasterboards fitted in the correct position.",
+    "tags": [
+      "Technical Accuracy"
+    ]
+  },
+  {
+    "code": "T-042",
+    "criterionName": "Contour damage, broken tools and conformity to drawing; all sides. (Part 1)",
+    "category": "Technical Accuracy",
+    "sector": "Manufacturing & Engineering",
+    "score0": "Evidence of collision with cutting tools or arbours. Damage must be evident to touch.",
+    "score1": "Over 25% of project complete. Visual damage from cutting tools or arbours. Any area showing evidence of roughing toolpaths that have not been finished. Major evidence of tools leading in/out, stall marks etc.",
+    "score2": "Over 55% of project complete. Good - No collision marks from tools or arbours. Some minor evidence of tools leading in/out, stall marks etc.",
+    "score3": "Excellence! Over 85% of project complete No marks from the lead-in - lead-out process. No crash marks or contour damage. All features are finished with a finishing strategy (No evidence of roughing toolpaths evident)",
+    "tags": [
+      "Technical Accuracy"
+    ]
+  },
+  {
+    "code": "T-043",
+    "criterionName": "Accuracy of sketches (sheet 2)",
+    "category": "Technical Accuracy",
+    "sector": "Creative & Design",
+    "score0": "Key details or features are missing, and the overall structure is not recognizable.",
+    "score1": "Details are clear enough to be identifiable, but still have a few noticeable errors or exaggerations.",
+    "score2": "Details are refined, lines are smooth, proportions are relatively precise, and errors are minimal.",
+    "score3": "Details are abundant, accurately conveying the object's characteristics.",
+    "tags": [
+      "Technical Accuracy"
+    ]
+  },
+  {
+    "code": "T-044",
+    "criterionName": "Nail Art is neat and precise and applied to all 10 fingers",
+    "category": "Technical Accuracy",
+    "sector": "Service & Care",
+    "score0": "Nails are not all neat and precise, showing considerable low levels of techniques",
+    "score1": "7 out of 10 fingers are neat and precise, showing variable level of techniques",
+    "score2": "8/9 out of 10 fingers are neat and precise, showing good level of techniques",
+    "score3": "All 10 fingers are neat and precise showing high level of techniques",
+    "tags": [
+      "Technical Accuracy"
+    ]
+  },
+  {
+    "code": "T-045",
+    "criterionName": "Mid and End Clamps accuracy check. 6 clamps are on [Garment] side, you need to find out the error",
+    "category": "Technical Accuracy",
+    "sector": "General",
+    "score0": "If more than four (4) clamps has the error or the gap is more than [X] mm in any of the clamp",
+    "score1": "Four (4) are having less than [X] mm difference",
+    "score2": "Five (5) are having less than [X] mm difference",
+    "score3": "All six (6) clamps are having less than [X] mm difference",
+    "tags": [
+      "Technical Accuracy"
+    ]
+  },
+  {
+    "code": "T-046",
+    "criterionName": "Accuracy and confidence in answering detailed questions",
+    "category": "Technical Accuracy",
+    "sector": "Service & Care",
+    "score0": "Unable to answer most questions or provided incorrect information",
+    "score1": "Answered some questions but often needed to check information",
+    "score2": "Answered most questions accurately with occasional reference to information systems",
+    "score3": "Answered all questions accurately and confidently without needing to check",
+    "tags": [
+      "Technical Accuracy"
+    ]
+  },
+  {
+    "code": "T-047",
+    "criterionName": "Quality of the typographic Design - based on \"How to Use Font Effectively\"",
+    "category": "Creativity & Design",
+    "sector": "Creative & Design",
+    "score0": "The typography fails to adhere to the guidelines outlined in \"How to Use Font Effectively.\" Paragraph and letter spacing are inadequate, making the text appear cluttered. There is little distinction between capital and lowercase letters, and character shapes are difficult to distinguish. Font weight and width are poorly chosen, reducing readability. Color contrast does not comply with accessibility standards, making the text hard to read.",
+    "score1": "The typography shows some adherence to the guidelines in \"How to Use Font Effectively,\" but improvements are needed. Paragraph and letter spacing are somewhat adequate but could be better. There is a noticeable difference between capital and lowercase letters, but character shape distinction needs improvement. Font weight and width are chosen better, but readability is still impacted. Color contrast is present but could be enhanced for better accessibility.",
+    "score2": "The typography effectively follows the guidelines in \"How to Use Font Effectively.\" Paragraph and letter spacing are well-managed, ensuring readability. There is a clear distinction between capital and lowercase letters, and character shapes are easily distinguishable. Font weight and width are well-chosen, enhancing readability. Color contrast complies with accessibility standards, making the text clear and easy to read.",
+    "score3": "The typography excels in adhering to the guidelines from \"How to Use Font Effectively.\" Paragraph and letter spacing are perfect, providing excellent readability. There is a distinct difference between capital and lowercase letters, and character shapes are clearly differentiated. Font weight and width are optimally chosen, ensuring high readability even at smaller sizes. Color contrast follows guidelines, making the text highly accessible and easy to read for all viewers. The balance of these elements results in a visually appealing and highly readable design.",
+    "tags": [
+      "Creativity & Design"
+    ]
+  },
+  {
+    "code": "T-048",
+    "criterionName": "Overall impression of the Beard design (free choise)",
+    "category": "Creativity & Design",
+    "sector": "Service & Care",
+    "score0": "Low Skill: The Hairdresser has no understanding of the client wishes and result does not meet these focal points: continuity and creativity for the beard design. The beard design does not have balance/portion or all beard has removed. This would be redone before a client leave the salon.",
+    "score1": "Basic Skill: The Hairdresser has an acceptable skill level and meet the client wishes. The result meets only a few focal points: continuity and creativity for the beard design. The beard design balance and proportion is on basic level. The client would pay not probably not go back.",
+    "score2": "Good Skill: The Hairdresser has a good understanding of the client wishes. The final result meets mostly all focal points: continuity and creativity for the Beard design. The overall design fits for the client. The client would be happy with the result.",
+    "score3": "Excellent Skill: The Hairdresser has an excellent understanding of the client wishes. The result meets these focal points: continuity and creativity for Beard design. The continuity of the beard design shows a high level of design skills. Beard design fits for the client perfectly. The client would be very impressed with the result and would highly recommend the stylist.",
+    "tags": [
+      "Creativity & Design"
+    ]
+  },
+  {
+    "code": "T-049",
+    "criterionName": "Orientation and Placement of Component Names",
+    "category": "Creativity & Design",
+    "sector": "Manufacturing & Engineering",
+    "score0": "Nearly no component names are visible and can be assigned to the corresponding component. Text font is too small. Text is readable in more than two directions. A lot of overlaps of text onto other text, outlines, vias, pads or holes. Component values are turned on. Missing names. No attention is paid to the silk screen at all.",
+    "score1": "Only some component names are visible and can hardly be assigned to the corresponding component. Text font is suitable large. Text is readable only in two directions. Many overlaps of text onto other text, outlines, vias, pads or holes. Component values are turned off.",
+    "score2": "Component names are mostly visible and can mostly be assigned to the corresponding component. Text font is suitable large. Text is readable only in two directions. Mostly no overlap of text onto other text, outlines, vias, pads or holes. Component values are turned off.",
+    "score3": "Component names are visible and can be assigned to the corresponding component. Text font is suitable large. Text is readable only in two directions. No overlap of text onto other text, outlines, vias, pads or holes. Component values are turned off.",
+    "tags": [
+      "Creativity & Design"
+    ]
+  },
+  {
+    "code": "T-050",
+    "criterionName": "- User Profile Screen UI - Quality of design and user experience",
+    "category": "Creativity & Design",
+    "sector": "Technology & IT",
+    "score0": "The design of the user profile screen is substandard, lacking in user-friendliness, and deviates significantly from the Belle [product] Lyonnais style guide, resulting in a disjointed user experience",
+    "score1": "The design incorporates basic user-friendly elements but only partially aligns with the Belle [product] Lyonnais style guide, offering a moderate user experience with room for improvement",
+    "score2": "The user interface design is well-executed, providing a user-friendly experience, and mostly adheres to the Belle [product] Lyonnais style guide, ensuring consistency and usability",
+    "score3": "The design is exemplary, featuring an intuitive user interface that fully complies with the Belle [product] Lyonnais style guide, enhancing user engagement and satisfaction through a seamless experience",
+    "tags": [
+      "Creativity & Design"
+    ]
+  },
+  {
+    "code": "T-051",
+    "criterionName": "Overall impression of design",
+    "category": "Creativity & Design",
+    "sector": "Construction & Building",
+    "score0": "Incomplete multiple defects with poor opacity, non straight lines, poor corners, heavy brush and roller marks visable, viewed from a distance of 1.5 metre",
+    "score1": "Complete with minors faults in lines and curves with +/-[X] mm, a minimum of 2 coats of paint applied, and no runs. Moderate brush and roller marks visible from 1.5 metres away",
+    "score2": "Complete with minors faults in lines and curves with +/-[X] mm, a minimum of 2 coats of paint applied, good opacity, minor brush and roller marks visable from 1.5 metres away and no runs.",
+    "score3": "Complete with no faults in lines and curves with +/-[X] mm, a minimum of 2 coats of paint applied, excellent opacity in all areas and no brush or roller marks visable from 1.5 metres away",
+    "tags": [
+      "Creativity & Design"
+    ]
+  },
+  {
+    "code": "T-052",
+    "criterionName": "Overall look of the Nail Art in relation to the theme.",
+    "category": "Creativity & Design",
+    "sector": "Service & Care",
+    "score0": "Not used three different techniques, considerable limitations in skills and complexity. Poor overall look that does not match with the theme.",
+    "score1": "Used three different techniques, basic level of complexity small amount of freehand work and neatness. Overall look is average. Slightly matches with the theme.",
+    "score2": "Used three techniques, detailed level of skill showing good level of complexity with some freehand work and neatness. Good overall look, matches with the theme.",
+    "score3": "Used three techniques, very detailed level of skill, high level of complexity with a majority of freehand work and neatness. Excellent overall look. Perfectly matches with the theme.",
+    "tags": [
+      "Creativity & Design"
+    ]
+  },
+  {
+    "code": "T-053",
+    "criterionName": "Mitres on the opening",
+    "category": "Technical Skills & Craftsmanship",
+    "sector": "Construction & Building",
+    "score0": "Members are not lined through and do not meet requirements, one section of moulding is higher than another, one section of moulding is twisted, the sections are at the wrong angle leaving a gap and they will be out of plumb and level. The mitre is not filled at all or has multiple tooling marks, marking out lines will still be visible, the moulding sections are not filled on the lengths. The moulding sections are left dirty with jointing compound with the surrounding wall area contaminated with compound with no attempt made to remove it.",
+    "score1": "The members are lined through and meet on the same plane, the moulding sections are at the same level, there is no twist in the sections but they may not be perfectly plumb or level. The sections are cut to the correct angle leaving no gap, the mitre is generally filled flush but with small missing areas and some tool marks, marking out lines could still be visible. The moulding sections are filled along their length but with small, missed areas, the moulding sections are left clean with the surrounding wall area generally clean with some brush or sponge marks or some remaining compound.",
+    "score2": "All members are lined through and meet on the same plane, the moulding sections are at the same level, the moulding sections are flat, level and plumb the moulding sections are cut to the correct angle and meet in a sharp connection. The mitres are filled flush and finished so there is no obvious difference between them but there may be some very minor tool marks, there will be no evidence of marking out lines, the moulding sections are filled along their length so as there are no missing areas or tool marks. The moulding sections and the surrounding area is clean but there may be some brush or sponge marks.",
+    "score3": "All members are lined through and meet on the same plane, the moulding sections are at the same level, the moulding sections are flat, level, and plumb, the moulding sections are cut to the correct angle and meet in a sharp connection, the mitres are filled flush and finished so there is no obvious difference between them with no tool marks, there will be no evidence of marking out lines. The moulding sections are filled along their length so as there are no missing areas or tool marks, the moulding sections and the surrounding area is perfectly clean with no brush or sponge marks.",
+    "tags": [
+      "Technical Skills & Craftsmanship"
+    ]
+  },
+  {
+    "code": "T-054",
+    "criterionName": "All drilled holes assessed for quality",
+    "category": "Technical Skills & Craftsmanship",
+    "sector": "General",
+    "score0": "Unsatisfactory One (1) or more holes are not drilled to the drawing specifications. Refer to the assessment of holes with the drill check shafts. No tampering or deforming of the shape of the drilled hole through filing or reaming is evident. No sharp burr is present on the through side of any of the drilled holes. There is no evidence that a drilled hole on a part has been filled in with a weld and then redrilled. No weld or spatter inside the hole. Drilling quality on these parts would not meet the minimum requirements. If this is the Judgement for drilling quality, zero (0) marks will be awarded.",
+    "score1": "Satisfactory Through visual inspection, six (6) holes are deburred greater or less than a depth of 0.[X] mm. Refer to the sample plate. A burr on the drill side of two (2) holes, indicating the hole has not been deburred. On four (4) holes, deburring on both sides of the hole is uneven (erratic), indicating incorrect drilling speed when deburring. Drilling quality on these parts would meet the minimum expectations. If this is the Judgement for drilling quality, one (1) mark will be awarded.",
+    "score2": "Good Four (4) holes are deburred greater/less than a depth of 0.[X] mm. Refer to the sample plate. There is a burr on the drill side of 1 hole, indicating the hole has not been deburred. On four (4) holes, deburring on both sides of the hole is uneven (erratic), indicating incorrect drilling speed when deburring. Drilling quality on these parts would confidently meet the requirements. If this is the Judgement for drilling quality, two (2) marks will be awarded.",
+    "score3": "Excellent Two (2) holes are deburred greater or less than a depth of 0.[X] mm. Refer to the sample plate. There is no burr present on any of the drill sides of the holes, indicating all holes have been deburred. On two (2) holes, deburring on both sides of the hole is uneven (erratic), indicating incorrect drilling speed when deburring. Drilling quality on these parts would meet and exceed expectations. If this is the Judgement for the drilling, three (3) marks will be awarded.",
+    "tags": [
+      "Technical Skills & Craftsmanship"
+    ]
+  },
+  {
+    "code": "T-055",
+    "criterionName": "Overall impression of the haircut",
+    "category": "Technical Skills & Craftsmanship",
+    "sector": "Service & Care",
+    "score0": "Low Skill: The Hairdresser has no understanding of the client wishes and result does not meet these focal points: line, direction, form, texture and balance/proportion. There is no continuity/evenness of the haircut. Length of the cut is too short or too long for the design. The proportion of texture within the design is not balanced. The hair cut would need to be redone before a client leave the salon. The client would not recommend the stylist.",
+    "score1": "Basic Skill: The Hairdresser has an acceptable skill level and meets professional standards and client wishes. The result meets only a few focal points: line, direction, form, texture, balance/proportion. The perimeter cut is almost the same as the clients wish, but many parts of the length of the cut can be shorter or longer than the clients wish. The proportion of texture within the design is not balanced in all areas. The client would pay for the cut but would not go back.",
+    "score2": "Good Skill: The Hairdresser has good understanding of the client wishes. The result meets mostly all focal points: line, direction, form, texture, balance/proportion. The perimeter cut is the same as the clients wish. Length of the cut can be some part slightly shorter/longer than the clients wish. There is proportion of texture within the design. The client would be happy with the result but not necessarily recommend the stylist.",
+    "score3": "Excellent Skill: The Hairdresser has an excellent understanding of the client wishes. Result meets these focal points: line, direction, form, texture, balance/proportion. The perimeter cut is the same as the clients wish. Length of the cut is the same as the clients wish. There is excellent proportion of texture within the design. The client would be very impressed with the result and would highly recommend the stylist.",
+    "tags": [
+      "Technical Skills & Craftsmanship"
+    ]
+  },
+  {
+    "code": "T-056",
+    "criterionName": "- Schematic quality",
+    "category": "Technical Skills & Craftsmanship",
+    "sector": "Manufacturing & Engineering",
+    "score0": "Schematic is incorrect. No signal flow from left to right (unless better clarity results from right to left signal flow). Component number and designations not used in many places. +V at the bottom many times, GND and -V at the top many times. Schematic is crowded. Supply rail connections for ICs often missing. Many long connecting wires used, making the schematic hard to follow. Many bypass caps. missing. Unused inputs are not tied to GND at all.",
+    "score1": "Schematic is correct. Signal flow from left to right (unless better clarity results from right to left signal flow). +V at the top, GND and -V at the bottom most of the time. Schematic is crowded. Supply rail connections for ICs shown. Some long connecting wires used making the schematic hard to follow. Bypass caps. present on schematic though often not near IC. Many unused inputs are not tied to GND.",
+    "score2": "Schematic is easy to follow. Signal flow from left to right (unless better clarity results from right to left signal flow). Component number and designations mostly in the same plane and place. +V at the top, GND and -V at the bottom most of the time. Schematic is not crowded. Supply rail connections for ICs shown. Bypass Caps mostly placed beside IC they belong to. Unused inputs mostly tied to GND.",
+    "score3": "Schematic is very easy to follow. Signal flow from left to right (unless better clarity results from right to left signal flow). Component number and designations always in the same plane and place. +V at the top, GND and -V at the bottom. Schematic is not crowded. Supply rail connections to ICs grouped together and easily found. Bypass Caps placed beside IC they belong to. Unused inputs tied to GND.",
+    "tags": [
+      "Technical Skills & Craftsmanship"
+    ]
+  },
+  {
+    "code": "T-057",
+    "criterionName": "Typographic Hierarchy and spacing",
+    "category": "Technical Skills & Craftsmanship",
+    "sector": "Creative & Design",
+    "score0": "The typography does not enhance readability, making the text difficult to read due to inappropriate font choices, inconsistent leading (line spacing), and poor alignment. The overall presentation is cluttered, detracting from both the readability and the aesthetic appeal of the booklet.",
+    "score1": "There is an attempt to use typography that enhances readability, but it falls short due to suboptimal font choices, inconsistent leading, or minor alignment issues. The typography contributes somewhat to the aesthetic appeal, but the reading experience is hindered by occasional readability issues.",
+    "score2": "The typography chosen effectively enhances readability, with appropriate font choices, consistent leading, and careful alignment contributing to an easy and enjoyable reading experience. Typography significantly enhances the aesthetic appeal of the booklet while ensuring that the information is clear and accessible to the target audience.",
+    "score3": "The typography used demonstrates exceptional quality in enhancing readability, with thoughtful font selection, meticulous attention to leading and alignment, and an overall layout that provides an outstanding reading experience. Typography not only enhances the booklet's aesthetic appeal but also supports the narrative flow, ensuring that information about Alpine Hemp Technology is easily comprehensible and engaging for the target audience.",
+    "tags": [
+      "Technical Skills & Craftsmanship"
+    ]
+  },
+  {
+    "code": "T-058",
+    "criterionName": "3.7.4: SSH -IR1/IR2",
+    "category": "Technical Skills & Craftsmanship",
+    "sector": "Technology & IT",
+    "score0": "SSH disabled on the devices",
+    "score1": "IP SSH version 1.99 configured and not limited to given MAC algorithms",
+    "score2": "IP SSH version 2 configured and not limited to given MAC algorithms",
+    "score3": "On IR1 and IR2, \"show ip ssh\" output IR1#sh ip ssh SSH Enabled - version 2.0 Authentication methods:publickey,keyboard-interactive,password Authentication Publickey Algorithms:x509v3-ssh-rsa,ssh-rsa Hostkey Algorithms:x509v3-ssh-rsa,ssh-rsa Encryption Algorithms:aes128-ctr,aes192-ctr,aes256-ctr MAC Algorithms:hmac-sha2-512,hmac-sha2-256 KEX Algorithms:diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1 Authentication timeout: 120 secs; Authentication retries: 3 Minimum expected Diffie Hellman key size : 2048 bits IOS Keys in SECSH format(ssh-rsa, base64 encoded): IR1.[competition].net",
+    "tags": [
+      "Technical Skills & Craftsmanship"
+    ]
+  },
+  {
+    "code": "T-059",
+    "criterionName": "Posters work well together, as well as separately",
+    "category": "Technical Skills & Craftsmanship",
+    "sector": "Creative & Design",
+    "score0": "The three posters lack coordination and do not work well together. Each poster appears disjointed and does not convey a cohesive message when viewed as a series. Individually, the posters fail to effectively communicate the intended message.",
+    "score1": "The three posters show some attempt at coordination but still lack a strong cohesive element. While there are some common design elements, the posters do not fully work together as a series. Individually, the posters communicate the message but lack impact.",
+    "score2": "The three posters are well-coordinated, sharing common design elements that create a cohesive series. Each poster works effectively both as part of the series and on its own. The messages are clear and consistent across all posters, enhancing the overall impact.",
+    "score3": "The three posters demonstrate exceptional coordination, with a strong and cohesive design that ties them together as a compelling series. Each poster is highly effective both individually and as part of the series. The visual and thematic elements are seamlessly integrated, creating a powerful and unified campaign that effectively communicates the intended message.",
+    "tags": [
+      "Technical Skills & Craftsmanship"
+    ]
+  },
+  {
+    "code": "T-060",
+    "criterionName": "Typography (spacing, leading, font choice), Hierarchy",
+    "category": "Technical Skills & Craftsmanship",
+    "sector": "Creative & Design",
+    "score0": "The typography lacks consideration for spacing, leading, and font choice, resulting in poor readability and aesthetic coherence. There is no discernible hierarchy in the text elements, making it challenging for viewers to navigate and prioritise information.",
+    "score1": "There is a basic attempt at spacing, leading, and font choice, but improvements are needed for better readability and visual appeal. Some effort is made to establish hierarchy, but important information may not stand out optimally. The typography and hierarchy somewhat support the poster's message.",
+    "score2": "The typography shows good consideration for spacing, leading, and font choice, enhancing readability and aesthetic appeal. There is a clear hierarchy in the text elements, guiding viewers through the poster with emphasis on key information.",
+    "score3": "The typography is exemplary, with meticulous attention to spacing, leading, and font choice that enhances readability and visual impact. The hierarchy is exceptionally well-defined, ensuring optimal emphasis on key information and guiding viewers through the poster effortlessly. The typography and hierarchy are integral to the poster's success",
+    "tags": [
+      "Technical Skills & Craftsmanship"
+    ]
+  },
+  {
+    "code": "T-061",
+    "criterionName": "Overall impression of the hair style and finishing",
+    "category": "Quality of Finish",
+    "sector": "Service & Care",
+    "score0": "Low Skill: The Hairdresser has no understanding of the client wishes and result does not meet these focal points: line, direction, form, texture and balance/proportion. The styling is either too big or too small. The hair is styled in the wrong direction to what the client wants. The texture is too curly or too straight. The style does not have balance/proportion. This would be redone before a client leave the salon. The client would not recommend the stylist.",
+    "score1": "Basic Skill: The Hairdresser has an acceptable skill level and meets clients wishes. The result meets only a few focal points: line, direction, form, texture, balance/proportion. The styling texture has not as smooth as the clients wishes and the form does not have balance/portion. The client would pay for the styling but would not go back.",
+    "score2": "Good Skill: The Hairdresser has a good understanding of the client wishes. The final result meets mostly all focal points: line, direction, form, texture and balance/proportion. The styling texture is smooth and controlled. The styling enhanced the design. The client would be happy with the result.",
+    "score3": "Excellent Skill: The Hairdresser has an excellent understanding of the client wishes. The result meets the focal points: line, direction, form, texture, balance/proportion. The styling is balance/portioned, The hair has a smooth controlled finish. The hair has shine to complement and enhance the design. The client would be very impressed with the result and would highly recommend the stylist.",
+    "tags": [
+      "Quality of Finish"
+    ]
+  },
+  {
+    "code": "T-062",
+    "criterionName": "[Garment] construction quality ( neckline/armhole )",
+    "category": "Quality of Finish",
+    "sector": "Creative & Design",
+    "score0": "TOP has been poorly constructed, techniques are incorrect or show low level industry finishes, with low quality work or incomplete. Most of the neckline/armhole seams are uneven, not straight, inconsistent. Tension too loose or too tight. Neckline/armhole seams are pulling or stretched.",
+    "score1": "TOP has been constructed with techniques showing some low level industry finishes. Quite a few of the neckline/armhole seams are uneven, not straight, inconsistent. Tension too loose or too tight. Quite a few neckline/armhole seams are pulling or stretched.",
+    "score2": "TOP has been fairly well constructed, techniques show mid level industry finishes, with mid quality work. Only a couple of the neckline/armhole seams are uneven, not straight, inconsistent. Tension too loose or too tight. Only a couple of neckline/armhole seams are pulling or stretched.",
+    "score3": "TOP has been very well constructed, techniques show high level finishes, with exceptional quality work. Most of the neckline/armhole seams are even, straight, consistent. Tension is not too loose or too tight. Most of the neckline/armhole seams are not pulling or stretched.",
+    "tags": [
+      "Quality of Finish"
+    ]
+  },
+  {
+    "code": "T-063",
+    "criterionName": "External [Surface]f elevation A to a Q4 standard",
+    "category": "Quality of Finish",
+    "sector": "Construction & Building",
+    "score0": "No tape installed. Minimum amount of jointing compound used and the paper tape not fixed but cut to correct length. The taper of the plasterboard not filled out.",
+    "score1": "Paper tape installed with compound. Small amount of tape blebbing on the joint. The taper of the plasterboard filled but not fully flush. The entire surface of the plasterboard has coverage with defects and air blebs.",
+    "score2": "Plasterboard fully covered to a flat even surface with minimum amount of defects. At least 75% of the wall should be to a good surface finish.",
+    "score3": "The Paper tape has been installed full length of the joint with no visible defects and no blebs in the joint. Plasterboards are fully covered with materials to a flat finished surface with no defects or misses. Surface edges must be clean and free from extra materials.",
+    "tags": [
+      "Quality of Finish"
+    ]
+  },
+  {
+    "code": "T-064",
+    "criterionName": "LED display installation finishing product is delicate and high quality",
+    "category": "Quality of Finish",
+    "sector": "Manufacturing & Engineering",
+    "score0": "Incomplete or obvious gaps between unit borders, panels are noticeably uneven, affecting the normal display of images.",
+    "score1": "The gap between individual panels is lower than the professional standard, and the panels are obviously uneven, which affects the normal display of images to some extent.",
+    "score2": "Compliance with professional standards: invisible gaps between panels, individual [component] unevenness, does not affect the normal display of the image.",
+    "score3": "Conforms to professional standards with elements of good practice: gaps between panels are completely invisible, all panels are flat and the display is perfect.",
+    "tags": [
+      "Quality of Finish"
+    ]
+  },
+  {
+    "code": "T-065",
+    "criterionName": "Sanded - Surface finish of all front faces",
+    "category": "Quality of Finish",
+    "sector": "Construction & Building",
+    "score0": "Sanding to an unacceptable standard - many bumps; areas not sanded; machine marks present; not suitable to apply finish",
+    "score1": "Sanding to an acceptable standard - some bumps; most areas sanded; some machine marks present; acceptable to apply finish",
+    "score2": "Sanding to a good standard - limited bumps; most areas sanded; little or no machine marks; good surface to apply finish",
+    "score3": "Sanding to an excellent standard - no bumps; all areas sanded; no machine marks; very good surface to apply finish",
+    "tags": [
+      "Quality of Finish"
+    ]
+  },
+  {
+    "code": "T-066",
+    "criterionName": "Sanded - Surface finish of inside edges",
+    "category": "Quality of Finish",
+    "sector": "Construction & Building",
+    "score0": "Sanding to an unacceptable standard - many bumps; areas not sanded; machine marks present; not suitable to apply finish",
+    "score1": "Sanding to an acceptable standard - some bumps; most areas sanded; some machine marks present; acceptable to apply finish",
+    "score2": "Sanding to a good standard - limited bumps; most areas sanded; little or no machine marks; good surface to apply finish",
+    "score3": "Sanding to an excellent standard - no bumps; all areas sanded; no machine marks; very good surface to apply finish",
+    "tags": [
+      "Quality of Finish"
+    ]
+  },
+  {
+    "code": "T-067",
+    "criterionName": "Welding Quality GMAW (135)",
+    "category": "Joints & Assembly",
+    "sector": "General",
+    "score0": "Unsatisfactory The measured fillet weld is the correct size stated on the weld symbol or within tolerance of the weld size and length, as stated on the TD. Porosity/gas holes are visible on four (4) welds. One (1) or more welds will have a slag trap. Start/stop defects with stray arcing are visible at eight (8) welds/places One (1) or more welds will have been filed, mechanically ground, or excessively cleaned, affecting the weld profile. Six (6) weld toes will not have been cleaned, leaving excessive slag visible in the welded joint. Weld spatter is visible on eight (8) or more weld locations. MMAW on these parts would not meet the minimum requirements. If this is the Judgement for MMAW, 0 (zero) marks will be awarded.",
+    "score1": "Satisfactory Through visual inspection,six (6) welds will not match the fillet profile (be a uniform size) for MMAW. Porosity/gas holes are visible on two (2) welds. Start/stop defects and stray arcing are visible at six (6) welds/places. Weld spatter is visible at six (6) weld locations. No welds will have been filed or mechanically ground, or excessively cleaned, affecting the weld profile. Four (4) weld toes will not have been cleaned, leaving slag visible in the welded joint. MMAW on these parts would meet minimum expectations. If this is the Judgement for MMAW, one (1) mark will be awarded. If this is the Judgement for MMAW, one (1) mark will be awarded.",
+    "score2": "Good Through visual inspection, four (4) welds will not match the fillet profile (be a uniform size) for MMAW. Two (2) welds will not have blended weld toes, leaving slag visible in the welded joint. No porosity/gas holes are visible on any weld. Start/stop defects and stray arcing are visible at four (4) welds/places. Weld spatter is visible at four (4) weld locations. MMAW on these parts would confidently meet the requirements. If this is the Judgement for MMAW, two (2) marks will be awarded.",
+    "score3": "Excellent Through visual inspection, two (2) welds will not match the fillet profile (are not a uniform size) for MMAW. One (1) weld will not have blended weld toes, leaving slight slag visible in the welded joint. Start/stop defects and stray arcing are visible at two (2) welds/places. Weld spatter is visible at two (2) weld locations. MMAW on these parts would meet and exceed the expectations. If this is the Judgement for MMAW, three (3) marks will be awarded.",
+    "tags": [
+      "Joints & Assembly"
+    ]
+  },
+  {
+    "code": "T-068",
+    "criterionName": "Soldered Joint 6 Is the soldered joint soldered to standards?",
+    "category": "Joints & Assembly",
+    "sector": "Construction & Building",
+    "score0": "Solder is not visible all the way around pipe/fitting and/or Too much solder is visible or more than 1 drops there are.(Attention: It is not allowed to clean away the additional solder or any drops of solder!) and/or The pipe and/or the fitting are not clean of all soldering Flux.",
+    "score1": "Ø15-[X] mm more than 1 start point is visable or Ø28-[X] mm more than 2 start points are visible or going around the fitting with the solder when soldering",
+    "score2": "Ø15-[X] mm more than 1 start point is visible or Ø28-[X] mm more than 2 start points are visible or going around the fitting with the solder when soldering or 1 drop of soldering is on the Pipe/Fitting. Attention: The flat start point can be on both at the pipe and the fitting! This is not a fault",
+    "score3": "None of the previously described defects are present. Attention: 15-[X] mm: only 1 flat start point is allowed. 28-[X] mm: 2 flat start points are allowed It's not allowed going around the fitting with the solder when soldering.",
+    "tags": [
+      "Joints & Assembly"
+    ]
+  },
+  {
+    "code": "T-069",
+    "criterionName": "Spotlight_1: Soldering meets electrical assemble & safety requirements",
+    "category": "Joints & Assembly",
+    "sector": "Manufacturing & Engineering",
+    "score0": "Soldered product with components missing (and/or) major misalignment/excessive solder/ PCB damage/ leak solder on component/ short circuit, or anything does not meet electrical safety requirements at all.",
+    "score1": "Solder joints with too much solder (and/or) formed rough blocks",
+    "score2": "Solder joints are mostly secure but have slight misaligment and/or no obvious solder projection",
+    "score3": "Meets electrical safety requirements, solder joints with proper amount of solder on the pin and/or no damage on PCB/ no solder leak.",
+    "tags": [
+      "Joints & Assembly"
+    ]
+  },
+  {
+    "code": "T-070",
+    "criterionName": "Overall presentation (hang of garment) and pressing - ON STAND (Everything but not zipper)",
+    "category": "Joints & Assembly",
+    "sector": "Creative & Design",
+    "score0": "Over pressed or under pressed in most areas Garment pulls, drags or puckers in a few places, garment sits poorly on stand or garment incomplete",
+    "score1": "A few areas over pressed or under pressed An acceptable standard, no significant puckers, drags or pulling, sits fairly well on the stand",
+    "score2": "Hardly any areas that are over or under pressed A good standard, hardly any puckers, drags or pulling, sits quite well on the stand",
+    "score3": "Excellent pressing, no under pressing or over pressing An excellent standard, no drags, puckers or pulling, sits beautifully on the stand",
+    "tags": [
+      "Joints & Assembly"
+    ]
+  },
+  {
+    "code": "T-071",
+    "criterionName": "Overall presentation (hang of garment) and pressing - Everything but pockets, pleats/gathers ON STAND",
+    "category": "Joints & Assembly",
+    "sector": "Creative & Design",
+    "score0": "Over pressed or under pressed in most areas Garment pulls, drags or puckers in a few places, garment sits poorly on stand or garment incomplete",
+    "score1": "A few areas over pressed or under pressed An acceptable standard, no significant puckers, drags or pulling, sits fairly well on the stand",
+    "score2": "Hardly any areas that are over or under pressed A good standard, hardly any puckers, drags or pulling, sits quite well on the stand",
+    "score3": "Excellent pressing, no under pressing or over pressing An excellent standard, no drags, puckers or pulling, sits beautifully on the stand",
+    "tags": [
+      "Joints & Assembly"
+    ]
+  },
+  {
+    "code": "T-072",
+    "criterionName": "Spotlight_1: Silicone grease is applied correctly, the heat dissipation of the luminaire is good",
+    "category": "Joints & Assembly",
+    "sector": "Manufacturing & Engineering",
+    "score0": "Neither the fixture chip nor the heat sink is coated with silicone grease, but the fixture glows without flickering, the",
+    "score1": "Lamp chip and radiator silicone grease coating is not uniform, but the lamps and lanterns heat dissipation is not abnormal, the lamps and lanterns emit light there are flickering phenomenon",
+    "score2": "Lamp chip and radiator are coated with silicone grease, lamps and lanterns heat dissipation is good, but the lamps and lanterns light flicker phenomenon",
+    "score3": "Lamp chips and heat sinks are coated with silicone grease, lamps and lanterns heat dissipation is good, lamps and lanterns light without flickering",
+    "tags": [
+      "Joints & Assembly"
+    ]
+  },
+  {
+    "code": "T-073",
+    "criterionName": "All external corners",
+    "category": "Texture & Taste",
+    "sector": "Construction & Building",
+    "score0": "No angle bead is cut to the correct length and there are sharp edges. Angle beads are not securely fixed. There is more than 10% of the wall not covered. The coating is not applied evenly The angles are not straight and sharp. The surrounding area is not clean after the work.",
+    "score1": "Most of the angles are cut to the correct length with no sharp edges. The angle beads are generally securely fixed. The background is not visible through the coating. All the wall is covered with the coating. The coating is generally applied evenly with a consistent finish. The angle beads are generally clean. The angles are straight and clean with small amounts of material build up. The surrounding area is generally clean.",
+    "score2": "All the beads are cut to the correct length with no sharp edges. All the angle beads are securely fixed. No background is visible through the coating. All the wall is covered with the coating. The coating is applied to give a completely even finish. The angle beads are all clean with no coating residue. The angles are clean and sharp with no build-up of material. The surrounding area is clean with no material remaining.",
+    "score3": "All the beads are cut to the correct length with no sharp edges. All the angle beads are securely fixed. No background is visible through the coating. All the wall is covered with the coating. The coating is applied to give a completely even finish over the entire surface. The beads are all clean with no coating residue with clean sharp angles. The angles are perfectly clean and sharp with no build-up of material. The surrounding area is clean with no material remaining.",
+    "tags": [
+      "Texture & Taste"
+    ]
+  },
+  {
+    "code": "T-074",
+    "criterionName": "Flavour Taste and Aroma",
+    "category": "Texture & Taste",
+    "sector": "Culinary & Hospitality",
+    "score0": "No attempt or flavours unbalanced and do not go well together, either individual or combined. Over-powering, dominant, under-whelming, competing or off-flavours. Over-seasoned with salt, or overwhelmed with a single flavouring (e.g. hot chilli, tart vinegar), or badly burnt to a point that cannot be tasted. Basically inedible or tastes awful. Would not finish eating or pay for the dish.",
+    "score1": "Flavours of dish balanced and go well together, either individual or combined. Some over-powering/dominant or under-accented components, Some general under- or over-seasoning of the dish as a whole, but not to a point of being inedible. Edible, but may have mild background hint of burnt taste. Would eat the dish and pay for it.",
+    "score2": "Flavour of dish well balanced and having great taste, highlighting the variety of individual or combined components, but no overpowering or under-whelming flavours. Some under- or over-seasoning in some components. No burnt taste. Tasty, would eat the entire dish and order it again.",
+    "score3": "Flavour of dish has exceptional taste with a large combination highlighting each individual component as well as the combined dish. No over-powering, dominant, competing or off-flavours. No under or over seasoning. No burnt taste. Very tasty. Happy to pay for the dish and would order again.",
+    "tags": [
+      "Texture & Taste"
+    ]
+  },
+  {
+    "code": "T-075",
+    "criterionName": "An opacity map creates the appropriate transparency for the 3D Asset",
+    "category": "Texture & Taste",
+    "sector": "Creative & Design",
+    "score0": "No use of opacity map",
+    "score1": "Opacity map is applied, but it does not contribute effectively, possibly causing unwanted artifacts or inconsistencies",
+    "score2": "Opacity map is used correctly, providing suitable transparency where intended without any issues",
+    "score3": "Opacity map is skillfully applied, enhancing the 3D asset with fine details and subtle transparency effects that contribute to the overall realism and appeal",
+    "tags": [
+      "Texture & Taste"
+    ]
+  },
+  {
+    "code": "T-076",
+    "criterionName": "Taste of constructed [Product] overall - with all components",
+    "category": "Texture & Taste",
+    "sector": "Culinary & Hospitality",
+    "score0": "Not presented or clashing flavours which do not eat well together",
+    "score1": "Insipid flavours with overall weak taste or intense sweetness",
+    "score2": "Rounded flavours with some standing out more than others but overall pleasant to eat",
+    "score3": "Well- defined flavour profiles which match and complement each other. Excellent balance of all flavours together",
+    "tags": [
+      "Texture & Taste"
+    ]
+  },
+  {
+    "code": "T-077",
+    "criterionName": "Taste of Gateau with Passion fruit must be prominent, from the portion served separately",
+    "category": "Texture & Taste",
+    "sector": "Culinary & Hospitality",
+    "score0": "Not presented or non-definable fruit, out of balance with other components",
+    "score1": "Bland fruit flavour, not completely balanced with other components",
+    "score2": "Detectable fruit flavour quite well balanced with other tastes",
+    "score3": "Fruit the prominent flavour exceptionally well-balanced with the combination of all other components",
+    "tags": [
+      "Texture & Taste"
+    ]
+  },
+  {
+    "code": "T-078",
+    "criterionName": "Signature coffee taste",
+    "category": "Texture & Taste",
+    "sector": "Culinary & Hospitality",
+    "score0": "Poor taste, poor balance of ingredients, cannot be served",
+    "score1": "Drinkable coffee with reasonable balance, acceptable taste and could be served",
+    "score2": "Good balance of ingredients leading to a good taste, good final presentation, would be enjoyed",
+    "score3": "Excellent balance of ingredients leading to a beautiful well balanced taste, would be enjoyed, very creative coffee",
+    "tags": [
+      "Texture & Taste"
+    ]
+  },
+  {
+    "code": "T-079",
+    "criterionName": "Portion and Nutritional Balance",
+    "category": "Colour & Harmony",
+    "sector": "Culinary & Hospitality",
+    "score0": "No attempt or dish does not show any portion or nutritional balance. Plates are not replicated properly in shapes, colours or ingredients. Portions are haphazard. The main element, starch or vegetable portions are too small or too large. There is too little or no sauce. The garnish is missing or too large. There is no nutritional balance as items are mainly boiled or fried and there is too much starch. Vegetables are overcooked or not present, does not show creativity or style in plating and assembling of individual and combined food commodities, there is very little display of technical skills, work is messy and erratic. Attention to detail is lacking",
+    "score1": "Dish shows basic portion and nutritional balance. Plates are replicated in shapes, colours and ingredients. Portions are replicated. The main element, starch, vegetables, sauce and garnish are in proportion. There is basic nutritional balance and items are cooked to a variety of cooking methods. Vegetables are not overcooked and nutrition is retained. Dish shows a little creativity and style in plating and the assembling of individual and combined food commodities. Some display of technical skills - but maybe the idea does not get executed properly. Plate is basic and averagely complex in construction. Some attention to detail evident.",
+    "score2": "Dish shows good portion and nutritional balance. Plates are well replicated in shapes, colours and ingredients. Portions are well replicated. The main element, starch, vegetables, sauce and garnish are in good proportion. There is good nutritional balance and items are cooked to a variety of cooking methods. Vegetables are not overcooked and nutrition is retained. Dish shows good creativity and style in plating and the assembling of individual and combined food commodities. Plate is more complex with components. Good consistent technical skills shown on the plate, good degree of difficulty - mostly executed properly. Good consistent attention to detail.",
+    "score3": "Dish shows very good portion and nutritional balance. Plates are very well replicated in shapes, colours and ingredients. Portions are very well replicated. The main element, starch, vegetables, sauce and garnish are in very good proportion. There is excellent nutritional balance and items are cooked to a variety of cooking methods. Vegetables are not overcooked and nutrition is retained. Dish shows exceptional creativity and style in plating and the assembling of individual and combined food commodities. Excellent consistent technical skills shown on the plate, excellent degree of difficulty - executed properly. Plate is very complex with components. Excellent consistent attention to detail.",
+    "tags": [
+      "Colour & Harmony"
+    ]
+  },
+  {
+    "code": "T-080",
+    "criterionName": "Overall impression of the colouring",
+    "category": "Colour & Harmony",
+    "sector": "Service & Care",
+    "score0": "Low Skill: The Hairdresser has no understanding of the client wishes and the result does not meet focal points for colour. The colour does not have the required lustre, looks flat. There are patchy areas. There is visible colour missed. The colour does not enhance the hair design, line and direction. The colour is not balance/proportion. The colour does not enhance the hair design. The colour would need to redone before a client leave the salon. The client would not recommend the stylist.",
+    "score1": "Basic skill: The Hairdresser has an acceptable skill. The colour meets the client wishes and the result meets only a few focal points. The result of the colour: there is full colour coverage; however the line, direction and balance/proportion does not enhance the design. The client would pay for the colour but would not go back.",
+    "score2": "Good Skill: The Hairdresser has good understanding of the client wishes. The result meets mostly all focal points. There is full colour coverage: The line, direction, and balance/proportion enhances the hair design. The client would be happy with the colour but noy necessarily recommend the stylist.",
+    "score3": "Excellent Skill: The Hairdresser has an excellent understanding of the client wishes. The result meets the focal points. They have full colur coverage, The line, direction, and balance/proportion enhances the hair design. The placement of the colour shows a high level of colour design. The colour not only enhancing the design but highlights features of the hair design. The client would be very impressed with the result and would highly recommend the stylist.",
+    "tags": [
+      "Colour & Harmony"
+    ]
+  },
+  {
+    "code": "T-081",
+    "criterionName": "Package Colours - Choice, Harmony, Contrast related to the target group",
+    "category": "Colour & Harmony",
+    "sector": "Creative & Design",
+    "score0": "The use of colour lacks harmony and coherence, resulting in a visually jarring experience. There is a notable absence of a cohesive colour scheme that appeals to the target group of younger individuals aged 18-35 years, including active outdoor enthusiasts and environmentally conscious consumers.",
+    "score1": "The colour palette shows some attempt at harmony, but improvements are needed for a more unified visual experience. Contrast may be lacking in certain areas, impacting the overall vibrancy. The design only partially appeals to the price-sensitive, value-seeking young professionals, students, and adventure seekers.",
+    "score2": "The use of colour is well-coordinated, creating a harmonious and visually pleasing design. Contrast is effectively utilised to enhance key elements and create a balanced composition. The design effectively appeals to the interests and lifestyle of young, active outdoor enthusiasts who value sustainability and have a strong connection to nature.",
+    "score3": "The colour scheme demonstrates an exceptional level of harmony, with each hue purposefully contributing to the overall emotional impact of the design. The use of colour is innovative and evokes a strong, positive response from the target audience of young professionals, students, and adventure seekers who appreciate quality and sustainable products.",
+    "tags": [
+      "Colour & Harmony"
+    ]
+  },
+  {
+    "code": "T-082",
+    "criterionName": "Effective use of color schemes and design elements",
+    "category": "Colour & Harmony",
+    "sector": "Technology & IT",
+    "score0": "Poor use of colors and design elements, distracting from data presentation",
+    "score1": "Basic use of colors and design elements, but lacks visual appeal",
+    "score2": "Good use of colors and design elements, enhancing data presentation",
+    "score3": "Excellent use of colors and design elements, significantly enhancing data presentation and user experience",
+    "tags": [
+      "Colour & Harmony"
+    ]
+  },
+  {
+    "code": "T-083",
+    "criterionName": "Final Render: Colour - Colour harmony of the concept art",
+    "category": "Colour & Harmony",
+    "sector": "Creative & Design",
+    "score0": "Lacks a colour harmony resulting in a chaotic colour scheme",
+    "score1": "A basic but recognisable colour harmony is present",
+    "score2": "A refined colour harmony is present",
+    "score3": "A refined colour harmony is present with attention to the proportions of colours used, enhancing overall visual impact",
+    "tags": [
+      "Colour & Harmony"
+    ]
+  },
+  {
+    "code": "T-084",
+    "criterionName": "Baked - colour",
+    "category": "Colour & Harmony",
+    "sector": "Culinary & Hospitality",
+    "score0": "Not presented or uneven bake; raw in the middle or overbaked and colour too dark or excessively pale",
+    "score1": "Erratic baked colour; dark and pale in places",
+    "score2": "Golden bake but a little uneven in areas",
+    "score3": "Pale golden colour overall, turned during baking to achieve uniform colour",
+    "tags": [
+      "Colour & Harmony"
+    ]
+  }
+]

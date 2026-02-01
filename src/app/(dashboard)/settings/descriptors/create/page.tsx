@@ -104,42 +104,42 @@ export default async function CreateDescriptorPage({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="excellent">Excellent</Label>
+                <Label htmlFor="score3">Score 3</Label>
                 <Textarea
-                  id="excellent"
-                  name="excellent"
+                  id="score3"
+                  name="score3"
                   rows={3}
-                  placeholder="Description of excellent performance..."
+                  placeholder="Description for score 3 (excellent)..."
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="good">Good</Label>
+                <Label htmlFor="score2">Score 2</Label>
                 <Textarea
-                  id="good"
-                  name="good"
+                  id="score2"
+                  name="score2"
                   rows={3}
-                  placeholder="Description of good performance..."
+                  placeholder="Description for score 2 (good)..."
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="pass">Pass</Label>
+                <Label htmlFor="score1">Score 1</Label>
                 <Textarea
-                  id="pass"
-                  name="pass"
+                  id="score1"
+                  name="score1"
                   rows={3}
-                  placeholder="Description of passing performance..."
+                  placeholder="Description for score 1 (acceptable)..."
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="belowPass">Below Pass</Label>
+                <Label htmlFor="score0">Score 0</Label>
                 <Textarea
-                  id="belowPass"
-                  name="belowPass"
+                  id="score0"
+                  name="score0"
                   rows={3}
-                  placeholder="Description of below pass performance..."
+                  placeholder="Description for score 0 (below standard)..."
                 />
               </div>
             </div>

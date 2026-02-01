@@ -45,10 +45,10 @@ export function DescriptorModal({ descriptor, open, onOpenChange }: DescriptorMo
 
   const copyAllLevels = async () => {
     const levels = [
-      descriptor.excellent && `Excellent: ${descriptor.excellent}`,
-      descriptor.good && `Good: ${descriptor.good}`,
-      descriptor.pass && `Pass: ${descriptor.pass}`,
-      descriptor.belowPass && `Below Pass: ${descriptor.belowPass}`,
+      descriptor.score3 && `Score 3: ${descriptor.score3}`,
+      descriptor.score2 && `Score 2: ${descriptor.score2}`,
+      descriptor.score1 && `Score 1: ${descriptor.score1}`,
+      descriptor.score0 && `Score 0: ${descriptor.score0}`,
     ].filter(Boolean).join("\n\n");
 
     const fullText = `${descriptor.criterionName}\n\n${levels}`;
@@ -79,7 +79,7 @@ export function DescriptorModal({ descriptor, open, onOpenChange }: DescriptorMo
             <DialogTitle className="text-xl pr-8">{descriptor.criterionName}</DialogTitle>
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                WSC2024: {descriptor.skillName}
+                {descriptor.skillName}
               </Badge>
               {descriptor.category && (
                 <Badge variant="outline">{descriptor.category}</Badge>
@@ -101,43 +101,43 @@ export function DescriptorModal({ descriptor, open, onOpenChange }: DescriptorMo
             </Button>
           </div>
 
-          {descriptor.excellent && (
+          {descriptor.score3 && (
             <div className="border rounded-lg p-4 bg-green-50/50">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-green-700">Excellent</span>
-                <CopyButton text={descriptor.excellent} field="excellent" label="Excellent level" />
+                <span className="font-semibold text-green-700">Score 3</span>
+                <CopyButton text={descriptor.score3} field="score3" label="Score 3" />
               </div>
-              <p className="text-sm whitespace-pre-wrap">{descriptor.excellent}</p>
+              <p className="text-sm whitespace-pre-wrap">{descriptor.score3}</p>
             </div>
           )}
 
-          {descriptor.good && (
+          {descriptor.score2 && (
             <div className="border rounded-lg p-4 bg-blue-50/50">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-blue-700">Good</span>
-                <CopyButton text={descriptor.good} field="good" label="Good level" />
+                <span className="font-semibold text-blue-700">Score 2</span>
+                <CopyButton text={descriptor.score2} field="score2" label="Score 2" />
               </div>
-              <p className="text-sm whitespace-pre-wrap">{descriptor.good}</p>
+              <p className="text-sm whitespace-pre-wrap">{descriptor.score2}</p>
             </div>
           )}
 
-          {descriptor.pass && (
+          {descriptor.score1 && (
             <div className="border rounded-lg p-4 bg-yellow-50/50">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-yellow-700">Pass</span>
-                <CopyButton text={descriptor.pass} field="pass" label="Pass level" />
+                <span className="font-semibold text-yellow-700">Score 1</span>
+                <CopyButton text={descriptor.score1} field="score1" label="Score 1" />
               </div>
-              <p className="text-sm whitespace-pre-wrap">{descriptor.pass}</p>
+              <p className="text-sm whitespace-pre-wrap">{descriptor.score1}</p>
             </div>
           )}
 
-          {descriptor.belowPass && (
+          {descriptor.score0 && (
             <div className="border rounded-lg p-4 bg-red-50/50">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-red-700">Below Pass</span>
-                <CopyButton text={descriptor.belowPass} field="belowPass" label="Below Pass level" />
+                <span className="font-semibold text-red-700">Score 0</span>
+                <CopyButton text={descriptor.score0} field="score0" label="Score 0" />
               </div>
-              <p className="text-sm whitespace-pre-wrap">{descriptor.belowPass}</p>
+              <p className="text-sm whitespace-pre-wrap">{descriptor.score0}</p>
             </div>
           )}
 

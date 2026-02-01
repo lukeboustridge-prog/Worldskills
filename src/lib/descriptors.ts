@@ -47,10 +47,10 @@ export async function getAllDescriptors(filters: DescriptorFilters = {}) {
     where.OR = [
       { criterionName: { contains: filters.search, mode: "insensitive" } },
       { code: { contains: filters.search, mode: "insensitive" } },
-      { excellent: { contains: filters.search, mode: "insensitive" } },
-      { good: { contains: filters.search, mode: "insensitive" } },
-      { pass: { contains: filters.search, mode: "insensitive" } },
-      { belowPass: { contains: filters.search, mode: "insensitive" } },
+      { score3: { contains: filters.search, mode: "insensitive" } },
+      { score2: { contains: filters.search, mode: "insensitive" } },
+      { score1: { contains: filters.search, mode: "insensitive" } },
+      { score0: { contains: filters.search, mode: "insensitive" } },
     ];
   }
 
