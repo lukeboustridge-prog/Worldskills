@@ -1,0 +1,206 @@
+import { QualityIndicator } from "@prisma/client";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { requireAdminUser } from "@/lib/auth";
+import { findSimilarDescriptors } from "@/lib/duplicate-detection";
+import { DuplicateWarning } from "@/components/descriptors/duplicate-warning";
+import { createDescriptorAction } from "@/app/(dashboard)/settings/descriptors/actions";
+
+const QUALITY_INDICATOR_LABELS: Record<QualityIndicator, string> = {
+  [QualityIndicator.EXCELLENT]: "Excellent",
+  [QualityIndicator.GOOD]: "Good",
+  [QualityIndicator.REFERENCE]: "Reference",
+  [QualityIndicator.NEEDS_REVIEW]: "Needs Review",
+};
+
+export default async function CreateDescriptorPage({
+  searchParams,
+}: {
+  searchParams?: { criterionName?: string; error?: string };
+}) {
+  await requireAdminUser();
+
+  // Fetch similar descriptors if criterionName provided (e.g., after form validation redirect)
+  const similarDescriptors = searchParams?.criterionName
+    ? await findSimilarDescriptors(searchParams.criterionName)
+    : [];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Button asChild variant="ghost" size="sm">
+          <Link href="/settings/descriptors">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Descriptors
+          </Link>
+        </Button>
+      </div>
+
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Create Descriptor
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          Add a new performance descriptor to the library.
+        </p>
+      </div>
+
+      {searchParams?.error && (
+        <Card className="border-destructive bg-destructive/10">
+          <CardContent className="py-4">
+            <p className="text-sm text-destructive">{searchParams.error}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      <DuplicateWarning similar={similarDescriptors} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Descriptor Details</CardTitle>
+          <CardDescription>
+            Enter the descriptor information below
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={createDescriptorAction} className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="code">Code</Label>
+                <Input
+                  id="code"
+                  name="code"
+                  required
+                  placeholder="A1"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="skillName">Source Skill</Label>
+                <Input
+                  id="skillName"
+                  name="skillName"
+                  required
+                  placeholder="Welding"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="criterionName">Criterion Name</Label>
+              <Input
+                id="criterionName"
+                name="criterionName"
+                required
+                placeholder="Quality of weld seam"
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="excellent">Excellent</Label>
+                <Textarea
+                  id="excellent"
+                  name="excellent"
+                  rows={3}
+                  placeholder="Description of excellent performance..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="good">Good</Label>
+                <Textarea
+                  id="good"
+                  name="good"
+                  rows={3}
+                  placeholder="Description of good performance..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pass">Pass</Label>
+                <Textarea
+                  id="pass"
+                  name="pass"
+                  rows={3}
+                  placeholder="Description of passing performance..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="belowPass">Below Pass</Label>
+                <Textarea
+                  id="belowPass"
+                  name="belowPass"
+                  rows={3}
+                  placeholder="Description of below pass performance..."
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="sector">Sector</Label>
+                <Input
+                  id="sector"
+                  name="sector"
+                  placeholder="e.g., Manufacturing and Engineering Technology"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Input
+                  id="category"
+                  name="category"
+                  placeholder="e.g., Technical Skills"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags</Label>
+              <Input
+                id="tags"
+                name="tags"
+                placeholder="tag1, tag2, tag3"
+              />
+              <p className="text-xs text-muted-foreground">
+                Comma-separated tags for categorization
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="qualityIndicator">Quality Indicator</Label>
+              <select
+                id="qualityIndicator"
+                name="qualityIndicator"
+                defaultValue={QualityIndicator.REFERENCE}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {Object.entries(QUALITY_INDICATOR_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex gap-2">
+              <Button type="submit">Create Descriptor</Button>
+              <Button asChild variant="outline">
+                <Link href="/settings/descriptors">Cancel</Link>
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
