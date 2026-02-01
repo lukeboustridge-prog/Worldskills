@@ -44,10 +44,11 @@ Plans:
   3. Only Admins and Secretariat can create, edit, or delete management meetings
   4. Management meeting creation sends calendar invites to all SAs and selected Secretariat members
   5. Email templates correctly identify meeting type (Skill Meeting vs Skill Advisor Meeting)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: TBD during planning
+- [ ] 02-01-PLAN.md — Authorization foundation (permission helpers, email template, activity logging)
+- [ ] 02-02-PLAN.md — Management meeting server actions and visibility queries
 
 ### Phase 3: UI Integration & Components
 **Goal**: Users can create, view, filter, and distinguish between skill and management meetings in unified interface
@@ -86,10 +87,10 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Database Foundation & Type System | 2/2 | ✓ Complete | 2026-02-01 |
-| 2. Permission & Business Logic Layer | 0/TBD | Not started | - |
+| 2. Permission & Business Logic Layer | 0/2 | Planned | - |
 | 3. UI Integration & Components | 0/TBD | Not started | - |
 | 4. Deployment & Validation | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-01*
-*Last updated: 2026-02-01 after Phase 1 execution*
+*Last updated: 2026-02-01 after Phase 2 planning*
