@@ -30,6 +30,7 @@ import {
   updateDeliverableTemplateAction,
   updateMilestoneTemplateAction,
   updateUserRoleAction,
+  updateUserDetailsAction,
   deleteUserAction
 } from "./actions";
 import { prisma } from "@/lib/prisma";
@@ -165,6 +166,7 @@ export default async function SettingsPage({
       : undefined
   );
   const userUpdated = typeof searchParams?.userUpdated === "string";
+  const userDetailsUpdated = typeof searchParams?.userDetailsUpdated === "string";
   const userDeleted = typeof searchParams?.userDeleted === "string";
   const userQuery = typeof searchParams?.userQuery === "string" ? searchParams.userQuery.trim() : "";
   const inviteCreated = typeof searchParams?.inviteCreated === "string";
@@ -211,21 +213,62 @@ export default async function SettingsPage({
     const statusClasses = isPending
       ? "rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
       : "rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground";
+    const isEditing = searchParams?.editUser === record.id;
 
     return (
       <div
         key={record.id}
         className={`rounded-md border p-4 ${isPending ? "border-amber-300 border-dashed bg-amber-50/60" : ""}`}
       >
-        <div className="mb-3">
-          <p className="font-medium">{getUserDisplayName(record)}</p>
-          <p className="text-xs text-muted-foreground">{record.email}</p>
-          {isPending ? (
-            <p className="mt-1 text-xs text-amber-700">
-              Awaiting an administrator to assign a role.
-            </p>
-          ) : null}
-        </div>
+        {isEditing ? (
+          <form action={updateUserDetailsAction} className="mb-3 space-y-3 rounded-md border bg-muted p-3">
+            <input type="hidden" name="userId" value={record.id} />
+            <div className="space-y-2">
+              <Label htmlFor={`name-${record.id}`}>Name</Label>
+              <Input
+                id={`name-${record.id}`}
+                name="name"
+                defaultValue={record.name ?? ""}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`email-${record.id}`}>Email</Label>
+              <Input
+                id={`email-${record.id}`}
+                name="email"
+                type="email"
+                defaultValue={record.email}
+                required
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" size="sm">Save Details</Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/settings">Cancel</Link>
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="mb-3">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-medium">{getUserDisplayName(record)}</p>
+                <p className="text-xs text-muted-foreground">{record.email}</p>
+                {isPending ? (
+                  <p className="mt-1 text-xs text-amber-700">
+                    Awaiting an administrator to assign a role.
+                  </p>
+                ) : null}
+              </div>
+              <Button asChild variant="ghost" size="sm">
+                <Link href={`/settings?editUser=${record.id}`}>
+                  Edit Details
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
         <form
           action={updateUserRoleAction}
           className="grid gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))_auto] md:items-end"
@@ -388,6 +431,11 @@ export default async function SettingsPage({
         {userUpdated ? (
           <div className="rounded-md border border-slate-400 bg-slate-50 p-4 text-sm text-slate-900">
             User permissions updated successfully.
+          </div>
+        ) : null}
+        {userDetailsUpdated ? (
+          <div className="rounded-md border border-slate-400 bg-slate-50 p-4 text-sm text-slate-900">
+            User details updated successfully.
           </div>
         ) : null}
         {userDeleted ? (

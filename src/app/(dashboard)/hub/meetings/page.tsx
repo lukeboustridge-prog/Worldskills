@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { format, isBefore } from "date-fns";
-import { Calendar, Clock, Video, FileText, ExternalLink } from "lucide-react";
+import { Calendar, Clock, Video, FileText, ExternalLink, Plus } from "lucide-react";
 import { Role } from "@prisma/client";
 
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +27,11 @@ interface MeetingLink {
   url: string;
 }
 
-export default async function MeetingsPage() {
+export default async function MeetingsPage({
+  searchParams,
+}: {
+  searchParams?: { created?: string };
+}) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -51,13 +56,29 @@ export default async function MeetingsPage() {
 
   const now = new Date();
 
-  const meetings = skillIds.length
+  // Get skill-specific meetings
+  const skillMeetings = skillIds.length
     ? await prisma.meeting.findMany({
         where: { skillId: { in: skillIds } },
         orderBy: { startTime: "asc" },
         include: { skill: { select: { name: true } } },
       })
     : [];
+
+  // Get management meetings (Skill Advisor meetings - skillId: null) for SAs, admins, and secretariat
+  const managementMeetings =
+    user.role === Role.SA || user.isAdmin || user.role === Role.Secretariat
+      ? await prisma.meeting.findMany({
+          where: { skillId: null },
+          orderBy: { startTime: "asc" },
+          include: { skill: { select: { name: true } } },
+        })
+      : [];
+
+  // Combine both types of meetings
+  const meetings = [...skillMeetings, ...managementMeetings].sort(
+    (a, b) => a.startTime.getTime() - b.startTime.getTime()
+  );
 
   const upcomingMeetings = meetings.filter((m) => !isBefore(m.endTime, now));
   const pastMeetings = meetings
@@ -66,16 +87,38 @@ export default async function MeetingsPage() {
 
   const nextMeeting = upcomingMeetings[0];
 
+  const canCreateSAMeeting = user.isAdmin || user.role === Role.Secretariat;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Meetings & Events
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          View and manage your skill-related meetings.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Meetings & Events
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            View and manage your skill-related meetings.
+          </p>
+        </div>
+        {canCreateSAMeeting && (
+          <Button asChild>
+            <Link href="/hub/meetings/create">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Skill Advisor Meeting
+            </Link>
+          </Button>
+        )}
       </div>
+
+      {searchParams?.created && (
+        <Card className="border-green-500 bg-green-50 dark:bg-green-950">
+          <CardContent className="py-4">
+            <p className="text-sm text-green-700 dark:text-green-300">
+              Skill Advisor meeting created successfully. Invitations have been sent to all Skill Advisors.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {nextMeeting && (
         <Card className="border-primary/20 bg-primary/5">

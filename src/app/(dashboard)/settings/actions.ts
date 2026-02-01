@@ -694,6 +694,61 @@ export async function updateUserRoleAction(formData: FormData) {
   return redirect(`/settings?${params.toString()}`);
 }
 
+const updateUserDetailsSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Enter a valid email address")
+});
+
+export async function updateUserDetailsAction(formData: FormData) {
+  await requireAdminUser();
+
+  const parsedResult = updateUserDetailsSchema.safeParse({
+    userId: formData.get("userId"),
+    name: formData.get("name"),
+    email: formData.get("email")
+  });
+
+  if (!parsedResult.success) {
+    const firstError = parsedResult.error.errors[0]?.message ?? "Unable to update the user.";
+    const params = new URLSearchParams({ userError: firstError });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  const { userId, name, email } = parsedResult.data;
+
+  // Check if email is already in use by another user
+  const existingUser = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  if (existingUser && existingUser.id !== userId) {
+    const params = new URLSearchParams({ userError: "This email address is already in use by another account." });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name,
+        email
+      }
+    });
+  } catch (error) {
+    console.error("Failed to update user details", error);
+    const params = new URLSearchParams({ userError: "Unable to update the user. Please try again." });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  revalidatePath("/settings");
+  revalidatePath("/skills");
+  revalidatePath("/dashboard");
+
+  const params = new URLSearchParams({ userDetailsUpdated: "1" });
+  return redirect(`/settings?${params.toString()}`);
+}
+
 const deleteUserSchema = z.object({
   userId: z.string().min(1, "User ID is required")
 });

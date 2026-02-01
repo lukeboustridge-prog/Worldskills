@@ -2,6 +2,7 @@
 
 import { Role, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { logActivity } from "@/lib/activity";
@@ -270,7 +271,7 @@ export async function createManagementMeetingAction(formData: FormData) {
   revalidatePath("/meetings");
   revalidatePath("/hub/meetings");
 
-  return { success: true, meetingId: meeting.id };
+  return redirect("/hub/meetings?created=true");
 }
 
 const updateManagementMeetingMinutesSchema = z.object({
