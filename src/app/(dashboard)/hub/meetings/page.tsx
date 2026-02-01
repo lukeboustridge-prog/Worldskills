@@ -85,7 +85,7 @@ export default async function MeetingsPage() {
                 <Badge className="mb-2">Next Up</Badge>
                 <CardTitle className="text-xl">{nextMeeting.title}</CardTitle>
                 <CardDescription className="mt-1">
-                  {nextMeeting.skill.name}
+                  {nextMeeting.skill?.name ?? 'Skill Advisor Meeting'}
                 </CardDescription>
               </div>
               <MeetingCountdown targetDate={nextMeeting.startTime} />
@@ -145,7 +145,7 @@ export default async function MeetingsPage() {
                         <div>
                           <p className="font-medium">{meeting.title}</p>
                           <p className="text-sm text-muted-foreground">
-                            {meeting.skill.name}
+                            {meeting.skill?.name ?? 'Skill Advisor Meeting'}
                           </p>
                         </div>
                         {meeting.meetingLink && (
@@ -219,7 +219,7 @@ export default async function MeetingsPage() {
                       <div>
                         <p className="font-medium">{meeting.title}</p>
                         <p className="text-sm text-muted-foreground">
-                          {meeting.skill.name}
+                          {meeting.skill?.name ?? 'Skill Advisor Meeting'}
                         </p>
                       </div>
                       <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
