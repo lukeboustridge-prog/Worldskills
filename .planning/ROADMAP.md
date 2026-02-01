@@ -89,8 +89,8 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md - Preview modal with toast notifications and source attribution
-- [ ] 04-02-PLAN.md - Comparison view with multi-select (TBD)
-- [ ] 04-03-PLAN.md - Responsive design polish (TBD)
+- [x] 04-02-PLAN.md - Comparison view with multi-select
+- [ ] 04-03-PLAN.md - Responsive design polish
 
 ### Phase 5: Access Control & Polish
 **Goal**: Integrate descriptor library permissions with existing role system and finalize user experience
@@ -117,7 +117,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Data Import & Foundation | 5/5 | Complete | 2026-02-01 |
 | 2. Admin Curation | 3/3 | Complete | 2026-02-02 |
 | 3. Search & Discovery | 5/5 | Complete | 2026-02-02 |
-| 4. Library UI | 1/3 | In progress | - |
+| 4. Library UI | 2/3 | In progress | - |
 | 5. Access Control & Polish | 0/TBD | Not started | - |
 
 ---
