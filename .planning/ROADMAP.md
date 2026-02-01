@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Data Import & Foundation** - Parse WSC2024 Excel files and establish database schema
 - [x] **Phase 2: Admin Curation** - Enable admin CRUD for descriptor library management
-- [ ] **Phase 3: Search & Discovery** - Implement full-text search with relevance tuning
+- [x] **Phase 3: Search & Discovery** - Implement full-text search with relevance tuning
 - [ ] **Phase 4: Library UI** - Build search interface with preview and clipboard integration
 - [ ] **Phase 5: Access Control & Polish** - Integrate permissions and finalize library
 
@@ -69,11 +69,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 03-01-PLAN.md - Functional GIN index migration and base search function with relevance ranking
-- [ ] 03-02-PLAN.md - DescriptorFavorite schema and toggle/query functions for bookmarks
-- [ ] 03-03-PLAN.md - Enhanced search with pagination and faceted filter counts
-- [ ] 03-04-PLAN.md - Related descriptors recommendations using pg_trgm similarity
-- [ ] 03-05-PLAN.md - URL-based search state persistence with nuqs and search UI components
+- [x] 03-01-PLAN.md - Functional GIN index migration and base search function with relevance ranking
+- [x] 03-02-PLAN.md - DescriptorFavorite schema and toggle/query functions for bookmarks
+- [x] 03-03-PLAN.md - Enhanced search with pagination and faceted filter counts
+- [x] 03-04-PLAN.md - Related descriptors recommendations using pg_trgm similarity
+- [x] 03-05-PLAN.md - URL-based search state persistence with nuqs and search UI components
 
 ### Phase 4: Library UI
 **Goal**: Build search interface with faceted filtering, preview modals, and clipboard integration
@@ -115,7 +115,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Data Import & Foundation | 5/5 | Complete | 2026-02-01 |
 | 2. Admin Curation | 3/3 | Complete | 2026-02-02 |
-| 3. Search & Discovery | 0/5 | Planned | - |
+| 3. Search & Discovery | 5/5 | Complete | 2026-02-02 |
 | 4. Library UI | 0/TBD | Not started | - |
 | 5. Access Control & Polish | 0/TBD | Not started | - |
 
