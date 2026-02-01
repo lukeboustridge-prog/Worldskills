@@ -12,8 +12,8 @@ This roadmap delivers a searchable descriptor library for SCMs to access proven 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Data Import & Foundation** - Parse WSC2024 Excel files and establish database schema
-- [ ] **Phase 2: Admin Curation** - Enable admin CRUD for descriptor library management
+- [x] **Phase 1: Data Import & Foundation** - Parse WSC2024 Excel files and establish database schema
+- [x] **Phase 2: Admin Curation** - Enable admin CRUD for descriptor library management
 - [ ] **Phase 3: Search & Discovery** - Implement full-text search with relevance tuning
 - [ ] **Phase 4: Library UI** - Build search interface with preview and clipboard integration
 - [ ] **Phase 5: Access Control & Polish** - Integrate permissions and finalize library
@@ -53,8 +53,8 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md - Database schema extensions (QualityIndicator enum, soft delete, pg_trgm)
-- [ ] 02-02-PLAN.md - Server Actions and query functions (CRUD, duplicate detection)
-- [ ] 02-03-PLAN.md - Admin UI (list, create, edit pages, delete confirmation)
+- [x] 02-02-PLAN.md - Server Actions and query functions (CRUD, duplicate detection)
+- [x] 02-03-PLAN.md - Admin UI (list, create, edit pages, delete confirmation)
 
 ### Phase 3: Search & Discovery
 **Goal**: Implement PostgreSQL full-text search with relevance ranking and multi-criteria filtering
@@ -111,11 +111,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data Import & Foundation | 5/5 | Complete | 2026-02-01 |
-| 2. Admin Curation | 1/3 | In progress | - |
+| 2. Admin Curation | 3/3 | Complete | 2026-02-01 |
 | 3. Search & Discovery | 0/TBD | Not started | - |
 | 4. Library UI | 0/TBD | Not started | - |
 | 5. Access Control & Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-01*
-*Last updated: 2026-02-01 after completing 02-01-PLAN.md*
+*Last updated: 2026-02-01 after completing 02-03-PLAN.md*
