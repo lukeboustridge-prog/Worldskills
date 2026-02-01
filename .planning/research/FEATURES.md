@@ -1,402 +1,276 @@
-# Management Meeting Features Research
-
-**Research Type:** Project Research — Features dimension for management meetings
-**Date:** 2026-02-01
-**Context:** Adding management/coordination meetings to existing WorldSkills Competition Management System
-
----
-
-## Executive Summary
-
-Management meetings in team collaboration systems require different access patterns than entity-bound meetings. Key distinctions:
-
-- **Visibility scope**: Role-based (all SAs) vs entity-based (skill team)
-- **Selective attendance**: Dynamic participant lists vs fixed team membership
-- **Visual distinction**: Clear UI differentiation to prevent confusion
-- **Permission model**: Creation restricted to coordinators (Secretariat/Admin) vs team managers (SA/SCM)
-
-**Recommendation**: Extend existing Meeting model with optional `skillId` and add `attendees` relation for selective participation, leveraging existing email/calendar infrastructure.
-
----
-
-## Table Stakes Features
-
-### 1. Non-Entity Meeting Creation
-**What**: Meetings not tied to a specific skill
-**Why**: Coordination meetings span multiple skills or address organizational topics
-**Complexity**: LOW - Make `skillId` optional in existing Meeting model
-**Dependencies**: Existing Meeting model, database migration
-
-**Expected Behavior**:
-- Admin and Secretariat can create meetings without selecting a skill
-- System validates either `skillId` is null (management meeting) or exists (skill meeting)
-- Same rich fields as skill meetings: title, time, meetingLink, minutes, actionPoints, documents, links
-
-**Industry Pattern**: Slack channels (workspace-level vs channel-level), Microsoft Teams (org-wide vs team meetings), Asana (portfolio vs project meetings)
-
----
-
-### 2. Role-Based Universal Visibility
-**What**: All users with specific role(s) see all management meetings
-**Why**: Coordination requires all Skill Advisors to be informed
-**Complexity**: MEDIUM - Query logic changes for meeting list
-**Dependencies**: Existing role system (Role.SA)
-
-**Expected Behavior**:
-- All SAs see all management meetings in their meetings list
-- Skill-specific meetings still filtered by team membership
-- Combined view shows both types without confusion
-- No permission checks needed for viewing management meetings as SA
-
-**Industry Pattern**: Confluence space permissions, GitHub org-level discussions, Monday.com board sharing by role
-
----
-
-### 3. Selective Attendance Lists
-**What**: Per-meeting selection of which Secretariat members attend
-**Why**: Not all administrative staff need to attend every coordination meeting
-**Complexity**: MEDIUM - New many-to-many relation for meeting attendees
-**Dependencies**: User model, Meeting model
-
-**Expected Behavior**:
-- When creating management meeting, Admin/Secretariat can select attendees from User table
-- Selected Secretariat members receive calendar invites (reuse existing email infrastructure)
-- Attendees see meeting in their meetings list
-- Non-attendee Secretariat don't see meetings they weren't invited to
-- SAs always see all management meetings regardless of attendee list
-
-**Industry Pattern**: Google Calendar event attendees, Outlook meeting invitations, Calendly selective invitations
-
----
-
-### 4. Permission Model for Management Meetings
-**What**: Only Admin and Secretariat can create/edit management meetings
-**Why**: Organizational coordination controlled by administrative roles
-**Complexity**: LOW - Extend existing permission checks
-**Dependencies**: getCurrentUser(), role checks
-
-**Expected Behavior**:
-- SAs can view all management meetings but cannot create/edit them
-- SAs can create/edit their own skill meetings (existing behavior preserved)
-- Secretariat can create/edit management meetings
-- Admin has full control over all meetings (existing behavior)
-- Clear UI: "Schedule Management Meeting" button only visible to Secretariat/Admin
-
-**Industry Pattern**: Workspace admin privileges (Slack, Teams), org-level meeting scheduling (Google Workspace), board admin controls (Trello)
-
----
-
-### 5. Visual Distinction via Badges
-**What**: Clear UI indicators differentiating meeting types
-**Why**: Prevent confusion when both types appear in same list
-**Complexity**: LOW - Add Badge components with conditional rendering
-**Dependencies**: Existing Badge component, meeting.skillId check
-
-**Expected Behavior**:
-- Skill meetings show badge: "Skill Meeting" or skill name
-- Management meetings show badge: "Skill Advisor Meeting" or "Management"
-- Color coding: skill meetings use one color scheme, management another
-- Hub meetings page displays both types with clear visual separation
-- Badge appears in meeting cards, countdown components, and detail views
-
-**Industry Pattern**: Gmail labels, Slack message tags, Asana project tags, Notion database properties
-
----
-
-### 6. Unified Meetings Interface
-**What**: Single meetings page showing both skill and management meetings
-**Why**: Reduce cognitive load, all meetings in one place
-**Complexity**: MEDIUM - Extend query logic to union two meeting types
-**Dependencies**: Hub meetings page, meeting list components
-
-**Expected Behavior**:
-- `/hub/meetings` page shows both upcoming and past meetings for both types
-- Meetings sorted chronologically regardless of type
-- Filter options: "All", "Skill Meetings", "Management Meetings"
-- Next meeting countdown works for both types
-- Meeting detail expansion works identically for both types
-
-**Industry Pattern**: Unified inbox (Gmail, Outlook), combined calendar views (Google Calendar), all-tasks views (Todoist, Things)
-
----
-
-### 7. Preserve Email/Calendar Functionality
-**What**: Reuse existing meeting invitation infrastructure
-**Why**: Users expect calendar invites, already validated and working
-**Complexity**: MEDIUM - Extend recipient list logic for attendees
-**Dependencies**: sendMeetingInvitation(), Resend API, ICS generation
-
-**Expected Behavior**:
-- Management meetings generate .ics calendar files (existing)
-- Email invitations sent to selected attendees + all SAs
-- Email templates include meeting type badge/indicator
-- Google Calendar links work identically (existing generateGoogleCalendarLink)
-- Cancellation/update emails if meeting edited (future enhancement)
-
-**Industry Pattern**: Every collaboration tool with meetings (Teams, Zoom, Webex, Google Meet)
-
----
-
-## Differentiator Features
-
-### 8. Smart Attendee Suggestions
-**What**: Auto-suggest Secretariat members based on meeting patterns
-**Why**: Reduce admin overhead, learn from past attendance
-**Complexity**: HIGH - Requires attendee history analysis
-**Dependencies**: Meeting history, attendee data
-
-**Expected Behavior**:
-- When creating management meeting, system suggests Secretariat members
-- Suggestions based on: recent attendees, topic keywords, time patterns
-- Quick-select buttons: "Usual attendees", "Full secretariat", "Custom"
-- Admin can override suggestions freely
-
-**Industry Pattern**: Outlook attendee suggestions, Google Calendar smart scheduling, Calendly team routing
-
-**Risk**: Over-engineering for current scale (small Secretariat team)
-**Recommendation**: DEFER until user feedback indicates need
-
----
-
-### 9. Meeting Series/Recurring Meetings
-**What**: Create multiple meetings with recurring schedule
-**Why**: Weekly SA coordination meetings, daily CPW standups
-**Complexity**: VERY HIGH - Requires series management, update propagation
-**Dependencies**: Meeting model restructure, complex update logic
-
-**Expected Behavior**:
-- Create series with recurrence rule (daily, weekly, custom)
-- Edit single instance vs edit series options
-- Attendee changes propagate to future meetings
-- Cancellation of single instance vs entire series
-
-**Industry Pattern**: Google Calendar recurring events, Outlook series, Zoom recurring meetings
-
-**Risk**: Adds significant complexity, active requirement explicitly scoped out
-**Recommendation**: EXCLUDE from current milestone (per PROJECT.md)
-
----
-
-### 10. Meeting Templates
-**What**: Pre-configured meeting templates for common coordination scenarios
-**Why**: Faster meeting creation, consistency across similar meetings
-**Complexity**: MEDIUM - Template storage, application logic
-**Dependencies**: Meeting model, template data structure
-
-**Expected Behavior**:
-- Templates for: "Daily SA Standup", "Weekly Coordination", "CCD Briefing"
-- Template includes: default title format, duration, attendee presets
-- Admin can create/edit templates
-- One-click meeting creation from template
-
-**Industry Pattern**: Zoom meeting templates, Notion templates, email templates
-
-**Risk**: Limited template variety needed for current use cases
-**Recommendation**: CONSIDER for future iteration if users request
-
----
-
-### 11. Attendance Tracking
-**What**: Record who actually attended vs who was invited
-**Why**: Accountability, meeting effectiveness metrics
-**Complexity**: HIGH - Requires check-in mechanism, attendance recording
-**Dependencies**: Meeting model extension, UI for check-in
-
-**Expected Behavior**:
-- Organizer marks attendees present/absent after meeting
-- Attendance percentages in meeting history
-- Reports on attendance patterns
-
-**Industry Pattern**: Zoom attendance reports, Teams meeting attendance, Eventbrite check-ins
-
-**Risk**: Explicitly scoped out (per PROJECT.md)
-**Recommendation**: EXCLUDE from current milestone
-
----
-
-## Anti-Features
-
-### 12. In-App Video Conferencing
-**What**: Built-in video calling within the application
-**Why NOT**: External tools (Teams, Zoom) already used, integration overhead high
-**Complexity**: EXTREMELY HIGH - Real-time communication infrastructure
-
-**Rationale for Exclusion**:
-- Users already have preferred video tools
-- meetingLink field supports any external service
-- Building video infrastructure diverts from core value
-- Maintenance burden significant
-
-**Industry Context**: Most project management tools (Asana, Monday.com, Jira) integrate rather than build video
-
----
-
-### 13. Meeting Agenda Builder
-**What**: Structured agenda creation with time-boxed sections
-**Why NOT**: Minutes/description fields sufficient, adds complexity without clear value
-**Complexity**: MEDIUM - Structured data model, agenda UI
-
-**Rationale for Exclusion**:
-- Current users use minutes field for agendas
-- Free-form text more flexible for varied meeting types
-- Structured agendas add cognitive overhead
-- Explicitly scoped out (per PROJECT.md)
-
-**Industry Context**: Tools like Fellow.app specialize in this, but general collaboration tools avoid it
-
----
-
-### 14. Multi-Skill Association
-**What**: Single management meeting associated with multiple skills
-**Why NOT**: Adds query complexity, unclear UI presentation
-**Complexity**: HIGH - Many-to-many skill-meeting relation, permission implications
-
-**Rationale for Exclusion**:
-- Management meetings are inherently cross-skill (no skill association)
-- Many-to-many relation adds database complexity
-- Filtering/display logic becomes ambiguous
-- Current design cleaner: null skillId = all skills
-
-**Industry Context**: Most systems use hierarchical rather than many-to-many for meetings
-
----
-
-### 15. Meeting Approval Workflow
-**What**: Management meetings require approval before being scheduled
-**Why NOT**: No business need, slows coordination
-**Complexity**: HIGH - Approval state machine, notifications
-
-**Rationale for Exclusion**:
-- Secretariat/Admin trusted to schedule appropriately
-- CPW environment requires rapid scheduling
-- Approval adds delay without clear benefit
-- No user request for this feature
-
-**Industry Context**: Approval workflows common in enterprise (SAP, Oracle) but rare in collaboration tools
-
----
-
-### 16. Automatic Timezone Conversion
-**What**: Display meeting times in each attendee's local timezone
-**Why NOT**: All users in same timezone during CPW, UTC sufficient
-**Complexity**: MEDIUM - Timezone storage per user, display logic
-
-**Rationale for Exclusion**:
-- Competition in single location (Lyon 2026)
-- Current system uses UTC consistently
-- Timezone bugs are common and hard to fix
-- Users can convert times if needed
-
-**Industry Context**: Global tools (Calendly, Doodle) need this, local-focused tools skip it
-
----
-
-### 17. Integration with CIS (Competition Information System)
-**What**: Sync meetings with external CIS system
-**Why NOT**: Explicitly scoped out, integration complexity high
-**Complexity**: VERY HIGH - External API integration, sync logic, conflict resolution
-
-**Rationale for Exclusion**:
-- Per PROJECT.md: "CIS integration beyond external links — future milestone"
-- External links already supported via meetingLink and links fields
-- Two-way sync introduces data consistency challenges
-- No API documentation available for CIS
-
-**Industry Context**: Integrations are valuable but should be milestone-specific
-
----
-
-## Feature Dependencies Map
+# Feature Research: Descriptor Library & Marking Scheme
+
+**Domain:** Content library / Reusable text component management
+**Researched:** 2026-02-01
+**Confidence:** MEDIUM
+
+## Feature Landscape
+
+### Table Stakes (Users Expect These)
+
+Features users assume exist. Missing these = product feels incomplete.
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| **Keyword search** | Core discovery mechanism - 73% of users search rather than browse | LOW | Full-text search across descriptor text, not just titles |
+| **Multi-criteria filtering** | Users need to narrow by category (skill area, criterion type, performance level) | MEDIUM | Faceted filtering pattern - combine filters, don't replace |
+| **Preview before insert** | Must see full context (all performance levels) before committing | LOW | Modal or expandable panel showing complete criterion block |
+| **Copy to clipboard** | Standard expectation for reusable content libraries | LOW | Single-click copy with visual confirmation |
+| **Clear visual hierarchy** | Distinguish descriptor text from metadata (tags, source skill) | LOW | Typography and spacing to separate content from chrome |
+| **Performance level grouping** | Show all levels (Excellent/Good/Pass/Below Pass) together as complete criterion | MEDIUM | Descriptors aren't useful in isolation - need context of full rubric |
+| **Source attribution** | Show which WSC2024 skill the descriptor came from | LOW | Trust signal - "proven in real competition" |
+
+### Differentiators (Competitive Advantage)
+
+Features that set the product apart. Not required, but valuable.
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| **Tag-based organization** | Flexible categorization beyond strict hierarchies - tag "teamwork" "safety" "precision" | MEDIUM | Bridges gap between formal categories and natural search terms |
+| **Saved/favorited descriptors** | SCMs can bookmark useful descriptors for current project | LOW | Personal workspace - reduces repeat searching |
+| **Descriptor quality indicators** | Mark "excellent example" vs "reference only" based on curation | LOW | Guide SCMs to better patterns - educational value |
+| **Cross-skill pattern discovery** | "See how other skills describe precision/safety/teamwork" | MEDIUM | Value: Learn from peers across skill families |
+| **Usage analytics** | Show "most used descriptors" or "descriptors from similar skills" | HIGH | Social proof - "others found this useful" |
+| **Batch insert** | Select multiple descriptors and insert as criterion set | MEDIUM | Efficiency for building schemes from scratch |
+| **Comparison view** | Side-by-side view of 2-3 similar descriptors | MEDIUM | Help SCMs choose the best fit for their context |
+| **Related suggestions** | "If you liked this descriptor, consider these similar ones" | HIGH | Discovery aid - surface relevant content |
+
+### Anti-Features (Commonly Requested, Often Problematic)
+
+Features that seem good but create problems.
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| **AI-generated descriptors** | "Make my job easier" | Quality control nightmare - marking schemes need precision, AI hallucinates measurements/criteria | Curated library from proven examples - humans write, AI assists with search/categorization |
+| **Collaborative editing of library** | "Let SCMs contribute" | Quality dilution - becomes dumping ground of unvetted content | Admin-curated with submission workflow - contributors suggest, admins approve |
+| **Real-time everything** | "Live updates during CPW" | Complexity without value - descriptor library is stable reference data, not collaborative document | Standard pagination/filtering - no WebSocket overhead |
+| **Versioning individual descriptors** | "Track changes over time" | Version sprawl - which version is canonical? Creates choice paralysis | Single authoritative version per descriptor - library is snapshot of WSC2024 |
+| **Rating/voting on descriptors** | "Crowdsource quality" | Popularity != quality for marking rubrics - technical accuracy matters more than votes | Expert curation with quality indicators - trust domain experts |
+| **Multi-language support (v1)** | "Support all WSC languages" | Scope explosion - translation quality critical for marking criteria | English-only v1 - defer translation until library proven valuable |
+| **Auto-validation of inserted descriptors** | "Ensure consistency" | False confidence - automation can't judge if descriptor fits skill context | Manual review by SCM/SA - they know their skill best |
+
+## Feature Dependencies
 
 ```
-Core Infrastructure (Existing)
-├── Meeting model (skillId, title, startTime, endTime, meetingLink, minutes, actionPoints, documents, links)
-├── sendMeetingInvitation() email infrastructure
-├── Role-based access control (Role.SA, Role.Secretariat, Role.Admin)
-└── getCurrentUser() authentication
+Keyword Search (foundational)
+    └──requires──> Full-text database indexing
+    └──enhances──> Tag-based organization (tags boost search relevance)
 
-Table Stakes (This Milestone)
-├── [1] Non-Entity Creation ──┬──> [6] Unified Interface
-├── [2] Role-Based Visibility ─┤
-├── [3] Selective Attendance ──┼──> [7] Preserve Email/Calendar
-├── [4] Permission Model ──────┤
-└── [5] Visual Distinction ────┘
+Multi-criteria Filtering
+    └──requires──> Normalized taxonomy (skill areas, criterion types, levels)
+    └──enhances──> Keyword Search (search within filtered results)
 
-Differentiators (Future Consideration)
-├── [8] Smart Attendee Suggestions (depends on [3])
-├── [9] Recurring Meetings (HIGH complexity, excluded)
-├── [10] Meeting Templates (depends on [1], [3])
-└── [11] Attendance Tracking (explicitly excluded)
+Preview Before Insert
+    └──requires──> Performance Level Grouping (must show complete criterion)
+    └──enables──> Copy to Clipboard (preview → copy workflow)
 
-Anti-Features (Deliberately Excluded)
-├── [12] In-App Video (use external tools)
-├── [13] Agenda Builder (scope creep)
-├── [14] Multi-Skill Association (overcomplicated)
-├── [15] Approval Workflow (unnecessary friction)
-├── [16] Timezone Conversion (not needed)
-└── [17] CIS Integration (future milestone)
+Tag-based Organization
+    └──requires──> Tag taxonomy (controlled vocabulary vs free-form)
+    └──enhances──> Cross-skill Pattern Discovery (tags bridge skills)
+
+Saved/Favorited Descriptors
+    └──requires──> User association (many-to-many: users ↔ descriptors)
+    └──conflicts with──> Stateless/shareable search URLs (favorites are personal)
+
+Batch Insert
+    └──requires──> Multi-select UI pattern
+    └──requires──> Preview Before Insert (preview multiple items)
+
+Comparison View
+    └──requires──> Multi-select (select 2-3 to compare)
+    └──enhances──> Preview Before Insert (alternative to single preview)
 ```
 
+### Dependency Notes
+
+- **Search + Filtering work together:** Search narrows by keyword, filtering narrows by metadata - both needed for effective discovery
+- **Preview is gateway to action:** Users preview (explore) before copying/inserting (commit) - preview must be frictionless
+- **Tags bridge structure and search:** Formal categories (criterion types) are limited, tags provide flexible cross-cutting dimensions
+- **Batch operations require multi-select:** Don't build batch insert without supporting select multiple in UI
+- **Favorites are personal, search is shareable:** Don't conflate these - SCM can't share "my favorites" URL with colleague
+
+## MVP Definition
+
+### Launch With (v1.0)
+
+Minimum viable library - what's needed to validate that curated descriptors help SCMs write better marking schemes.
+
+- [x] **Keyword search** — Primary discovery mechanism (table stakes)
+- [x] **Multi-criteria filtering** — Skill area + criterion type + performance level (table stakes)
+- [x] **Tag-based organization** — Flexible categorization for cross-skill discovery (differentiator with high value/cost ratio)
+- [x] **Preview before insert** — Show complete criterion with all performance levels (table stakes)
+- [x] **Copy to clipboard** — Standard reusable content workflow (table stakes)
+- [x] **Source attribution** — Which WSC2024 skill (trust signal, table stakes)
+- [x] **Performance level grouping** — Descriptors grouped as complete criteria (table stakes)
+
+### Add After Validation (v1.x)
+
+Features to add once core library proves valuable and usage patterns emerge.
+
+- [ ] **Saved/favorited descriptors** — Add when SCMs report "I keep searching for the same descriptor" (trigger: repeat search patterns in analytics)
+- [ ] **Descriptor quality indicators** — Add when curation reveals clear quality tiers (trigger: admin feedback during library population)
+- [ ] **Batch insert** — Add when SCMs report building schemes from scratch (trigger: "insert 5+ descriptors in one session" usage pattern)
+- [ ] **Comparison view** — Add when SCMs report difficulty choosing between similar descriptors (trigger: user testing feedback)
+- [ ] **Usage analytics ("most used")** — Add after 3 months of usage data (trigger: sufficient data for statistical significance)
+
+### Future Consideration (v2+)
+
+Features to defer until product-market fit is established and library is proven valuable.
+
+- [ ] **Cross-skill pattern discovery** — Requires mature taxonomy and rich tagging (defer: complexity high, value unclear without usage data)
+- [ ] **Related suggestions** — Requires recommendation engine or similarity scoring (defer: needs ML/data science investment)
+- [ ] **Collaborative library contributions** — Requires submission workflow, moderation, quality control (defer: solve curation problem first)
+- [ ] **Multi-language support** — Requires translation workflow and QA (defer: validate English library first)
+- [ ] **Advanced export formats** — PDF/Word with formatting (defer: Excel sufficient for v1)
+
+## Feature Prioritization Matrix
+
+| Feature | User Value | Implementation Cost | Priority | Phase |
+|---------|------------|---------------------|----------|-------|
+| Keyword search | HIGH | LOW | P1 | v1.0 |
+| Multi-criteria filtering | HIGH | MEDIUM | P1 | v1.0 |
+| Preview before insert | HIGH | LOW | P1 | v1.0 |
+| Copy to clipboard | HIGH | LOW | P1 | v1.0 |
+| Performance level grouping | HIGH | MEDIUM | P1 | v1.0 |
+| Source attribution | MEDIUM | LOW | P1 | v1.0 |
+| Tag-based organization | HIGH | MEDIUM | P1 | v1.0 |
+| Saved/favorited descriptors | MEDIUM | LOW | P2 | v1.x |
+| Descriptor quality indicators | MEDIUM | LOW | P2 | v1.x |
+| Batch insert | MEDIUM | MEDIUM | P2 | v1.x |
+| Comparison view | LOW | MEDIUM | P2 | v1.x |
+| Usage analytics | LOW | MEDIUM | P2 | v1.x |
+| Cross-skill pattern discovery | MEDIUM | HIGH | P3 | v2+ |
+| Related suggestions | LOW | HIGH | P3 | v2+ |
+| Collaborative contributions | LOW | HIGH | P3 | v2+ |
+
+**Priority key:**
+- P1: Must have for launch - validates core value proposition
+- P2: Should have when possible - enhances proven workflows
+- P3: Nice to have - future consideration after PMF
+
+## UX Pattern Analysis
+
+### Search & Discovery Patterns (from research)
+
+**Industry Standard (Code Editors):**
+- VSCode snippets: Search by prefix trigger, browse by category, preview in tooltip
+- Sublime Text: Autocomplete-style discovery, keyword-based activation
+- **Takeaway:** Instant feedback, low friction to preview, keyboard-navigable
+
+**Content Libraries (Workflow Tools):**
+- n8n templates: Browse categories, filter by keyword, instant download
+- HighLevel workflows: Category + keyword + popularity sort
+- **Takeaway:** Multiple discovery paths (browse OR search), not just one
+
+**Design Systems (Component Libraries):**
+- Figma components: Visual preview, tag-based search, usage examples
+- UXPin patterns: Search + filter + preview, copy-paste workflow
+- **Takeaway:** Visual preview is critical, show usage context not just isolated item
+
+**Knowledge Bases:**
+- 73% of users search rather than browse (source: MatrixFlows 2026)
+- Inside-out organization fails - organize by user mental model, not admin taxonomy
+- **Takeaway:** Search is primary, browsing is secondary - but support both
+
+### Insert/Copy Workflow Patterns
+
+**Standard Workflow (from research):**
+1. **Discover** (search OR browse)
+2. **Preview** (see full context before committing)
+3. **Select** (single OR batch)
+4. **Insert** (copy to clipboard OR direct insert into form)
+5. **Confirm** (visual feedback: "Copied" toast)
+
+**Clipboard vs Direct Insert:**
+- Clipboard: Flexible (works anywhere), requires paste step
+- Direct insert: Seamless (no paste needed), requires form context
+- **Recommendation:** Support both - clipboard for flexibility, direct insert when editing marking scheme
+
+### Favorites/Bookmarks Patterns
+
+**Heart vs Star Icon:**
+- Heart: 52% preference in A/B testing (source: UI Patterns)
+- Star: More common in enterprise tools (GitHub, email)
+- **Recommendation:** Heart for emotional connection ("I like this descriptor"), aligns with curation/quality focus
+
+**Saved Items UX:**
+- Two-state button: empty/filled heart, instant feedback
+- Toast notification: "Added to favorites" (non-intrusive)
+- Dedicated view: "My Saved Descriptors" page
+- **Anti-pattern:** Inconsistent naming (favorites vs bookmarks vs saved) - pick one term
+
+### Filtering Patterns
+
+**Faceted Filtering (recommended):**
+- Multiple independent filters combine (AND logic)
+- Show filter counts: "Safety (23)"
+- Clear all filters button
+- Persist filters in URL for shareable links
+- **Source:** Holistics, ArcGIS Pro 2026 filter patterns
+
+**Anti-pattern: Dropdown Hell:**
+- Don't hide filters in nested dropdowns
+- Expose common filters upfront (skill area, criterion type)
+- Use pills/tags for selected filters (visible, dismissable)
+
+## Integration with Existing Features
+
+| Existing Feature | Integration Point | Notes |
+|------------------|-------------------|-------|
+| Skill management | Filter descriptors by skill area | Leverage existing skill sectors/categories |
+| Role-based access | SCMs can browse library, Admins can curate | Existing RBAC system |
+| Database (Prisma) | Descriptor storage + full-text search | PostgreSQL full-text search sufficient for v1 |
+| File storage (S3) | Not needed for descriptors | Descriptors are database records, not files |
+| Activity logging | Log descriptor inserts | Audit trail: "SCM copied descriptor X into scheme Y" |
+| Knowledge base | Separate from library | Knowledge base = static docs, Library = reusable content |
+
+## Curation Workflow (Admin-facing)
+
+**Not in v1.0 scope, but plan for future:**
+
+1. **Extraction** (manual, v1.0): Admin analyzes WSC2024 schemes, copies good descriptors
+2. **Tagging** (manual, v1.0): Admin assigns skill area, criterion type, tags
+3. **Quality marking** (manual, v1.0): Admin flags "excellent example" vs "reference"
+4. **Contribution workflow** (future): SCM suggests descriptor → Admin reviews → Approve/Reject
+5. **Bulk import** (future): Upload CSV of descriptors with metadata
+
+## Sources
+
+### Search & Discovery UX
+- [VSCode Snippet Guide](https://code.visualstudio.com/api/language-extensions/snippet-guide) - Official documentation
+- [Template Library for Workflows - HighLevel](https://help.gohighlevel.com/support/solutions/articles/155000005613-template-library-for-workflows) - Workflow template UX patterns
+- [7888 Workflow Automation Templates - n8n](https://n8n.io/workflows/) - Template library with search/filter
+- [Knowledge Base Taxonomy Best Practices 2026](https://www.matrixflows.com/blog/knowledge-base-taxonomy-best-practices) - 73% search vs browse statistic
+
+### Component Libraries & Patterns
+- [Design Systems vs Pattern Libraries - UXPin](https://www.uxpin.com/studio/blog/design-systems-vs-pattern-libraries-vs-style-guides-whats-difference/) - Component vs pattern definitions
+- [Components, Styles, and Shared Libraries - Figma](https://www.figma.com/best-practices/components-styles-and-shared-libraries/) - Component library best practices
+- [Pattern Library Playbook - Futurice](https://www.futurice.com/blog/pattern-library-playbook) - Pattern library structure
+- [Creating Consistent User Experiences With Pattern Libraries](https://www.axelerant.com/blog/creating-consistent-user-experiences-pattern-libraries) - Pattern library fundamentals
+
+### Favorites/Bookmarks UX
+- [Favorites design pattern - UI-patterns.com](https://ui-patterns.com/patterns/favorites) - Heart vs star, two-state buttons
+- [How to design better "favorites" - UX Planet](https://uxplanet.org/how-to-design-better-favorites-d1fe8f204a1) - Consistency, feedback, naming
+- [UI for Favorites - Mobiscroll](https://blog.mobiscroll.com/ui-for-favorites/) - Heart icon preference (52% vs star)
+
+### Filtering & Search
+- [Reusable Filter & Query Templates - Holistics](https://www.holistics.io/features/filter-query-templates/) - Faceted filtering patterns
+- [Filter or search for editing templates - ArcGIS Pro](https://pro.arcgis.com/en/pro-app/latest/help/editing/filter-and-search-for-templates.htm) - Filter patterns in content libraries
+
+### Content Curation & Moderation
+- [10 best content moderation tools 2026 - Planable](https://planable.io/blog/content-moderation-tools/) - Curation workflow patterns
+- [Content Curation Automation - Zapier](https://zapier.com/automation/content-automation/content-curation) - Moderation pipeline patterns
+- [Guide to Moderating User Generated Content - Curator.io](https://curator.io/blog/moderating-user-generated-content) - UGC moderation best practices
+
+### Copywriting & Content Tools
+- [Useful Copywriting Tools - Smart Interface Design Patterns](https://smart-interface-design-patterns.com/articles/copywriting/) - UX copywriting tool patterns
+- [UX Writing Assistant - Frontitude](https://write.frontitude.com/) - Content library + style guidelines integration
+
+### Workflow & Bulk Operations
+- [How To Design Bulk Import UX - Smart Interface Design Patterns](https://smart-interface-design-patterns.com/articles/bulk-ux/) - Bulk workflow: setup → upload → map → repair → import
+- [Content workflow guide 2026 - Planable](https://planable.io/blog/content-workflow/) - Content workflow sequence patterns
+
 ---
-
-## Implementation Complexity Assessment
-
-| Feature | DB Changes | UI Changes | Logic Changes | Risk Level | Estimated Effort |
-|---------|-----------|-----------|---------------|------------|------------------|
-| [1] Non-Entity Creation | Optional skillId | Update forms | Validation logic | LOW | 2-4 hours |
-| [2] Role-Based Visibility | None | Update queries | Filter logic | MEDIUM | 4-6 hours |
-| [3] Selective Attendance | New attendees table | Attendee selector | Many-to-many relation | MEDIUM | 6-8 hours |
-| [4] Permission Model | None | Conditional rendering | Permission checks | LOW | 2-3 hours |
-| [5] Visual Distinction | None | Badge components | Conditional styling | LOW | 1-2 hours |
-| [6] Unified Interface | None | Page layout | Query union | MEDIUM | 4-6 hours |
-| [7] Preserve Email/Calendar | None | Email template | Recipient logic | MEDIUM | 4-5 hours |
-
-**Total Estimated Effort**: 23-34 hours (3-4 days of focused development)
-
----
-
-## Quality Gate Checklist
-
-- [x] Categories clearly defined (table stakes vs differentiators vs anti-features)
-- [x] Complexity noted for each feature (LOW/MEDIUM/HIGH/VERY HIGH)
-- [x] Dependencies on existing features identified (Meeting model, email infrastructure, roles)
-- [x] Industry patterns cited for validation (Google Calendar, Slack, Teams, etc.)
-- [x] Rationale provided for anti-features (avoid scope creep)
-- [x] Implementation effort estimated
-- [x] Risk assessment included (data consistency, complexity, user confusion)
-
----
-
-## Research Sources
-
-**Existing Codebase Analysis**:
-- `prisma/schema.prisma` - Meeting model (skillId, title, startTime, endTime, meetingLink, minutes, actionPoints, documents, links)
-- `src/app/(dashboard)/hub/meetings/page.tsx` - Current meeting list implementation
-- `src/app/(dashboard)/skills/[skillId]/meeting-list.tsx` - Skill meeting UI patterns
-- `src/lib/email/meeting-invitation.ts` - Calendar invite generation (ICS, Google Calendar links)
-- `src/lib/permissions.ts` - Role-based access control patterns (canManageSkill, canViewSkill)
-- `.planning/PROJECT.md` - Active requirements and out-of-scope features
-- `.planning/codebase/ARCHITECTURE.md` - System architecture and design patterns
-
-**Industry Best Practices**:
-- Collaboration platforms: Slack, Microsoft Teams, Google Workspace
-- Project management: Asana, Monday.com, Jira, Notion
-- Scheduling tools: Calendly, Doodle, Outlook, Google Calendar
-- Meeting-specific: Zoom, Fellow.app, Loom
-
----
-
-## Recommendations for Requirements Phase
-
-1. **Prioritize Table Stakes (1-7)**: All seven are essential for MVP, implement in order of dependencies
-2. **Skip Differentiators for Now**: Features 8-11 add complexity without validated user need
-3. **Document Anti-Features**: Explicitly communicate what won't be built to manage expectations
-4. **Leverage Existing Infrastructure**: Reuse email/calendar system, permission model, UI components
-5. **Visual Distinction Critical**: Badge system prevents user confusion when both meeting types coexist
-6. **Test Selective Attendance**: Most complex feature (#3), needs thorough testing with email delivery
-7. **Database Migration Strategy**: Make skillId nullable, add MeetingAttendee junction table, ensure backward compatibility
-
----
-
-**Research completed**: 2026-02-01
-**Next phase**: Requirements definition using this feature analysis
+*Feature research for: Descriptor Library & Marking Scheme*
+*Researched: 2026-02-01*
+*Confidence: MEDIUM - Based on WebSearch findings verified against multiple professional tools*
