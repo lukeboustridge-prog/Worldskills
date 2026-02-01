@@ -151,7 +151,13 @@ function DescriptorCard({
         <div className="flex items-center gap-2 shrink-0">
           <Badge
             variant={descriptor.qualityIndicator === "EXCELLENT" ? "default" : "outline"}
-            className="text-xs"
+            className={`text-xs ${
+              descriptor.qualityIndicator === "REFERENCE"
+                ? "bg-green-100 text-green-800 border-green-200"
+                : descriptor.qualityIndicator === "NEEDS_REVIEW"
+                ? "bg-amber-100 text-amber-800 border-amber-200"
+                : ""
+            }`}
           >
             {QUALITY_LABELS[descriptor.qualityIndicator] || descriptor.qualityIndicator}
           </Badge>

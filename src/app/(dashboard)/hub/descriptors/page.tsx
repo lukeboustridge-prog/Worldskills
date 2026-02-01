@@ -30,6 +30,10 @@ export default async function DescriptorsPage({ searchParams }: PageProps) {
   const user = await getCurrentUser();
   const canReview = user && ["SA", "SCM", "Secretariat", "Admin"].includes(user.role);
 
+  // SCM users should not see NEEDS_REVIEW descriptors (only reviewed ones)
+  const isSCM = user?.role === "SCM";
+  const excludeForSCM = isSCM ? [QualityIndicator.NEEDS_REVIEW] : undefined;
+
   // Fetch search results and facet counts in parallel
   const [searchResponse, facets] = await Promise.all([
     searchDescriptors({
@@ -37,6 +41,7 @@ export default async function DescriptorsPage({ searchParams }: PageProps) {
       skillName: params.skill,
       category: params.category,
       qualityIndicator: params.quality as QualityIndicator | undefined,
+      excludeQualityIndicators: excludeForSCM,
       page,
       limit,
     }),

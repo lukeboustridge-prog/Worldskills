@@ -6,6 +6,7 @@ export interface SearchParams {
   skillName?: string;
   category?: string;
   qualityIndicator?: QualityIndicator;
+  excludeQualityIndicators?: QualityIndicator[];
   limit?: number;
   page?: number;
 }
@@ -52,6 +53,7 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
     skillName,
     category,
     qualityIndicator,
+    excludeQualityIndicators,
     limit = 20,
     page = 1
   } = params;
@@ -75,6 +77,12 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
 
     if (qualityIndicator) {
       additionalWhere = Prisma.sql`${additionalWhere} AND "qualityIndicator" = ${qualityIndicator}::"QualityIndicator"`;
+    }
+
+    if (excludeQualityIndicators && excludeQualityIndicators.length > 0) {
+      for (const excluded of excludeQualityIndicators) {
+        additionalWhere = Prisma.sql`${additionalWhere} AND "qualityIndicator" != ${excluded}::"QualityIndicator"`;
+      }
     }
 
     // Execute results and count queries in parallel
@@ -158,6 +166,12 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
 
     if (qualityIndicator) {
       additionalWhere = Prisma.sql`${additionalWhere} AND "qualityIndicator" = ${qualityIndicator}::"QualityIndicator"`;
+    }
+
+    if (excludeQualityIndicators && excludeQualityIndicators.length > 0) {
+      for (const excluded of excludeQualityIndicators) {
+        additionalWhere = Prisma.sql`${additionalWhere} AND "qualityIndicator" != ${excluded}::"QualityIndicator"`;
+      }
     }
 
     // Execute results and count queries in parallel

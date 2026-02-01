@@ -199,7 +199,7 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
                       id={`score3-${descriptor.id}`}
                       value={score3}
                       onChange={(e) => setScore3(e.target.value)}
-                      rows={3}
+                      rows={6}
                       className="text-sm"
                     />
                   </div>
@@ -211,7 +211,7 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
                       id={`score2-${descriptor.id}`}
                       value={score2}
                       onChange={(e) => setScore2(e.target.value)}
-                      rows={3}
+                      rows={6}
                       className="text-sm"
                     />
                   </div>
@@ -223,7 +223,7 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
                       id={`score1-${descriptor.id}`}
                       value={score1}
                       onChange={(e) => setScore1(e.target.value)}
-                      rows={3}
+                      rows={6}
                       className="text-sm"
                     />
                   </div>
@@ -235,7 +235,7 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
                       id={`score0-${descriptor.id}`}
                       value={score0}
                       onChange={(e) => setScore0(e.target.value)}
-                      rows={3}
+                      rows={6}
                       className="text-sm"
                     />
                   </div>
