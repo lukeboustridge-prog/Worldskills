@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-01)
 ## Current Position
 
 Phase: 3 of 5 (Search & Discovery)
-Plan: 3 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-01 — Completed 03-03-PLAN.md
+Last activity: 2026-02-01 — Completed 03-04-PLAN.md
 
 Progress: [████████░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 11m 22s
-- Total execution time: 1.51 hours
+- Total plans completed: 9
+- Average duration: 11m 34s
+- Total execution time: 1.74 hours
 
 **By Phase:**
 
@@ -29,13 +29,13 @@ Progress: [████████░░] 80%
 |-------|-------|-------|----------|
 | 01-data-import-foundation | 3/3 | 33m 27s | 11m 9s |
 | 02-admin-curation | 3/3 | 16m 26s | 5m 29s |
-| 03-search-discovery | 3/5 | 41m 15s | 13m 45s |
+| 03-search-discovery | 4/5 | 55m 15s | 13m 49s |
 
 **Recent Trend:**
-- 02-03: 6m 0s (Descriptor CRUD UI)
 - 03-01: 28m 15s (Full-Text Search Infrastructure)
 - 03-03: 13m 0s (Pagination & Faceted Filters)
-- Trend: Stabilizing around 13m/plan for search features
+- 03-04: 14m 0s (Related Descriptors)
+- Trend: Consistent around 13-14m/plan for search features
 
 *Updated after each plan completion*
 
@@ -69,6 +69,8 @@ Recent decisions affecting current work:
 | DESC-019 | Page-based pagination with max page 20 | Performance | Prevents deep pagination performance issues |
 | DESC-020 | Parallel results and count queries | Performance | Promise.all for single round-trip time |
 | DESC-021 | Facet counts use same FTS expression | Consistency | Accurate filter panel counts for current search |
+| DESC-022 | CROSS JOIN LATERAL for top-N similarity | Query optimization | Efficient per-row top-N pattern for related descriptors |
+| DESC-023 | Default similarity threshold 0.3 | pg_trgm configuration | Matches pg_trgm default, tunable based on feedback |
 
 ### Pending Todos
 
@@ -80,11 +82,11 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-01 14:07 UTC
-Stopped at: Completed 03-03-PLAN.md (Pagination & Faceted Filters)
+Last session: 2026-02-01 14:08 UTC
+Stopped at: Completed 03-04-PLAN.md (Related Descriptors)
 Resume file: None
-Next: Continue Phase 3 with plan 03-04
+Next: Continue Phase 3 with plan 03-05
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-01 after 03-03 execution*
+*Last updated: 2026-02-01 after 03-04 execution*
