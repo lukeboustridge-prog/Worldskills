@@ -547,3 +547,144 @@ export async function deleteManagementMeetingDocumentAction(
 
   return { success: true };
 }
+
+// Link Actions
+
+const addManagementMeetingLinkSchema = z.object({
+  meetingId: z.string().min(1),
+  label: z.string().min(1, "Label is required"),
+  url: z.string().url("Invalid URL")
+});
+
+export async function addManagementMeetingLinkAction(
+  meetingId: string,
+  linkData: { label: string; url: string }
+) {
+  const user = await requireUser();
+
+  const parsed = addManagementMeetingLinkSchema.safeParse({
+    meetingId,
+    ...linkData
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((e) => e.message).join(", "));
+  }
+
+  const meeting = await prisma.meeting.findUnique({
+    where: { id: meetingId }
+  });
+
+  if (!meeting) {
+    throw new Error("Meeting not found");
+  }
+
+  if (meeting.skillId !== null) {
+    throw new Error("This action is only for management meetings");
+  }
+
+  if (!canManageMeeting(user, meeting)) {
+    throw new Error("Only Admins and Secretariat can add links to management meetings");
+  }
+
+  const existingLinks = normaliseMeetingLinks(meeting.links);
+  const newLink: MeetingLink = {
+    id: createId(),
+    label: parsed.data.label,
+    url: parsed.data.url,
+    addedAt: new Date().toISOString()
+  };
+
+  await prisma.meeting.update({
+    where: { id: meetingId },
+    data: {
+      links: serialiseMeetingLinks([...existingLinks, newLink])
+    }
+  });
+
+  await logActivity({
+    skillId: null,
+    userId: user.id,
+    action: "ManagementMeetingLinkAdded",
+    payload: {
+      meetingId,
+      linkId: newLink.id,
+      label: newLink.label,
+      url: newLink.url
+    }
+  });
+
+  revalidatePath("/meetings");
+  revalidatePath("/hub/meetings");
+
+  return { success: true, linkId: newLink.id };
+}
+
+const removeManagementMeetingLinkSchema = z.object({
+  meetingId: z.string().min(1),
+  linkId: z.string().min(1)
+});
+
+export async function removeManagementMeetingLinkAction(
+  meetingId: string,
+  linkId: string
+) {
+  const user = await requireUser();
+
+  const parsed = removeManagementMeetingLinkSchema.safeParse({
+    meetingId,
+    linkId
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((e) => e.message).join(", "));
+  }
+
+  const meeting = await prisma.meeting.findUnique({
+    where: { id: meetingId }
+  });
+
+  if (!meeting) {
+    throw new Error("Meeting not found");
+  }
+
+  if (meeting.skillId !== null) {
+    throw new Error("This action is only for management meetings");
+  }
+
+  if (!canManageMeeting(user, meeting)) {
+    throw new Error("Only Admins and Secretariat can remove links from management meetings");
+  }
+
+  const existingLinks = normaliseMeetingLinks(meeting.links);
+  const linkToDelete = existingLinks.find((link) => link.id === linkId);
+
+  if (!linkToDelete) {
+    throw new Error("Link not found");
+  }
+
+  const updatedLinks = existingLinks.filter((link) => link.id !== linkId);
+
+  await prisma.meeting.update({
+    where: { id: meetingId },
+    data: {
+      links: serialiseMeetingLinks(updatedLinks)
+    }
+  });
+
+  await logActivity({
+    skillId: null,
+    userId: user.id,
+    action: "ManagementMeetingLinkRemoved",
+    payload: {
+      meetingId,
+      linkId,
+      label: linkToDelete.label
+    }
+  });
+
+  revalidatePath("/meetings");
+  revalidatePath("/hub/meetings");
+
+  return { success: true };
+}
