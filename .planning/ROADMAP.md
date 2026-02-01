@@ -49,11 +49,12 @@ Plans:
   3. Admin can delete descriptors with soft-delete preservation for audit trail
   4. Validation prevents saving descriptors without required fields (criterion name, performance level, source)
   5. Duplicate detection warns admin if similar descriptor already exists
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md - Database schema extensions (QualityIndicator enum, soft delete, pg_trgm)
+- [ ] 02-02-PLAN.md - Server Actions and query functions (CRUD, duplicate detection)
+- [ ] 02-03-PLAN.md - Admin UI (list, create, edit pages, delete confirmation)
 
 ### Phase 3: Search & Discovery
 **Goal**: Implement PostgreSQL full-text search with relevance ranking and multi-criteria filtering
@@ -110,11 +111,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data Import & Foundation | 0/5 | Ready | - |
-| 2. Admin Curation | 0/TBD | Not started | - |
+| 2. Admin Curation | 0/3 | Ready | - |
 | 3. Search & Discovery | 0/TBD | Not started | - |
 | 4. Library UI | 0/TBD | Not started | - |
 | 5. Access Control & Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-01*
-*Last updated: 2026-02-01 after Phase 1 planning*
+*Last updated: 2026-02-02 after Phase 2 planning*
