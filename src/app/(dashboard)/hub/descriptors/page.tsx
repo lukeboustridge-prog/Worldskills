@@ -51,9 +51,15 @@ export default async function DescriptorsPage({ searchParams }: PageProps) {
   return (
     <div className="container mx-auto px-4 py-6 md:py-8 max-w-4xl">
       <div className="flex items-center justify-between mb-4 md:mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold">Descriptor Library</h1>
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold">Descriptor Library</h1>
+          <p className="mt-2 text-muted-foreground">
+            Template descriptors to assist in designing your Marking Scheme. These are starting points
+            and should be modified to suit individual skills and Test Projects.
+          </p>
+        </div>
         {canReview && (
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="shrink-0 ml-4">
             <Link href="/hub/descriptors/review">
               <ClipboardCheck className="h-4 w-4 mr-2" />
               Review Templates
