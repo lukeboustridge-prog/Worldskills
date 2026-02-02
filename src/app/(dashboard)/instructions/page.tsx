@@ -27,32 +27,111 @@ type GuideSection = {
 
 const COMMON_SECTIONS: GuideSection[] = [
   {
-    title: "Signing in and navigating the dashboard",
+    title: "Signing in and navigating the app",
     description: "Follow these steps every time you start work so you know exactly where to find information.",
     steps: [
-      "Open the WorldSkills Skill Advisor Tracker in your web browser. Google Chrome, Microsoft Edge, and Safari all work well.",
+      "Open the WorldSkills Skill Tracker in your web browser. Google Chrome, Microsoft Edge, and Safari all work well.",
       "Enter the email address and password you registered with. If this is your first time, click the invitation link that was emailed to you and create your password before returning to the sign-in page.",
-      "After signing in you will land on the Dashboard or the Skills list depending on your permissions. Your name and role appear in the top bar so you can confirm which account is active.",
+      "After signing in you will land on the Dashboard or the Skills Hub depending on your permissions. Your name and role appear in the top bar so you can confirm which account is active.",
       <>
-        Use the menu on the left to move between pages. The{" "}
+        Use the menu on the left to move between pages:{" "}
         <Link href="/dashboard" className="font-medium text-foreground underline">
           Dashboard
         </Link>{" "}
-        shows overall progress, the{" "}
+        shows overall progress and metrics,{" "}
+        <Link href="/hub" className="font-medium text-foreground underline">
+          Skills Hub
+        </Link>{" "}
+        is your personalised workspace with quick actions and tasks,{" "}
         <Link href="/skills" className="font-medium text-foreground underline">
           Skills
         </Link>{" "}
-        page lists every skill workspace, the{" "}
+        lists every skill workspace, and{" "}
         <Link href="/settings" className="font-medium text-foreground underline">
           Settings
         </Link>{" "}
-        area is reserved for administrators, and this User guide is always available for quick help.
+        is reserved for administrators.
       </>,
       "Click a page name once to open it. The highlighted link shows where you are at all times."
     ],
     tips: [
-      "If you forget your password, use the “Forgot password” option on the sign-in page to request a reset email.",
+      "If you forget your password, use the \"Forgot password\" option on the sign-in page to request a reset email.",
+      "Use the Change password link in the menu to update your password at any time.",
       "Add the website to your browser favourites so you can return without searching for the link."
+    ]
+  },
+  {
+    title: "Using the Skills Hub",
+    description: "Your personalised workspace for managing skills and staying on top of deliverables.",
+    steps: [
+      <>
+        Open the{" "}
+        <Link href="/hub" className="font-medium text-foreground underline">
+          Skills Hub
+        </Link>{" "}
+        from the side menu. This is your central workspace.
+      </>,
+      "The top cards show your key metrics: number of skills you manage, overdue deliverables, items due soon, and your next meeting.",
+      "Use Quick Actions to upload evidence, join meetings, or access expenses and resources with one click.",
+      "The My Tasks section lists deliverables that need attention, sorted by due date. Click any task to go directly to that skill workspace.",
+      "Recent Activity shows the latest updates across all your skills so you can stay informed.",
+      <>
+        From the Skills Hub, you can also access the{" "}
+        <Link href="/hub/qc" className="font-medium text-foreground underline">
+          Skills Matrix
+        </Link>{" "}
+        for a detailed progress overview, and the{" "}
+        <Link href="/hub/kb" className="font-medium text-foreground underline">
+          Knowledge Base
+        </Link>{" "}
+        for guidance documents and resources.
+      </>
+    ],
+    tips: [
+      "Check the Skills Hub daily to see what needs your attention first.",
+      "Featured Resources on the right provide quick access to commonly used documents."
+    ]
+  },
+  {
+    title: "Reading the Skills Matrix",
+    description: "Monitor deliverable progress across all skills at a glance.",
+    steps: [
+      <>
+        Open the{" "}
+        <Link href="/hub/qc" className="font-medium text-foreground underline">
+          Skills Matrix
+        </Link>{" "}
+        from the Skills Hub or directly from the menu.
+      </>,
+      "The summary cards at the top show totals: Total Skills, Total Deliverables, Completed count, and Overdue count.",
+      "The table below breaks down each skill by workflow stage: To Do, In Progress, Review, and Complete.",
+      "The Status column shows whether a skill is On Track (green) or At Risk (red) based on overdue deliverables.",
+      "Click any skill name in the table to open its full workspace."
+    ],
+    tips: [
+      "SCM and Skill Team users see a Benchmarking widget comparing their skill against the cohort average.",
+      "Use the Skills Matrix before meetings to quickly identify which skills need discussion."
+    ]
+  },
+  {
+    title: "Using the Knowledge Base",
+    description: "Find guidance notes, templates, and resources for your work.",
+    steps: [
+      <>
+        Open the{" "}
+        <Link href="/hub/kb" className="font-medium text-foreground underline">
+          Knowledge Base
+        </Link>{" "}
+        from the Skills Hub.
+      </>,
+      "Resources are organised by category: Guidance Notes, Templates & Forms, Best Practices, Policies, and Onboarding Materials.",
+      "External Links provide quick access to useful websites and tools.",
+      "Use the search bar to find specific resources by title or description.",
+      "Click any resource to open it in a new tab. Documents and links open externally so you can reference them while working."
+    ],
+    tips: [
+      "Administrators can manage resources from the Settings page.",
+      "Bookmark frequently used resources in your browser for even faster access."
     ]
   },
   {
@@ -67,8 +146,8 @@ const COMMON_SECTIONS: GuideSection[] = [
         page from the side menu.
       </>,
       "Each skill appears as a card. The left side shows the skill name and the assigned Skill Competition Manager (SCM).",
-      "The right column keeps badges neatly aligned: red badges show how many deliverables are overdue, the green “On track” badge confirms there are no urgent items, and the grey dashed badge shows how many deliverables are hidden for that skill.",
-      "The small badge labelled “SA” tells you who the Skill Advisor is. The arrow button rotates when the card is open.",
+      "The right column keeps badges neatly aligned: red badges show how many deliverables are overdue, the green On Track badge confirms there are no urgent items, and the grey dashed badge shows how many deliverables are hidden for that skill.",
+      "The small badge labelled SA tells you who the Skill Advisor is. The arrow button rotates when the card is open.",
       "Click anywhere on the card header to expand more options. Use the buttons that appear to open the full workspace or send a quick message."
     ],
     tips: [
@@ -78,13 +157,14 @@ const COMMON_SECTIONS: GuideSection[] = [
   },
   {
     title: "Working inside a skill workspace",
-    description: "The workspace keeps deliverables, milestones, notes, and chat messages together.",
+    description: "The workspace keeps deliverables, meetings, messages, milestones, and team info together.",
     steps: [
-      "Open a skill card and choose “Open workspace” to see the full detail.",
-      "Use the tabs to switch between Deliverables, Milestones, Notes, and the Activity log.",
+      "Open a skill card and choose Open Workspace to see the full detail.",
+      "Use the tabs to switch between Deliverables, Meetings, Messages, Milestones, and Team.",
       "Within Deliverables, each row shows the due date, status, and any supporting evidence. The calendar icon opens a date picker so you can choose new dates without typing.",
       "The evidence section lets you attach links or upload documents or images (depending on your permissions) so progress is easy to audit.",
-      "Scroll to the bottom of the page to add a message. Messages appear instantly for everyone who has access to the skill."
+      "The Messages tab shows the conversation history for the skill. Post updates to keep your team informed.",
+      "The Meetings tab lists scheduled meetings with links, documents, and action points."
     ],
     tips: [
       "Save changes regularly—buttons turn grey once the system is processing your update.",
@@ -207,14 +287,23 @@ const ROLE_SECTIONS: Record<Role, GuideSection[]> = {
     {
       title: "Monitoring overall progress",
       steps: [
-        "Visit the Dashboard to review the sector progress report. Each sector shows total deliverables, validated counts, and any overdue work.",
-        "Click into a sector to note which skills need additional support, then open those skills from the Skills page.",
-        "Use the hidden counts to ensure reports exclude deliverables that were intentionally removed by Skill Advisors.",
-        "Review the Activity log inside skills to confirm when advisors validated items or when deadlines changed."
+        <>
+          Visit the{" "}
+          <Link href="/dashboard" className="font-medium text-foreground underline">
+            Dashboard
+          </Link>{" "}
+          to review key metrics: overdue deliverables, items due within 30 days, average SCM response time, and conversations awaiting replies.
+        </>,
+        "The Skills at Risk section highlights skills with the most overdue work, ordered by severity.",
+        "Review Skill Advisor Performance to see completion rates and identify advisors who may need support.",
+        "SCM Response Performance shows how quickly managers reply to advisor messages—useful for identifying communication gaps.",
+        "Sector Progress breaks down completion rates by sector so you can spot patterns across related skills.",
+        "Click the Export global report (PDF) button to generate a comprehensive report for governance reviews or stakeholder updates."
       ],
       tips: [
-        "Export data after major reviews so you have a record of the status at that point in time.",
-        "Keep an eye on repeated overdue flags for the same skill—they may signal a resourcing issue."
+        "Export the global report regularly so you have a record of status at key milestones.",
+        "Keep an eye on repeated overdue flags for the same skill—they may signal a resourcing issue.",
+        "The Awaiting SCM Replies section helps identify conversations that need follow-up."
       ]
     },
     {
@@ -223,11 +312,18 @@ const ROLE_SECTIONS: Record<Role, GuideSection[]> = {
         "Use the message threads to nudge teams that have been quiet. Everyone with access to the skill sees Secretariat posts.",
         "Encourage advisors to document why deliverables are hidden or rescheduled so the history is clear for governance reviews.",
         "If an advisor is unavailable, liaise with an administrator to reassign the skill so progress continues.",
-        "Share any global announcements through messages on key skills and via email for broader visibility."
+        "Share any global announcements through messages on key skills and via email for broader visibility.",
+        <>
+          Use the{" "}
+          <Link href="/hub/qc" className="font-medium text-foreground underline">
+            Skills Matrix
+          </Link>{" "}
+          for a quick overview of all skills before team meetings.
+        </>
       ],
       tips: [
         "When sharing reminders, include the due date and expected status so the request is precise.",
-        "Record outcomes of major decisions in the Notes tab so future teams can see the rationale."
+        "Record outcomes of major decisions in the message thread so future teams can see the rationale."
       ]
     }
   ]
@@ -244,41 +340,62 @@ const ADMIN_SECTIONS: GuideSection[] = [
         </Link>{" "}
         page and scroll to the Invitations area.
       </>,
-      "Choose the person’s name, email address, and role. Tick the Admin checkbox only when they need full administrative rights.",
-      "Send the invitation. The recipient receives an email immediately. Remind them to follow the link so they can set a password.",
+      "Choose the person's name, email address, and role. Tick the Admin checkbox only when they need full administrative rights.",
+      "Send the invitation. The recipient receives a welcome email immediately with a link to set their password.",
       "To adjust a user after they have joined, use the User Management table on the same page. You can promote or remove admin rights and update roles here.",
       "If a mistake is made, send a new invitation or edit the user record—changes take effect as soon as you save."
     ],
     tips: [
-      "Keep a record of pending invitations and resend them if someone has not responded within a few days.",
+      "Check pending invitations regularly—users who haven't set up their account will appear in the pending list.",
       "Remove admin access as soon as it is no longer required to keep the system secure."
     ]
   },
   {
     title: "Maintaining competition settings",
     steps: [
-      "Use the Competition timeline section on the Settings page to update the C1 date. The system recalculates every deliverable when you confirm the change.",
+      "Use the Competition timeline section on the Settings page to update the C1 (competition start) and C4 (competition end) dates. The system recalculates every deliverable when you confirm the change.",
       "Review the Standard deliverables catalog regularly. You can add new templates, adjust due dates using the date picker, or delete templates that no longer apply—deletions remove seeded deliverables across all skills.",
       "Update Milestone templates in the same way so schedules remain accurate.",
-      "Record major timeline changes in the Notes field provided so the rationale is stored with the settings.",
+      "Use Key Dates to record important milestones like submission deadlines or review periods.",
       "After making adjustments, notify Skill Advisors through the messaging system so they know what changed."
     ],
     tips: [
       "Plan catalog changes outside of peak working hours to minimise disruption.",
-      "Export reports before and after large updates if you need to compare progress across timelines."
+      "Export the global report before and after large updates if you need to compare progress across timelines."
+    ]
+  },
+  {
+    title: "Managing the Knowledge Base",
+    steps: [
+      <>
+        From the{" "}
+        <Link href="/hub/kb" className="font-medium text-foreground underline">
+          Knowledge Base
+        </Link>{" "}
+        page, click Manage Resources to add, edit, or remove resources.
+      </>,
+      "Add resources by providing a title, URL, optional description, and selecting a category (Guidance, Template, Best Practice, Policy, Onboarding, or External Link).",
+      "Mark important resources as Featured so they appear on the Skills Hub homepage.",
+      "External Links appear in a separate section for Skill Advisors to quickly access useful websites and tools.",
+      "Remove outdated resources to keep the Knowledge Base relevant and easy to navigate."
+    ],
+    tips: [
+      "Organise resources into clear categories so users can find what they need quickly.",
+      "Review the Knowledge Base periodically to ensure links are still working and content is current."
     ]
   },
   {
     title: "Overseeing skills",
     steps: [
       "From the Skills page, create new skills or reassign advisors and managers using the forms that appear inside each card.",
-      "Only administrators can delete a skill. Expand the card, review the confirmation text carefully, and click “Delete skill” when you are sure. This removes the workspace and all associated data.",
+      "Only administrators can delete a skill. Expand the card, review the confirmation text carefully, and click Delete Skill when you are sure. This removes the workspace and all associated data.",
       "When reallocating work, message the outgoing and incoming advisors so everyone understands the change.",
-      "Monitor overdue badges across sectors and coordinate with the Secretariat to provide extra support where necessary."
+      "Monitor overdue badges across sectors and coordinate with the Secretariat to provide extra support where necessary.",
+      "Use the Skills Matrix to get a quick overview of progress across all skills before making decisions."
     ],
     tips: [
       "Assign every skill to both a Skill Advisor and an SCM to keep responsibilities clear.",
-      "Use the Dashboard’s sector breakdown to spot areas that are falling behind before deadlines arrive."
+      "Use the Dashboard's sector breakdown to spot areas that are falling behind before deadlines arrive."
     ]
   }
 ];
