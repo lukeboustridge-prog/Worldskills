@@ -213,14 +213,14 @@ export default async function SkillDetailPage({
         </div>
         <div className="flex gap-3">
           <Card className="min-w-[160px]">
-            <CardHeader className="p-4 pb-0">
-              <CardDescription>Deliverables complete</CardDescription>
+            <CardHeader className="p-4 pb-2">
+              <CardDescription className="min-h-[2.5rem]">Deliverables complete</CardDescription>
               <CardTitle>{completedDeliverablesCount}</CardTitle>
             </CardHeader>
           </Card>
           <Card className="min-w-[160px]">
-            <CardHeader className="p-4 pb-0">
-              <CardDescription>Total deliverables</CardDescription>
+            <CardHeader className="p-4 pb-2">
+              <CardDescription className="min-h-[2.5rem]">Total deliverables</CardDescription>
               <CardTitle>{summary.total}</CardTitle>
               {hiddenDeliverablesCount > 0 ? (
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -230,8 +230,8 @@ export default async function SkillDetailPage({
             </CardHeader>
           </Card>
           <Card className="min-w-[160px]">
-            <CardHeader className="p-4 pb-0">
-              <CardDescription>Overdue deliverables</CardDescription>
+            <CardHeader className="p-4 pb-2">
+              <CardDescription className="min-h-[2.5rem]">Overdue deliverables</CardDescription>
               <CardTitle className={summary.overdue > 0 ? "text-red-600" : ""}>{summary.overdue}</CardTitle>
             </CardHeader>
           </Card>

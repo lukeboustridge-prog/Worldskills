@@ -184,25 +184,25 @@ export function SkillsMatrixView({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Total Skills</CardDescription>
+            <CardDescription className="min-h-[2.5rem]">Total Skills</CardDescription>
             <CardTitle className="text-2xl">{skills.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Total Deliverables</CardDescription>
+            <CardDescription className="min-h-[2.5rem]">Total Deliverables</CardDescription>
             <CardTitle className="text-2xl">{totalDeliverables}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Completed</CardDescription>
+            <CardDescription className="min-h-[2.5rem]">Completed</CardDescription>
             <CardTitle className="text-2xl text-green-600">{totalComplete}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Overdue</CardDescription>
+            <CardDescription className="min-h-[2.5rem]">Overdue</CardDescription>
             <CardTitle className={cn("text-2xl", totalOverdue > 0 && "text-red-600")}>
               {totalOverdue}
             </CardTitle>
