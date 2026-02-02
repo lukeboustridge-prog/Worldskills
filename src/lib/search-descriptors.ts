@@ -3,8 +3,8 @@ import { Prisma, QualityIndicator } from "@prisma/client";
 
 export interface SearchParams {
   query?: string;
-  skillName?: string;
-  category?: string;
+  skillName?: string; // Filter by skill (checks if skillNames array contains this value)
+  category?: string; // Filter by category (checks if categories array contains this value)
   qualityIndicator?: QualityIndicator;
   excludeQualityIndicators?: QualityIndicator[];
   limit?: number;
@@ -19,9 +19,9 @@ export interface SearchResult {
   score2: string | null;
   score1: string | null;
   score0: string | null;
-  skillName: string;
+  skillNames: string[];
   sector: string | null;
-  category: string | null;
+  categories: string[];
   tags: string[];
   qualityIndicator: QualityIndicator;
   source: string | null;
@@ -68,11 +68,13 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
     let additionalWhere = Prisma.sql``;
 
     if (skillName) {
-      additionalWhere = Prisma.sql`${additionalWhere} AND "skillName" = ${skillName}`;
+      // Check if skillNames array contains the filter value
+      additionalWhere = Prisma.sql`${additionalWhere} AND ${skillName} = ANY("skillNames")`;
     }
 
     if (category) {
-      additionalWhere = Prisma.sql`${additionalWhere} AND "category" = ${category}`;
+      // Check if categories array contains the filter value
+      additionalWhere = Prisma.sql`${additionalWhere} AND ${category} = ANY("categories")`;
     }
 
     if (qualityIndicator) {
@@ -96,9 +98,9 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
           score2,
           score1,
           score0,
-          "skillName",
+          "skillNames",
           sector,
-          category,
+          "categories",
           tags,
           "qualityIndicator",
           source,
@@ -157,11 +159,11 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
     let additionalWhere = Prisma.sql``;
 
     if (skillName) {
-      additionalWhere = Prisma.sql`${additionalWhere} AND "skillName" = ${skillName}`;
+      additionalWhere = Prisma.sql`${additionalWhere} AND ${skillName} = ANY("skillNames")`;
     }
 
     if (category) {
-      additionalWhere = Prisma.sql`${additionalWhere} AND "category" = ${category}`;
+      additionalWhere = Prisma.sql`${additionalWhere} AND ${category} = ANY("categories")`;
     }
 
     if (qualityIndicator) {
@@ -185,9 +187,9 @@ export async function searchDescriptors(params: SearchParams): Promise<SearchRes
           score2,
           score1,
           score0,
-          "skillName",
+          "skillNames",
           sector,
-          category,
+          "categories",
           tags,
           "qualityIndicator",
           source,

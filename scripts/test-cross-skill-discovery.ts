@@ -12,7 +12,7 @@ async function test() {
       deletedAt: null,
       criterionName: { contains: "safety", mode: "insensitive" }
     },
-    select: { id: true, criterionName: true, skillName: true }
+    select: { id: true, criterionName: true, skillNames: true }
   });
 
   if (!safety) {
@@ -21,15 +21,16 @@ async function test() {
   }
 
   console.log("Source safety descriptor:");
-  console.log("  Skill:", safety.skillName);
+  console.log("  Skills:", safety.skillNames.join(", "));
   console.log("  Criterion:", safety.criterionName);
 
   const related = await getRelatedDescriptors(safety.id, 10, 0.25);
   console.log("\nRelated descriptors from OTHER skills:");
 
-  const otherSkills = related.filter(r => r.skillName !== safety.skillName);
+  // Compare skills - check if there's any overlap
+  const otherSkills = related.filter(r => !r.skillNames.some(s => safety.skillNames.includes(s)));
   otherSkills.forEach(r => {
-    console.log("  -", r.skillName, ":", r.criterionName.substring(0, 60), "(", r.similarityScore.toFixed(2), ")");
+    console.log("  -", r.skillNames.join(", "), ":", r.criterionName.substring(0, 60), "(", r.similarityScore.toFixed(2), ")");
   });
 
   console.log("\nCross-skill discovery:", otherSkills.length > 0 ? "WORKING" : "NO RESULTS");

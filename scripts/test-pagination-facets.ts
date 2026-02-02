@@ -10,7 +10,7 @@ async function testFilterCombination() {
   console.log("Search only:", searchOnly.total);
 
   // Get a skill that has safety results
-  const skillsWithSafety = [...new Set(searchOnly.results.map(r => r.skillName))];
+  const skillsWithSafety = [...new Set(searchOnly.results.flatMap(r => r.skillNames))];
   const testSkill = skillsWithSafety[0];
   console.log("Testing with skill:", testSkill);
 
@@ -27,7 +27,7 @@ async function testFilterCombination() {
   console.log("Filter narrows results:", filterNarrows);
 
   // Verify: all filtered results have the skill
-  const allMatchSkill = filtered.results.every(r => r.skillName === testSkill);
+  const allMatchSkill = filtered.results.every(r => r.skillNames.includes(testSkill));
   console.log("All results match skill:", allMatchSkill);
 
   // Verify: search still active (results are ranked)

@@ -5,7 +5,7 @@ interface SimilarDescriptor {
   id: string;
   code: string;
   criterionName: string;
-  skillName: string;
+  skillNames: string[];
   similarity: number;
 }
 
@@ -36,7 +36,7 @@ export function DuplicateWarning({ similar }: DuplicateWarningProps) {
                 {s.criterionName}
               </Link>
               <p className="text-muted-foreground">
-                {s.skillName} ({Math.round(s.similarity * 100)}% similar)
+                {s.skillNames.join(", ")} ({Math.round(s.similarity * 100)}% similar)
               </p>
             </div>
           </li>

@@ -5,7 +5,7 @@ export interface SimilarDescriptor {
   id: string;
   code: string;
   criterionName: string;
-  skillName: string;
+  skillNames: string[];
   similarity: number;
 }
 
@@ -34,7 +34,7 @@ export async function findSimilarDescriptors(
       id,
       code,
       "criterionName",
-      "skillName",
+      "skillNames",
       similarity("criterionName", ${criterionName}) as similarity
     FROM "Descriptor"
     WHERE
@@ -55,15 +55,18 @@ export async function findSimilarDescriptors(
 /**
  * Check if a descriptor with the same code exists within a skill.
  * Used to warn about potential duplicates before create/update.
+ * Now checks if any descriptor with the given code has any overlapping skills.
  */
 export async function checkCodeExists(
-  skillName: string,
+  skillNames: string[],
   code: string,
   excludeId?: string
 ): Promise<boolean> {
+  if (skillNames.length === 0) return false;
+
   const existing = await prisma.descriptor.findFirst({
     where: {
-      skillName,
+      skillNames: { hasSome: skillNames },
       code,
       deletedAt: null,
       ...(excludeId ? { id: { not: excludeId } } : {}),

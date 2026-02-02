@@ -9,7 +9,7 @@ async function test() {
   // Get a random descriptor
   const sample = await prisma.descriptor.findFirst({
     where: { deletedAt: null },
-    select: { id: true, criterionName: true, skillName: true }
+    select: { id: true, criterionName: true, skillNames: true }
   });
 
   if (!sample) {
@@ -19,14 +19,14 @@ async function test() {
 
   console.log("Source descriptor:");
   console.log("  Criterion:", sample.criterionName);
-  console.log("  Skill:", sample.skillName);
+  console.log("  Skills:", sample.skillNames.join(", "));
   console.log("");
 
   // Test by ID
   const relatedById = await getRelatedDescriptors(sample.id);
   console.log("Related by ID:", relatedById.length, "results");
   relatedById.forEach(r => {
-    console.log("  -", r.similarityScore.toFixed(2), r.skillName, "-", r.criterionName.substring(0, 50));
+    console.log("  -", r.similarityScore.toFixed(2), r.skillNames.join(", "), "-", r.criterionName.substring(0, 50));
   });
   console.log("");
 

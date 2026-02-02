@@ -96,14 +96,17 @@ export default async function EditDescriptorPage({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="skillName">Source Skill</Label>
+                <Label htmlFor="skillNames">Skills</Label>
                 <Input
-                  id="skillName"
-                  name="skillName"
+                  id="skillNames"
+                  name="skillNames"
                   required
-                  defaultValue={descriptor.skillName}
-                  placeholder="Welding"
+                  defaultValue={descriptor.skillNames.join(", ")}
+                  placeholder="Welding, Fabrication"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Comma-separated list of skills
+                </p>
               </div>
             </div>
 
@@ -176,13 +179,16 @@ export default async function EditDescriptorPage({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="categories">Categories</Label>
                 <Input
-                  id="category"
-                  name="category"
-                  defaultValue={descriptor.category ?? ""}
-                  placeholder="e.g., Technical Skills"
+                  id="categories"
+                  name="categories"
+                  defaultValue={descriptor.categories.join(", ")}
+                  placeholder="e.g., Technical Skills, Safety"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Comma-separated list of categories
+                </p>
               </div>
             </div>
 

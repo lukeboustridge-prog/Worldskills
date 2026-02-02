@@ -356,13 +356,13 @@ model Descriptor {
   score3 String? @db.Text // Excellent - 3 points
 
   // Source metadata
-  source    String // "WSC2024" for imported, "Manual" for admin-added
-  skillName String // Name of the skill (e.g., "Welding", "Bricklaying")
-  sector    String? // Sector category if available
+  source     String   // "WSC2024" for imported, "Manual" for admin-added
+  skillNames String[] @default([]) // Skills this descriptor applies to
+  sector     String?  // Sector category if available
 
-  // Categories and tags (for future filtering)
-  category String? // Criterion type/category
-  tags     String[] @default([]) // JSONB array for flexible tagging
+  // Categories and tags (for filtering)
+  categories String[] @default([]) // Categories this descriptor belongs to
+  tags       String[] @default([]) // JSONB array for flexible tagging
 
   // Schema versioning for future migrations
   version Int @default(1)
@@ -381,13 +381,9 @@ model Descriptor {
   // User favorites
   favoritedBy DescriptorFavorite[]
 
-  // Composite unique constraint: code unique within a skill
-  @@unique([skillName, code])
-  // B-tree indexes for common filters (GIN indexes added after import)
+  // B-tree indexes for common filters (GIN indexes for arrays added via raw SQL)
   @@index([source])
-  @@index([skillName])
   @@index([sector])
-  @@index([category])
   @@index([version])
 }
 

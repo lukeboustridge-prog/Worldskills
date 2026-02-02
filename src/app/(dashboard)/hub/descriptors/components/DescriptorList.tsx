@@ -173,13 +173,13 @@ function DescriptorCard({
                 {descriptor.source}
               </Badge>
             )}
-            <span>{descriptor.skillName}</span>
+            <span>{descriptor.skillNames?.join(", ") || "No skills"}</span>
             <span>•</span>
             <span>{descriptor.code}</span>
-            {descriptor.category && (
+            {descriptor.categories && descriptor.categories.length > 0 && (
               <>
                 <span>•</span>
-                <span>{descriptor.category}</span>
+                <span>{descriptor.categories.join(", ")}</span>
               </>
             )}
           </div>

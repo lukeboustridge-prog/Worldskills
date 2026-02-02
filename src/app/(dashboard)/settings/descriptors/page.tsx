@@ -254,7 +254,9 @@ export default async function DescriptorsPage({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant="outline">{descriptor.code}</Badge>
-                      <Badge variant="default">{descriptor.skillName}</Badge>
+                      {descriptor.skillNames.map((skill) => (
+                        <Badge key={skill} variant="default">{skill}</Badge>
+                      ))}
                       <Badge className={QUALITY_INDICATOR_COLORS[descriptor.qualityIndicator]}>
                         {QUALITY_INDICATOR_LABELS[descriptor.qualityIndicator]}
                       </Badge>
@@ -272,9 +274,9 @@ export default async function DescriptorsPage({
                       </div>
                     )}
 
-                    {(descriptor.sector || descriptor.category) && (
+                    {(descriptor.sector || descriptor.categories.length > 0) && (
                       <p className="mt-2 text-xs text-muted-foreground">
-                        {[descriptor.sector, descriptor.category].filter(Boolean).join(" • ")}
+                        {[descriptor.sector, ...descriptor.categories].filter(Boolean).join(" • ")}
                       </p>
                     )}
 

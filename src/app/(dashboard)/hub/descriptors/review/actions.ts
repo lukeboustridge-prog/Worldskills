@@ -15,8 +15,8 @@ const updateDescriptorSchema = z.object({
   score1: z.string().optional(),
   score0: z.string().optional(),
   qualityIndicator: z.nativeEnum(QualityIndicator),
-  skillName: z.string().min(1, "Skill name is required"),
-  category: z.string().optional(),
+  skillNames: z.array(z.string()).min(1, "At least one skill is required"),
+  categories: z.array(z.string()).optional(),
 });
 
 const createDescriptorSchema = z.object({
@@ -26,8 +26,8 @@ const createDescriptorSchema = z.object({
   score2: z.string().optional(),
   score1: z.string().optional(),
   score0: z.string().optional(),
-  skillName: z.string().min(1, "Skill name is required"),
-  category: z.string().optional(),
+  skillNames: z.array(z.string()).min(1, "At least one skill is required"),
+  categories: z.array(z.string()).optional(),
   qualityIndicator: z.nativeEnum(QualityIndicator).optional(),
 });
 
@@ -43,6 +43,23 @@ export async function updateDescriptorReviewAction(formData: FormData) {
     return { error: "You do not have permission to review descriptors" };
   }
 
+  // Parse arrays from form data (sent as JSON strings)
+  let skillNames: string[] = [];
+  let categories: string[] = [];
+
+  try {
+    const skillNamesRaw = formData.get("skillNames");
+    if (skillNamesRaw) {
+      skillNames = JSON.parse(skillNamesRaw as string);
+    }
+    const categoriesRaw = formData.get("categories");
+    if (categoriesRaw) {
+      categories = JSON.parse(categoriesRaw as string);
+    }
+  } catch {
+    return { error: "Invalid skill or category data" };
+  }
+
   const parsedResult = updateDescriptorSchema.safeParse({
     id: formData.get("id"),
     criterionName: formData.get("criterionName"),
@@ -51,8 +68,8 @@ export async function updateDescriptorReviewAction(formData: FormData) {
     score1: formData.get("score1") || undefined,
     score0: formData.get("score0") || undefined,
     qualityIndicator: formData.get("qualityIndicator"),
-    skillName: formData.get("skillName"),
-    category: formData.get("category") || undefined,
+    skillNames,
+    categories: categories.length > 0 ? categories : undefined,
   });
 
   if (!parsedResult.success) {
@@ -63,20 +80,19 @@ export async function updateDescriptorReviewAction(formData: FormData) {
   const data = parsedResult.data;
 
   try {
-    await prisma.$executeRaw`
-      UPDATE "Descriptor"
-      SET
-        "criterionName" = ${data.criterionName.trim()},
-        score3 = ${data.score3?.trim() || null},
-        score2 = ${data.score2?.trim() || null},
-        score1 = ${data.score1?.trim() || null},
-        score0 = ${data.score0?.trim() || null},
-        "qualityIndicator" = ${data.qualityIndicator}::"QualityIndicator",
-        "skillName" = ${data.skillName.trim()},
-        category = ${data.category?.trim() || null},
-        "updatedAt" = NOW()
-      WHERE id = ${data.id}
-    `;
+    await prisma.descriptor.update({
+      where: { id: data.id },
+      data: {
+        criterionName: data.criterionName.trim(),
+        score3: data.score3?.trim() || null,
+        score2: data.score2?.trim() || null,
+        score1: data.score1?.trim() || null,
+        score0: data.score0?.trim() || null,
+        qualityIndicator: data.qualityIndicator,
+        skillNames: data.skillNames.map(s => s.trim()),
+        categories: data.categories?.map(c => c.trim()) || [],
+      },
+    });
   } catch (error) {
     console.error("Failed to update descriptor", error);
     return { error: "Unable to update descriptor" };
@@ -99,6 +115,23 @@ export async function createDescriptorAction(formData: FormData) {
     return { error: "You do not have permission to create descriptors" };
   }
 
+  // Parse arrays from form data (sent as JSON strings)
+  let skillNames: string[] = [];
+  let categories: string[] = [];
+
+  try {
+    const skillNamesRaw = formData.get("skillNames");
+    if (skillNamesRaw) {
+      skillNames = JSON.parse(skillNamesRaw as string);
+    }
+    const categoriesRaw = formData.get("categories");
+    if (categoriesRaw) {
+      categories = JSON.parse(categoriesRaw as string);
+    }
+  } catch {
+    return { error: "Invalid skill or category data" };
+  }
+
   const parsedResult = createDescriptorSchema.safeParse({
     code: formData.get("code"),
     criterionName: formData.get("criterionName"),
@@ -106,8 +139,8 @@ export async function createDescriptorAction(formData: FormData) {
     score2: formData.get("score2") || undefined,
     score1: formData.get("score1") || undefined,
     score0: formData.get("score0") || undefined,
-    skillName: formData.get("skillName"),
-    category: formData.get("category") || undefined,
+    skillNames,
+    categories: categories.length > 0 ? categories : undefined,
     qualityIndicator: formData.get("qualityIndicator") || undefined,
   });
 
@@ -127,17 +160,14 @@ export async function createDescriptorAction(formData: FormData) {
         score2: data.score2?.trim() || null,
         score1: data.score1?.trim() || null,
         score0: data.score0?.trim() || null,
-        skillName: data.skillName.trim(),
-        category: data.category?.trim() || null,
+        skillNames: data.skillNames.map(s => s.trim()),
+        categories: data.categories?.map(c => c.trim()) || [],
         source: "Manual",
         qualityIndicator: data.qualityIndicator || "NEEDS_REVIEW",
       },
     });
   } catch (error: unknown) {
     console.error("Failed to create descriptor", error);
-    if (error instanceof Error && error.message.includes("Unique constraint")) {
-      return { error: "A descriptor with this code already exists for this skill" };
-    }
     return { error: "Unable to create descriptor" };
   }
 

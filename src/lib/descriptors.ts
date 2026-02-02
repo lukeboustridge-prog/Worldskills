@@ -24,7 +24,8 @@ export async function getAllDescriptors(filters: DescriptorFilters = {}) {
   }
 
   if (filters.skillName) {
-    where.skillName = filters.skillName;
+    // Filter descriptors that have this skill in their skillNames array
+    where.skillNames = { has: filters.skillName };
   }
 
   if (filters.sector) {
@@ -32,7 +33,8 @@ export async function getAllDescriptors(filters: DescriptorFilters = {}) {
   }
 
   if (filters.category) {
-    where.category = filters.category;
+    // Filter descriptors that have this category in their categories array
+    where.categories = { has: filters.category };
   }
 
   if (filters.qualityIndicator) {
@@ -57,7 +59,6 @@ export async function getAllDescriptors(filters: DescriptorFilters = {}) {
   return prisma.descriptor.findMany({
     where,
     orderBy: [
-      { skillName: "asc" },
       { code: "asc" },
     ],
   });
@@ -83,24 +84,26 @@ export async function getDescriptorById(id: string, includeDeleted = false) {
  */
 export async function getDescriptorFilterOptions() {
   const [skills, sectors, categories, tags] = await Promise.all([
-    prisma.descriptor.findMany({
-      where: { deletedAt: null },
-      select: { skillName: true },
-      distinct: ["skillName"],
-      orderBy: { skillName: "asc" },
-    }),
+    // Get unique skills from skillNames array
+    prisma.$queryRaw<{ skill: string }[]>`
+      SELECT DISTINCT unnest("skillNames") as skill
+      FROM "Descriptor"
+      WHERE "deletedAt" IS NULL
+      ORDER BY skill
+    `,
     prisma.descriptor.findMany({
       where: { deletedAt: null, sector: { not: null } },
       select: { sector: true },
       distinct: ["sector"],
       orderBy: { sector: "asc" },
     }),
-    prisma.descriptor.findMany({
-      where: { deletedAt: null, category: { not: null } },
-      select: { category: true },
-      distinct: ["category"],
-      orderBy: { category: "asc" },
-    }),
+    // Get unique categories from categories array
+    prisma.$queryRaw<{ category: string }[]>`
+      SELECT DISTINCT unnest("categories") as category
+      FROM "Descriptor"
+      WHERE "deletedAt" IS NULL
+      ORDER BY category
+    `,
     // Get unique tags (requires raw query since tags is array)
     prisma.$queryRaw<{ tag: string }[]>`
       SELECT DISTINCT unnest(tags) as tag
@@ -111,9 +114,9 @@ export async function getDescriptorFilterOptions() {
   ]);
 
   return {
-    skills: skills.map((s) => s.skillName),
+    skills: skills.map((s) => s.skill),
     sectors: sectors.map((s) => s.sector!),
-    categories: categories.map((c) => c.category!),
+    categories: categories.map((c) => c.category),
     tags: tags.map((t) => t.tag),
   };
 }

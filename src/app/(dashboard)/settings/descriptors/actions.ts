@@ -16,9 +16,9 @@ const baseDescriptorSchema = z.object({
   score2: z.string().optional(),
   score1: z.string().optional(),
   score0: z.string().optional(),
-  skillName: z.string().min(1, "Source skill is required"),
+  skillNames: z.string().min(1, "At least one skill is required"), // Comma-separated, parsed below
   sector: z.string().optional(),
-  category: z.string().optional(),
+  categories: z.string().optional(), // Comma-separated, parsed below
   tags: z.string().optional(), // Comma-separated, parsed below
   qualityIndicator: z.nativeEnum(QualityIndicator).optional(),
 });
@@ -42,14 +42,21 @@ const deleteDescriptorSchema = z.object({
 });
 
 /**
+ * Parse comma-separated string into array
+ */
+function parseCommaSeparated(input: string | undefined): string[] {
+  if (!input) return [];
+  return input
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+/**
  * Parse comma-separated tags string into array
  */
 function parseTags(tagsInput: string | undefined): string[] {
-  if (!tagsInput) return [];
-  return tagsInput
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter((tag) => tag.length > 0);
+  return parseCommaSeparated(tagsInput);
 }
 
 /**
@@ -65,9 +72,9 @@ export async function createDescriptorAction(formData: FormData) {
     score2: formData.get("score2") || undefined,
     score1: formData.get("score1") || undefined,
     score0: formData.get("score0") || undefined,
-    skillName: formData.get("skillName"),
+    skillNames: formData.get("skillNames"),
     sector: formData.get("sector") || undefined,
-    category: formData.get("category") || undefined,
+    categories: formData.get("categories") || undefined,
     tags: formData.get("tags") || undefined,
     qualityIndicator: formData.get("qualityIndicator") || undefined,
   });
@@ -79,13 +86,20 @@ export async function createDescriptorAction(formData: FormData) {
   }
 
   const data = parsedResult.data;
+  const skillNames = parseCommaSeparated(data.skillNames);
+  const categories = parseCommaSeparated(data.categories);
   const tags = parseTags(data.tags);
+
+  if (skillNames.length === 0) {
+    const params = new URLSearchParams({ error: "At least one skill is required" });
+    return redirect(`/settings/descriptors/create?${params.toString()}`);
+  }
 
   try {
     await prisma.$executeRaw`
       INSERT INTO "Descriptor" (
         id, code, "criterionName", score3, score2, score1, score0,
-        "skillName", sector, category, tags, "qualityIndicator",
+        "skillNames", sector, categories, tags, "qualityIndicator",
         source, version, "createdAt", "updatedAt"
       ) VALUES (
         gen_random_uuid()::text,
@@ -95,9 +109,9 @@ export async function createDescriptorAction(formData: FormData) {
         ${data.score2?.trim() || null},
         ${data.score1?.trim() || null},
         ${data.score0?.trim() || null},
-        ${data.skillName.trim()},
+        ${skillNames}::text[],
         ${data.sector?.trim() || null},
-        ${data.category?.trim() || null},
+        ${categories}::text[],
         ${tags}::text[],
         ${data.qualityIndicator ?? QualityIndicator.REFERENCE}::"QualityIndicator",
         'Manual',
@@ -136,9 +150,9 @@ export async function updateDescriptorAction(formData: FormData) {
     score2: formData.get("score2") || undefined,
     score1: formData.get("score1") || undefined,
     score0: formData.get("score0") || undefined,
-    skillName: formData.get("skillName"),
+    skillNames: formData.get("skillNames"),
     sector: formData.get("sector") || undefined,
-    category: formData.get("category") || undefined,
+    categories: formData.get("categories") || undefined,
     tags: formData.get("tags") || undefined,
     qualityIndicator: formData.get("qualityIndicator") || undefined,
   });
@@ -151,7 +165,14 @@ export async function updateDescriptorAction(formData: FormData) {
   }
 
   const data = parsedResult.data;
+  const skillNames = parseCommaSeparated(data.skillNames);
+  const categories = parseCommaSeparated(data.categories);
   const tags = parseTags(data.tags);
+
+  if (skillNames.length === 0) {
+    const params = new URLSearchParams({ error: "At least one skill is required" });
+    return redirect(`/settings/descriptors/${data.id}/edit?${params.toString()}`);
+  }
 
   try {
     await prisma.$executeRaw`
@@ -163,9 +184,9 @@ export async function updateDescriptorAction(formData: FormData) {
         score2 = ${data.score2?.trim() || null},
         score1 = ${data.score1?.trim() || null},
         score0 = ${data.score0?.trim() || null},
-        "skillName" = ${data.skillName.trim()},
+        "skillNames" = ${skillNames}::text[],
         sector = ${data.sector?.trim() || null},
-        category = ${data.category?.trim() || null},
+        categories = ${categories}::text[],
         tags = ${tags}::text[],
         "qualityIndicator" = ${data.qualityIndicator}::"QualityIndicator",
         "updatedAt" = NOW()

@@ -16,6 +16,8 @@ export interface Facets {
  * Get facet counts for filter panels.
  * When searchQuery is provided, counts reflect matching descriptors only.
  * When empty, counts reflect all non-deleted descriptors.
+ *
+ * Uses unnest() to expand array columns for proper counting.
  */
 export async function getFacetCounts(searchQuery?: string): Promise<Facets> {
   // Build the FTS condition if query provided
@@ -32,19 +34,20 @@ export async function getFacetCounts(searchQuery?: string): Promise<Facets> {
     : Prisma.sql``;
 
   // Execute all facet queries in parallel
+  // Use unnest() to expand arrays for counting
   const [skillAreas, categories, qualities] = await Promise.all([
     prisma.$queryRaw<FacetCount[]>`
-      SELECT "skillName" as name, COUNT(*)::int as count
-      FROM "Descriptor"
-      WHERE ${ftsCondition} "deletedAt" IS NULL
-      GROUP BY "skillName"
+      SELECT skill_name as name, COUNT(DISTINCT d.id)::int as count
+      FROM "Descriptor" d, unnest(d."skillNames") as skill_name
+      WHERE ${ftsCondition} d."deletedAt" IS NULL
+      GROUP BY skill_name
       ORDER BY count DESC, name ASC
     `,
     prisma.$queryRaw<FacetCount[]>`
-      SELECT category as name, COUNT(*)::int as count
-      FROM "Descriptor"
-      WHERE ${ftsCondition} "deletedAt" IS NULL AND category IS NOT NULL
-      GROUP BY category
+      SELECT cat as name, COUNT(DISTINCT d.id)::int as count
+      FROM "Descriptor" d, unnest(d."categories") as cat
+      WHERE ${ftsCondition} d."deletedAt" IS NULL
+      GROUP BY cat
       ORDER BY count DESC, name ASC
     `,
     prisma.$queryRaw<FacetCount[]>`

@@ -90,12 +90,14 @@ export function DescriptorModal({ descriptor, open, onOpenChange }: DescriptorMo
                   {descriptor.source}
                 </Badge>
               )}
-              <Badge variant="outline">
-                {descriptor.skillName}
-              </Badge>
-              {descriptor.category && (
-                <Badge variant="outline">{descriptor.category}</Badge>
-              )}
+              {descriptor.skillNames?.map((skill) => (
+                <Badge key={skill} variant="outline">
+                  {skill}
+                </Badge>
+              ))}
+              {descriptor.categories?.map((cat) => (
+                <Badge key={cat} variant="outline">{cat}</Badge>
+              ))}
               <Badge
                 variant={descriptor.qualityIndicator === "EXCELLENT" ? "default" : "outline"}
               >

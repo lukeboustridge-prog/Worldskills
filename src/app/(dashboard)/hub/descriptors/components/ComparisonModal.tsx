@@ -50,12 +50,14 @@ export function ComparisonModal({ descriptors, open, onOpenChange }: ComparisonM
               <div className="border-b pb-2">
                 <h3 className="font-semibold text-sm line-clamp-2">{d.criterionName}</h3>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                    {d.skillName}
-                  </Badge>
-                  {d.category && (
-                    <Badge variant="outline" className="text-xs">{d.category}</Badge>
-                  )}
+                  {d.skillNames?.map((skill) => (
+                    <Badge key={skill} variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                      {skill}
+                    </Badge>
+                  ))}
+                  {d.categories?.map((cat) => (
+                    <Badge key={cat} variant="outline" className="text-xs">{cat}</Badge>
+                  ))}
                 </div>
               </div>
 

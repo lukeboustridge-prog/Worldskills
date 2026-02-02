@@ -5,9 +5,9 @@ export interface RelatedDescriptor {
   id: string;
   code: string;
   criterionName: string;
-  skillName: string;
+  skillNames: string[];
   sector: string | null;
-  category: string | null;
+  categories: string[];
   qualityIndicator: QualityIndicator;
   similarityScore: number;
 }
@@ -31,9 +31,9 @@ export async function getRelatedDescriptors(
       d2.id,
       d2.code,
       d2."criterionName",
-      d2."skillName",
+      d2."skillNames",
       d2.sector,
-      d2.category,
+      d2.categories,
       d2."qualityIndicator",
       similarity(d1."criterionName", d2."criterionName") as "similarityScore"
     FROM "Descriptor" d1
@@ -77,9 +77,9 @@ export async function getRelatedByCriterionName(
         id,
         code,
         "criterionName",
-        "skillName",
+        "skillNames",
         sector,
-        category,
+        categories,
         "qualityIndicator",
         similarity("criterionName", ${criterionName}) as "similarityScore"
       FROM "Descriptor"
@@ -96,9 +96,9 @@ export async function getRelatedByCriterionName(
       id,
       code,
       "criterionName",
-      "skillName",
+      "skillNames",
       sector,
-      category,
+      categories,
       "qualityIndicator",
       similarity("criterionName", ${criterionName}) as "similarityScore"
     FROM "Descriptor"

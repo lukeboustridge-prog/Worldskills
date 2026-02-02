@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createDescriptorAction } from "../actions";
 import type { Facets } from "@/lib/queries/facet-counts";
@@ -33,8 +35,6 @@ const QUALITY_OPTIONS: { value: QualityIndicator; label: string }[] = [
   { value: "GOOD", label: "Good" },
   { value: "EXCELLENT", label: "Excellent" },
 ];
-
-const NO_CATEGORY = "__none__";
 
 interface CreateDescriptorModalProps {
   facets: Facets;
@@ -52,8 +52,8 @@ export function CreateDescriptorModal({ facets }: CreateDescriptorModalProps) {
   const [score2, setScore2] = useState("");
   const [score1, setScore1] = useState("");
   const [score0, setScore0] = useState("");
-  const [skillName, setSkillName] = useState("");
-  const [category, setCategory] = useState("");
+  const [skillNames, setSkillNames] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [quality, setQuality] = useState<QualityIndicator>("NEEDS_REVIEW");
 
   const resetForm = () => {
@@ -63,16 +63,28 @@ export function CreateDescriptorModal({ facets }: CreateDescriptorModalProps) {
     setScore2("");
     setScore1("");
     setScore0("");
-    setSkillName("");
-    setCategory("");
+    setSkillNames([]);
+    setCategories([]);
     setQuality("NEEDS_REVIEW");
   };
 
+  const toggleSkill = (skill: string) => {
+    setSkillNames(prev =>
+      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+    );
+  };
+
+  const toggleCategory = (category: string) => {
+    setCategories(prev =>
+      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
+    );
+  };
+
   const handleCreate = () => {
-    if (!code.trim() || !criterionName.trim() || !skillName) {
+    if (!code.trim() || !criterionName.trim() || skillNames.length === 0) {
       toast({
         title: "Validation Error",
-        description: "Code, criterion name, and skill are required",
+        description: "Code, criterion name, and at least one skill are required",
         variant: "destructive",
       });
       return;
@@ -85,8 +97,8 @@ export function CreateDescriptorModal({ facets }: CreateDescriptorModalProps) {
     formData.set("score2", score2);
     formData.set("score1", score1);
     formData.set("score0", score0);
-    formData.set("skillName", skillName);
-    formData.set("category", category);
+    formData.set("skillNames", JSON.stringify(skillNames));
+    formData.set("categories", JSON.stringify(categories));
     formData.set("qualityIndicator", quality);
 
     startTransition(async () => {
@@ -119,7 +131,7 @@ export function CreateDescriptorModal({ facets }: CreateDescriptorModalProps) {
 
         <div className="space-y-4 py-4">
           {/* Basic info row */}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="code">Code *</Label>
               <Input
@@ -127,53 +139,6 @@ export function CreateDescriptorModal({ facets }: CreateDescriptorModalProps) {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="e.g., A1, B2.1"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="skill">Skill *</Label>
-              <Select value={skillName} onValueChange={setSkillName}>
-                <SelectTrigger id="skill">
-                  <SelectValue placeholder="Select skill" />
-                </SelectTrigger>
-                <SelectContent>
-                  {facets.skillAreas.map(({ name }) => (
-                    <SelectItem key={name} value={name}>
-                      {name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select
-                value={category || NO_CATEGORY}
-                onValueChange={(v) => setCategory(v === NO_CATEGORY ? "" : v)}
-              >
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_CATEGORY}>No Category</SelectItem>
-                  {facets.categories.map(({ name }) => (
-                    <SelectItem key={name} value={name}>
-                      {name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Criterion name and quality */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="criterionName">Criterion Name *</Label>
-              <Input
-                id="criterionName"
-                value={criterionName}
-                onChange={(e) => setCriterionName(e.target.value)}
-                placeholder="Enter criterion name"
               />
             </div>
             <div className="space-y-2">
@@ -191,6 +156,77 @@ export function CreateDescriptorModal({ facets }: CreateDescriptorModalProps) {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Criterion name */}
+          <div className="space-y-2">
+            <Label htmlFor="criterionName">Criterion Name *</Label>
+            <Input
+              id="criterionName"
+              value={criterionName}
+              onChange={(e) => setCriterionName(e.target.value)}
+              placeholder="Enter criterion name"
+            />
+          </div>
+
+          {/* Skills multi-select */}
+          <div className="space-y-2">
+            <Label>Skills *</Label>
+            <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {facets.skillAreas.map(({ name }) => (
+                  <label key={name} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={skillNames.includes(name)}
+                      onCheckedChange={() => toggleSkill(name)}
+                    />
+                    {name}
+                  </label>
+                ))}
+              </div>
+            </div>
+            {skillNames.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {skillNames.map(skill => (
+                  <Badge key={skill} variant="outline" className="text-xs">
+                    {skill}
+                    <button onClick={() => toggleSkill(skill)} className="ml-1">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Categories multi-select */}
+          <div className="space-y-2">
+            <Label>Categories</Label>
+            <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {facets.categories.map(({ name }) => (
+                  <label key={name} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <Checkbox
+                      checked={categories.includes(name)}
+                      onCheckedChange={() => toggleCategory(name)}
+                    />
+                    {name}
+                  </label>
+                ))}
+              </div>
+            </div>
+            {categories.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {categories.map(cat => (
+                  <Badge key={cat} variant="outline" className="text-xs">
+                    {cat}
+                    <button onClick={() => toggleCategory(cat)} className="ml-1">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Score fields */}

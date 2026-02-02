@@ -25,6 +25,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Check, ChevronDown, ChevronRight, Loader2, Pencil, Trash2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { updateDescriptorReviewAction, updateQualityIndicatorAction, deleteDescriptorAction } from "../actions";
@@ -37,8 +38,6 @@ const QUALITY_OPTIONS: { value: QualityIndicator; label: string; color: string }
   { value: "GOOD", label: "Good", color: "bg-blue-100 text-blue-800" },
   { value: "EXCELLENT", label: "Excellent", color: "bg-green-100 text-green-800" },
 ];
-
-const NO_CATEGORY = "__none__";
 
 interface ReviewListProps {
   results: SearchResult[];
@@ -82,8 +81,8 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
   const [score1, setScore1] = useState(descriptor.score1 || "");
   const [score0, setScore0] = useState(descriptor.score0 || "");
   const [quality, setQuality] = useState<QualityIndicator>(descriptor.qualityIndicator);
-  const [skillName, setSkillName] = useState(descriptor.skillName);
-  const [category, setCategory] = useState(descriptor.category || "");
+  const [skillNames, setSkillNames] = useState<string[]>(descriptor.skillNames || []);
+  const [categories, setCategories] = useState<string[]>(descriptor.categories || []);
 
   const handleQuickQualityChange = (newQuality: QualityIndicator) => {
     startTransition(async () => {
@@ -98,6 +97,11 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
   };
 
   const handleSave = () => {
+    if (skillNames.length === 0) {
+      toast({ title: "Error", description: "At least one skill is required", variant: "destructive" });
+      return;
+    }
+
     const formData = new FormData();
     formData.set("id", descriptor.id);
     formData.set("criterionName", criterionName);
@@ -106,8 +110,8 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
     formData.set("score1", score1);
     formData.set("score0", score0);
     formData.set("qualityIndicator", quality);
-    formData.set("skillName", skillName);
-    formData.set("category", category);
+    formData.set("skillNames", JSON.stringify(skillNames));
+    formData.set("categories", JSON.stringify(categories));
 
     startTransition(async () => {
       const result = await updateDescriptorReviewAction(formData);
@@ -139,9 +143,21 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
     setScore1(descriptor.score1 || "");
     setScore0(descriptor.score0 || "");
     setQuality(descriptor.qualityIndicator);
-    setSkillName(descriptor.skillName);
-    setCategory(descriptor.category || "");
+    setSkillNames(descriptor.skillNames || []);
+    setCategories(descriptor.categories || []);
     setEditing(false);
+  };
+
+  const toggleSkill = (skill: string) => {
+    setSkillNames(prev =>
+      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+    );
+  };
+
+  const toggleCategory = (category: string) => {
+    setCategories(prev =>
+      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
+    );
   };
 
   const qualityOption = QUALITY_OPTIONS.find((q) => q.value === quality);
@@ -179,19 +195,19 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
               </CardTitle>
             )}
 
-            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
               {descriptor.source && (
                 <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
                   {descriptor.source}
                 </Badge>
               )}
-              <span>{skillName}</span>
+              <span>{skillNames.join(", ") || "No skills"}</span>
               <span>•</span>
               <span>{descriptor.code}</span>
-              {category && (
+              {categories.length > 0 && (
                 <>
                   <span>•</span>
-                  <span>{category}</span>
+                  <span>{categories.join(", ")}</span>
                 </>
               )}
             </div>
@@ -237,42 +253,64 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
           <div className="ml-7 pt-3 border-t space-y-4">
             {editing ? (
               <>
-                {/* Skill and Category row */}
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor={`skill-${descriptor.id}`}>Skill</Label>
-                    <Select value={skillName} onValueChange={setSkillName}>
-                      <SelectTrigger id={`skill-${descriptor.id}`}>
-                        <SelectValue placeholder="Select skill" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {facets.skillAreas.map(({ name }) => (
-                          <SelectItem key={name} value={name}>
-                            {name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* Skills multi-select */}
+                <div className="space-y-2">
+                  <Label>Skills *</Label>
+                  <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {facets.skillAreas.map(({ name }) => (
+                        <label key={name} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={skillNames.includes(name)}
+                            onCheckedChange={() => toggleSkill(name)}
+                          />
+                          {name}
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`category-${descriptor.id}`}>Category</Label>
-                    <Select
-                      value={category || NO_CATEGORY}
-                      onValueChange={(v) => setCategory(v === NO_CATEGORY ? "" : v)}
-                    >
-                      <SelectTrigger id={`category-${descriptor.id}`}>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={NO_CATEGORY}>No Category</SelectItem>
-                        {facets.categories.map(({ name }) => (
-                          <SelectItem key={name} value={name}>
-                            {name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  {skillNames.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {skillNames.map(skill => (
+                        <Badge key={skill} variant="outline" className="text-xs">
+                          {skill}
+                          <button onClick={() => toggleSkill(skill)} className="ml-1">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Categories multi-select */}
+                <div className="space-y-2">
+                  <Label>Categories</Label>
+                  <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {facets.categories.map(({ name }) => (
+                        <label key={name} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={categories.includes(name)}
+                            onCheckedChange={() => toggleCategory(name)}
+                          />
+                          {name}
+                        </label>
+                      ))}
+                    </div>
                   </div>
+                  {categories.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {categories.map(cat => (
+                        <Badge key={cat} variant="outline" className="text-xs">
+                          {cat}
+                          <button onClick={() => toggleCategory(cat)} className="ml-1">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Score fields */}
