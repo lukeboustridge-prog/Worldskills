@@ -408,7 +408,7 @@ export default async function DashboardPage({
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card className="flex flex-col">
-          <CardHeader className="pb-2 min-h-[6.5rem]">
+          <CardHeader className="pb-2 min-h-[5.5rem]">
             <CardTitle>Overdue deliverables</CardTitle>
             <CardDescription>Requires immediate attention</CardDescription>
           </CardHeader>
@@ -424,7 +424,7 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
         <Card className="flex flex-col">
-          <CardHeader className="pb-2 min-h-[6.5rem]">
+          <CardHeader className="pb-2 min-h-[5.5rem]">
             <CardTitle>Due within 30 days</CardTitle>
             <CardDescription>Upcoming deadlines</CardDescription>
           </CardHeader>
@@ -438,9 +438,9 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
         <Card className="flex flex-col">
-          <CardHeader className="pb-2 min-h-[6.5rem]">
+          <CardHeader className="pb-2 min-h-[5.5rem]">
             <CardTitle>Average SCM response</CardTitle>
-            <CardDescription>Time to respond to Skill Advisor messages</CardDescription>
+            <CardDescription>Reply time to SA messages</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{formatHours(averageScmResponseHours)}</p>
@@ -452,7 +452,7 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
         <Card className="flex flex-col">
-          <CardHeader className="pb-2 min-h-[6.5rem]">
+          <CardHeader className="pb-2 min-h-[5.5rem]">
             <CardTitle>Awaiting SCM replies</CardTitle>
             <CardDescription>Conversations needing action</CardDescription>
           </CardHeader>
