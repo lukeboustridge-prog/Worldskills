@@ -30,6 +30,9 @@ const MIME_EXTENSION_FALLBACKS: Record<string, string> = {
   pdf: "application/pdf",
   doc: "application/msword",
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  xls: "application/vnd.ms-excel",
+  csv: "text/csv",
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
   png: "image/png"
@@ -215,7 +218,7 @@ export function MeetingDocumentManager({
       }
 
       if (!DOCUMENT_MIME_TYPES.includes(mimeType as (typeof DOCUMENT_MIME_TYPES)[number])) {
-        setError("That file type isn't supported. Upload a PDF, Word document, or image.");
+        setError("That file type isn't supported. Upload a PDF, Word, Excel, CSV, or image file.");
         return;
       }
 
