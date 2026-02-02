@@ -22,7 +22,7 @@ import { deleteMilestoneAction, updateMilestoneStatusAction, inviteSkillTeamMemb
 import { DeliverablesTable, type DeliverableRow } from "./deliverables-table";
 import { CreateMilestoneForm } from "./create-milestone-form";
 import { MessageForm } from "./message-form";
-import { MeetingList, type MeetingData } from "./meeting-list";
+import { MeetingList, type MeetingData, type TeamMemberOption } from "./meeting-list";
 import {
   DUE_SOON_THRESHOLD_DAYS,
   classifyDeliverables,
@@ -123,7 +123,13 @@ export default async function SkillDetailPage({
         include: { author: true },
         orderBy: { createdAt: "desc" }
       },
-      meetings: { orderBy: { startTime: "asc" } }
+      meetings: {
+        orderBy: { startTime: "asc" },
+        include: {
+          attendees: { include: { user: true } },
+          guests: true
+        }
+      }
     }
   });
 
@@ -192,10 +198,51 @@ export default async function SkillDetailPage({
     minutes: meeting.minutes,
     actionPoints: meeting.actionPoints,
     documents: normaliseMeetingDocuments(meeting.documents),
-    links: normaliseMeetingLinks(meeting.links)
+    links: normaliseMeetingLinks(meeting.links),
+    attendees: meeting.attendees.map((a) => ({
+      id: a.user.id,
+      name: a.user.name,
+      email: a.user.email,
+      role: a.user.role
+    })),
+    guests: meeting.guests.map((g) => ({
+      id: g.id,
+      name: g.name,
+      email: g.email
+    }))
   }));
 
   const canManageMeetings = isAdmin || user.id === skill.saId || user.id === skill.scmId || isSkillTeamMember;
+
+  // Build team member options for meeting invitations
+  const teamMembersForMeetings: TeamMemberOption[] = [];
+  if (skill.sa) {
+    teamMembersForMeetings.push({
+      id: skill.sa.id,
+      name: skill.sa.name,
+      email: skill.sa.email,
+      role: "SA"
+    });
+  }
+  if (skill.scm) {
+    teamMembersForMeetings.push({
+      id: skill.scm.id,
+      name: skill.scm.name,
+      email: skill.scm.email,
+      role: "SCM"
+    });
+  }
+  for (const member of skill.teamMembers) {
+    // Avoid duplicates if SA or SCM is also in teamMembers
+    if (!teamMembersForMeetings.some((m) => m.id === member.user.id)) {
+      teamMembersForMeetings.push({
+        id: member.user.id,
+        name: member.user.name,
+        email: member.user.email,
+        role: "Team"
+      });
+    }
+  }
 
   const inviteParam = searchParams?.invite;
   const inviteErrorParam = searchParams?.inviteError;
@@ -294,6 +341,7 @@ export default async function SkillDetailPage({
             meetings={meetingsForClient}
             skillId={skill.id}
             canManage={canManageMeetings}
+            teamMembers={teamMembersForMeetings}
           />
         </TabsContent>
 

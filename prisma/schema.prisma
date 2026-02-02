@@ -232,6 +232,7 @@ model Meeting {
 
   skill     Skill?            @relation(fields: [skillId], references: [id])
   attendees MeetingAttendee[]
+  guests    MeetingGuest[]
 
   @@index([skillId])
   @@index([startTime])
@@ -249,6 +250,19 @@ model MeetingAttendee {
   @@id([meetingId, userId])
   @@index([meetingId])
   @@index([userId])
+}
+
+model MeetingGuest {
+  id        String   @id @default(cuid())
+  meetingId String
+  name      String
+  email     String
+  addedAt   DateTime @default(now())
+  addedBy   String?
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
 }
 
 model Invitation {

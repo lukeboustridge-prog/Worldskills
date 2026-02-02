@@ -148,7 +148,9 @@ const scheduleMeetingSchema = z.object({
   }),
   meetingLink: z.string().url().optional().or(z.literal("")),
   initialLinks: z.string().optional(),
-  initialDocuments: z.string().optional()
+  initialDocuments: z.string().optional(),
+  attendeeIds: z.string().optional(),
+  guests: z.string().optional()
 });
 
 interface InitialDocument {
@@ -197,6 +199,39 @@ function parseInitialLinks(json: string | undefined): MeetingLink[] {
   }
 }
 
+interface GuestInput {
+  name: string;
+  email: string;
+}
+
+function parseGuests(json: string | undefined): GuestInput[] {
+  if (!json) return [];
+  try {
+    const parsed = JSON.parse(json);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (g: unknown): g is GuestInput =>
+        typeof g === "object" &&
+        g !== null &&
+        typeof (g as GuestInput).name === "string" &&
+        typeof (g as GuestInput).email === "string"
+    );
+  } catch {
+    return [];
+  }
+}
+
+function parseAttendeeIds(json: string | undefined): string[] {
+  if (!json) return [];
+  try {
+    const parsed = JSON.parse(json);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is string => typeof id === "string");
+  } catch {
+    return [];
+  }
+}
+
 export async function scheduleMeetingAction(formData: FormData) {
   const user = await requireUser();
 
@@ -207,7 +242,9 @@ export async function scheduleMeetingAction(formData: FormData) {
     endTime: formData.get("endTime"),
     meetingLink: formData.get("meetingLink") || "",
     initialLinks: formData.get("initialLinks") || undefined,
-    initialDocuments: formData.get("initialDocuments") || undefined
+    initialDocuments: formData.get("initialDocuments") || undefined,
+    attendeeIds: formData.get("attendeeIds") || undefined,
+    guests: formData.get("guests") || undefined
   });
 
   if (!parsed.success) {
@@ -229,6 +266,8 @@ export async function scheduleMeetingAction(formData: FormData) {
 
   const initialDocuments = parseInitialDocuments(parsed.data.initialDocuments);
   const initialLinks = parseInitialLinks(parsed.data.initialLinks);
+  const attendeeIds = parseAttendeeIds(parsed.data.attendeeIds);
+  const guests = parseGuests(parsed.data.guests);
 
   const meeting = await prisma.meeting.create({
     data: {
@@ -242,6 +281,29 @@ export async function scheduleMeetingAction(formData: FormData) {
     }
   });
 
+  // Create MeetingAttendee records for selected team members
+  if (attendeeIds.length > 0) {
+    await prisma.meetingAttendee.createMany({
+      data: attendeeIds.map((userId) => ({
+        meetingId: meeting.id,
+        userId,
+        addedBy: user.id
+      }))
+    });
+  }
+
+  // Create MeetingGuest records for external guests
+  if (guests.length > 0) {
+    await prisma.meetingGuest.createMany({
+      data: guests.map((guest) => ({
+        meetingId: meeting.id,
+        name: guest.name,
+        email: guest.email,
+        addedBy: user.id
+      }))
+    });
+  }
+
   await logActivity({
     skillId: skill.id,
     userId: user.id,
@@ -250,20 +312,27 @@ export async function scheduleMeetingAction(formData: FormData) {
       meetingId: meeting.id,
       title: meeting.title,
       startTime: meeting.startTime.toISOString(),
-      endTime: meeting.endTime.toISOString()
+      endTime: meeting.endTime.toISOString(),
+      attendeeCount: attendeeIds.length,
+      guestCount: guests.length
     }
   });
 
-  // Send email invitations to SA and SCM
+  // Send email invitations to selected attendees and guests
   try {
     const recipientEmails: string[] = [];
 
-    if (skill.sa?.email) {
-      recipientEmails.push(skill.sa.email);
+    // Get emails of selected attendees
+    if (attendeeIds.length > 0) {
+      const attendees = await prisma.user.findMany({
+        where: { id: { in: attendeeIds } },
+        select: { email: true }
+      });
+      recipientEmails.push(...attendees.map((a) => a.email));
     }
-    if (skill.scm?.email) {
-      recipientEmails.push(skill.scm.email);
-    }
+
+    // Add guest emails
+    recipientEmails.push(...guests.map((g) => g.email));
 
     if (recipientEmails.length > 0) {
       await sendMeetingInvitation({

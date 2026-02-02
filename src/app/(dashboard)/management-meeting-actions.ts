@@ -155,6 +155,28 @@ function parseInitialLinks(json: string | undefined): MeetingLink[] {
   }
 }
 
+interface GuestInput {
+  name: string;
+  email: string;
+}
+
+function parseGuests(json: string | undefined): GuestInput[] {
+  if (!json) return [];
+  try {
+    const parsed = JSON.parse(json);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (g: unknown): g is GuestInput =>
+        typeof g === "object" &&
+        g !== null &&
+        typeof (g as GuestInput).name === "string" &&
+        typeof (g as GuestInput).email === "string"
+    );
+  } catch {
+    return [];
+  }
+}
+
 const createManagementMeetingSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
   startTime: z.string().refine((val) => !Number.isNaN(Date.parse(val)), {
@@ -166,7 +188,8 @@ const createManagementMeetingSchema = z.object({
   meetingLink: z.string().url().optional().or(z.literal("")),
   secretariatAttendeeIds: z.string(), // JSON array of user IDs
   initialDocuments: z.string().optional(),
-  initialLinks: z.string().optional()
+  initialLinks: z.string().optional(),
+  guests: z.string().optional()
 });
 
 export async function createManagementMeetingAction(formData: FormData) {
@@ -183,7 +206,8 @@ export async function createManagementMeetingAction(formData: FormData) {
     meetingLink: formData.get("meetingLink") || "",
     secretariatAttendeeIds: formData.get("secretariatAttendeeIds"),
     initialDocuments: formData.get("initialDocuments") || undefined,
-    initialLinks: formData.get("initialLinks") || undefined
+    initialLinks: formData.get("initialLinks") || undefined,
+    guests: formData.get("guests") || undefined
   });
 
   if (!parsed.success) {
@@ -198,6 +222,7 @@ export async function createManagementMeetingAction(formData: FormData) {
   }
 
   const secretariatAttendeeIds = JSON.parse(parsed.data.secretariatAttendeeIds) as string[];
+  const guests = parseGuests(parsed.data.guests);
 
   // Fetch all SAs
   const allSAs = await prisma.user.findMany({
@@ -237,10 +262,23 @@ export async function createManagementMeetingAction(formData: FormData) {
     });
   }
 
-  // Send email to all SAs + selected Secretariat
+  // Create MeetingGuest records for external guests
+  if (guests.length > 0) {
+    await prisma.meetingGuest.createMany({
+      data: guests.map((guest) => ({
+        meetingId: meeting.id,
+        name: guest.name,
+        email: guest.email,
+        addedBy: user.id
+      }))
+    });
+  }
+
+  // Send email to all SAs + selected Secretariat + guests
   const recipientEmails: string[] = [
     ...allSAs.map(sa => sa.email),
-    ...selectedSecretariat.map(s => s.email)
+    ...selectedSecretariat.map(s => s.email),
+    ...guests.map(g => g.email)
   ].filter(Boolean);
 
   if (recipientEmails.length > 0) {
@@ -264,7 +302,8 @@ export async function createManagementMeetingAction(formData: FormData) {
     payload: {
       meetingId: meeting.id,
       title: meeting.title,
-      attendeeCount: secretariatAttendeeIds.length
+      attendeeCount: secretariatAttendeeIds.length,
+      guestCount: guests.length
     }
   });
 

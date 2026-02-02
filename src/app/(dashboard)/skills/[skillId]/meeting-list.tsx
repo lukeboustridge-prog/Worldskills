@@ -24,6 +24,19 @@ import {
 import { MeetingDocumentManager } from "./meeting-document-manager";
 import { MeetingLinkManager } from "./meeting-link-manager";
 
+export type MeetingAttendeeData = {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string;
+};
+
+export type MeetingGuestData = {
+  id: string;
+  name: string;
+  email: string;
+};
+
 export type MeetingData = {
   id: string;
   title: string;
@@ -34,12 +47,22 @@ export type MeetingData = {
   actionPoints: string | null;
   documents: MeetingDocument[];
   links: MeetingLink[];
+  attendees: MeetingAttendeeData[];
+  guests: MeetingGuestData[];
+};
+
+export type TeamMemberOption = {
+  id: string;
+  name: string | null;
+  email: string;
+  role: "SA" | "SCM" | "Team";
 };
 
 interface MeetingListProps {
   meetings: MeetingData[];
   skillId: string;
   canManage: boolean;
+  teamMembers: TeamMemberOption[];
 }
 
 function formatLocalDateTime(isoString: string): string {
@@ -216,6 +239,36 @@ function MeetingItem({
                 />
               </div>
 
+              {(meeting.attendees.length > 0 || meeting.guests.length > 0) ? (
+                <div className="mb-4 border-t pt-4">
+                  {meeting.attendees.length > 0 ? (
+                    <div className="mb-3">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Team members invited</p>
+                      <ul className="space-y-1">
+                        {meeting.attendees.map((attendee) => (
+                          <li key={attendee.id} className="text-sm flex items-center gap-2">
+                            <span>{attendee.name ?? attendee.email}</span>
+                            <Badge variant="outline" className="text-xs">{attendee.role}</Badge>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  {meeting.guests.length > 0 ? (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">External guests</p>
+                      <ul className="space-y-1">
+                        {meeting.guests.map((guest) => (
+                          <li key={guest.id} className="text-sm">
+                            {guest.name} ({guest.email})
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
               {canManage ? (
                 <div className="flex gap-2 border-t pt-4">
                   <Button
@@ -257,6 +310,12 @@ interface PendingDocument {
   mimeType: string;
 }
 
+interface PendingGuest {
+  id: string;
+  name: string;
+  email: string;
+}
+
 const MIME_EXTENSION_FALLBACKS: Record<string, string> = {
   pdf: "application/pdf",
   doc: "application/msword",
@@ -280,11 +339,20 @@ function resolveMimeType(file: File) {
   return MIME_EXTENSION_FALLBACKS[extension] ?? "";
 }
 
-function ScheduleMeetingForm({ skillId }: { skillId: string }) {
+function ScheduleMeetingForm({ skillId, teamMembers }: { skillId: string; teamMembers: TeamMemberOption[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Attendee and guest state
+  const [selectedAttendees, setSelectedAttendees] = useState<string[]>(
+    () => teamMembers.map((m) => m.id)
+  );
+  const [pendingGuests, setPendingGuests] = useState<PendingGuest[]>([]);
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
 
   // Attachment state
   const [pendingLinks, setPendingLinks] = useState<PendingLink[]>([]);
@@ -296,6 +364,7 @@ function ScheduleMeetingForm({ skillId }: { skillId: string }) {
   const [isUploading, setIsUploading] = useState(false);
   const [storageReady, setStorageReady] = useState(false);
   const [storageChecking, setStorageChecking] = useState(true);
+  const [guestError, setGuestError] = useState<string | null>(null);
 
   // Check storage health on mount
   useEffect(() => {
@@ -329,6 +398,50 @@ function ScheduleMeetingForm({ skillId }: { skillId: string }) {
       controller.abort();
     };
   }, [isOpen]);
+
+  const handleToggleAttendee = (userId: string) => {
+    setSelectedAttendees((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const handleAddGuest = () => {
+    setGuestError(null);
+
+    if (!guestName.trim()) {
+      setGuestError("Please enter a name for the guest.");
+      return;
+    }
+
+    if (!guestEmail.trim()) {
+      setGuestError("Please enter an email address.");
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(guestEmail)) {
+      setGuestError("Please enter a valid email address.");
+      return;
+    }
+
+    const newGuest: PendingGuest = {
+      id: `guest-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      name: guestName.trim(),
+      email: guestEmail.trim().toLowerCase()
+    };
+
+    setPendingGuests((prev) => [...prev, newGuest]);
+    setGuestName("");
+    setGuestEmail("");
+    setShowGuestForm(false);
+  };
+
+  const handleRemoveGuest = (id: string) => {
+    setPendingGuests((prev) => prev.filter((guest) => guest.id !== id));
+  };
 
   const handleAddLink = () => {
     setAttachmentError(null);
@@ -466,6 +579,15 @@ function ScheduleMeetingForm({ skillId }: { skillId: string }) {
     newFormData.set("endTime", endDate.toISOString());
     newFormData.set("meetingLink", formData.get("meetingLink") as string);
 
+    // Add attendees and guests
+    newFormData.set("attendeeIds", JSON.stringify(selectedAttendees));
+    if (pendingGuests.length > 0) {
+      newFormData.set(
+        "guests",
+        JSON.stringify(pendingGuests.map((guest) => ({ name: guest.name, email: guest.email })))
+      );
+    }
+
     // Add initial links and documents
     if (pendingLinks.length > 0) {
       newFormData.set(
@@ -491,6 +613,8 @@ function ScheduleMeetingForm({ skillId }: { skillId: string }) {
     startTransition(async () => {
       await scheduleMeetingAction(newFormData);
       formRef.current?.reset();
+      setSelectedAttendees(teamMembers.map((m) => m.id));
+      setPendingGuests([]);
       setPendingLinks([]);
       setPendingDocuments([]);
       setIsOpen(false);
@@ -570,6 +694,110 @@ function ScheduleMeetingForm({ skillId }: { skillId: string }) {
               type="url"
               placeholder="https://meet.google.com/..."
             />
+          </div>
+
+          {/* Team Member Selection */}
+          {teamMembers.length > 0 ? (
+            <div className="space-y-2">
+              <Label>Invite team members</Label>
+              <div className="rounded-md border p-4 space-y-2 max-h-48 overflow-y-auto">
+                {teamMembers.map((member) => (
+                  <div key={member.id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`attendee-${member.id}`}
+                      checked={selectedAttendees.includes(member.id)}
+                      onChange={() => handleToggleAttendee(member.id)}
+                      className="h-4 w-4 rounded border-input"
+                    />
+                    <Label htmlFor={`attendee-${member.id}`} className="font-normal flex-1 flex items-center gap-2">
+                      <span>{member.name ?? member.email}</span>
+                      <Badge variant="outline" className="text-xs">{member.role}</Badge>
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Selected members will receive email invitations.
+              </p>
+            </div>
+          ) : null}
+
+          {/* External Guests */}
+          <div className="space-y-2">
+            <Label>Invite external guests (optional)</Label>
+            <div className="rounded-md border p-4 space-y-3">
+              {pendingGuests.length > 0 ? (
+                <ul className="space-y-1">
+                  {pendingGuests.map((guest) => (
+                    <li key={guest.id} className="flex items-center justify-between text-sm">
+                      <span>{guest.name} ({guest.email})</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveGuest(guest.id)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-muted-foreground">No external guests added.</p>
+              )}
+              {showGuestForm ? (
+                <div className="space-y-2 rounded border p-2">
+                  <Input
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    placeholder="Guest name"
+                    className="h-8 text-sm"
+                  />
+                  <Input
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    placeholder="guest@example.com"
+                    type="email"
+                    className="h-8 text-sm"
+                  />
+                  <div className="flex gap-2">
+                    <Button type="button" size="sm" variant="secondary" onClick={handleAddGuest}>
+                      Add
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setShowGuestForm(false);
+                        setGuestName("");
+                        setGuestEmail("");
+                        setGuestError(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowGuestForm(true)}
+                >
+                  Add Guest
+                </Button>
+              )}
+              {guestError ? (
+                <p className="text-sm text-destructive">{guestError}</p>
+              ) : null}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              External guests receive email invitations but don&apos;t need system access.
+            </p>
           </div>
 
           {/* Attachments Section */}
@@ -737,7 +965,7 @@ function ScheduleMeetingForm({ skillId }: { skillId: string }) {
   );
 }
 
-export function MeetingList({ meetings, skillId, canManage }: MeetingListProps) {
+export function MeetingList({ meetings, skillId, canManage, teamMembers }: MeetingListProps) {
   const now = new Date();
 
   const upcomingMeetings = meetings
@@ -750,7 +978,7 @@ export function MeetingList({ meetings, skillId, canManage }: MeetingListProps) 
 
   return (
     <div className="space-y-6">
-      {canManage ? <ScheduleMeetingForm skillId={skillId} /> : null}
+      {canManage ? <ScheduleMeetingForm skillId={skillId} teamMembers={teamMembers} /> : null}
 
       <Card>
         <CardHeader>
