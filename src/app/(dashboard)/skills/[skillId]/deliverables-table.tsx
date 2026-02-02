@@ -355,17 +355,19 @@ export function DeliverablesTable({
                   <div className="space-y-4 p-6">
                     {canEdit ? (
                       <div className="flex flex-wrap items-center justify-between gap-3">
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="sm"
                           onClick={() =>
                             setEditingDeliverableId((current) =>
                               current === deliverable.id ? null : deliverable.id
                             )
                           }
-                          className="text-xs font-medium text-primary underline-offset-2 hover:underline"
+                          className="text-xs"
                         >
                           {editingDeliverableId === deliverable.id ? "Cancel edit" : "Edit schedule"}
-                        </button>
+                        </Button>
                         <form
                           action={hideDeliverableAction}
                           onSubmit={(event) => {
@@ -377,7 +379,7 @@ export function DeliverablesTable({
                         >
                           <input type="hidden" name="skillId" value={skillId} />
                           <input type="hidden" name="deliverableId" value={deliverable.id} />
-                          <Button type="submit" variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive">
+                          <Button type="submit" variant="outline" size="sm" className="text-xs text-muted-foreground hover:text-destructive">
                             Hide deliverable
                           </Button>
                         </form>
@@ -398,35 +400,11 @@ export function DeliverablesTable({
                       <div className="space-y-3">
                         <p className="text-xs font-semibold uppercase text-muted-foreground">Status</p>
                         {canEdit ? (
-                          <form
-                            action={updateDeliverableStateAction}
-                            className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
-                          >
-                            <input type="hidden" name="skillId" value={skillId} />
-                            <input type="hidden" name="deliverableId" value={deliverable.id} />
-                            <select
-                              name="state"
-                              defaultValue={deliverable.state}
-                              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-[220px]"
-                            >
-                              {Object.values(DeliverableState).map((state) => (
-                                <option
-                                  key={state}
-                                  value={state}
-                                  disabled={
-                                    !canValidate &&
-                                    state === DeliverableState.Validated &&
-                                    deliverable.state !== DeliverableState.Validated
-                                  }
-                                >
-                                  {formatDeliverableState(state)}
-                                </option>
-                              ))}
-                            </select>
-                            <Button type="submit" variant="secondary" size="sm">
-                              Update
-                            </Button>
-                          </form>
+                          <DeliverableStateUpdater
+                            deliverable={deliverable}
+                            skillId={skillId}
+                            canValidate={canValidate}
+                          />
                         ) : (
                           <Badge variant="default" className="w-fit">
                             {formatDeliverableState(deliverable.state)}
@@ -908,6 +886,70 @@ function CreateCustomDeliverableForm({ skillId, onCancel, onCreated }: CreateCus
         </Button>
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+    </form>
+  );
+}
+
+interface DeliverableStateUpdaterProps {
+  deliverable: DeliverableRow;
+  skillId: string;
+  canValidate: boolean;
+}
+
+function DeliverableStateUpdater({ deliverable, skillId, canValidate }: DeliverableStateUpdaterProps) {
+  const [selectedState, setSelectedState] = useState<DeliverableState>(deliverable.state);
+  const [isSaving, startTransition] = useTransition();
+
+  const hasChanges = selectedState !== deliverable.state;
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const formData = new FormData();
+    formData.append("skillId", skillId);
+    formData.append("deliverableId", deliverable.id);
+    formData.append("state", selectedState);
+
+    startTransition(async () => {
+      await updateDeliverableStateAction(formData);
+    });
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
+    >
+      <select
+        name="state"
+        value={selectedState}
+        onChange={(e) => setSelectedState(e.target.value as DeliverableState)}
+        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-[220px]"
+        disabled={isSaving}
+      >
+        {Object.values(DeliverableState).map((state) => (
+          <option
+            key={state}
+            value={state}
+            disabled={
+              !canValidate &&
+              state === DeliverableState.Validated &&
+              deliverable.state !== DeliverableState.Validated
+            }
+          >
+            {formatDeliverableState(state)}
+          </option>
+        ))}
+      </select>
+      <Button
+        type="submit"
+        size="sm"
+        disabled={isSaving}
+        className={hasChanges ? "bg-black text-white hover:bg-black/90" : ""}
+        variant={hasChanges ? "default" : "secondary"}
+      >
+        {isSaving ? "Updating..." : "Update"}
+      </Button>
     </form>
   );
 }

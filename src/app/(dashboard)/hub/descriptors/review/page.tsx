@@ -9,6 +9,7 @@ import { searchDescriptors } from "@/lib/search-descriptors";
 import { getFacetCounts } from "@/lib/queries/facet-counts";
 import { ReviewList } from "./components/ReviewList";
 import { ReviewFilters } from "./components/ReviewFilters";
+import { CreateDescriptorModal } from "./components/CreateDescriptorModal";
 
 interface PageProps {
   searchParams: Promise<{
@@ -64,11 +65,14 @@ export default async function ReviewDescriptorsPage({ searchParams }: PageProps)
         </Button>
       </div>
 
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold">Review Descriptors</h1>
-        <p className="text-muted-foreground mt-1">
-          Review and approve template descriptors. Set quality indicators and edit content as needed.
-        </p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold">Review Descriptors</h1>
+          <p className="text-muted-foreground mt-1">
+            Review and approve template descriptors. Set quality indicators and edit content as needed.
+          </p>
+        </div>
+        <CreateDescriptorModal facets={facets} />
       </div>
 
       <div className="space-y-4">
@@ -82,7 +86,7 @@ export default async function ReviewDescriptorsPage({ searchParams }: PageProps)
         </div>
 
         <Suspense fallback={<div className="py-8">Loading...</div>}>
-          <ReviewList results={searchResponse.results} />
+          <ReviewList results={searchResponse.results} facets={facets} />
         </Suspense>
 
         {searchResponse.total > limit && (

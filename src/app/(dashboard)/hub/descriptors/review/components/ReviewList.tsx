@@ -15,10 +15,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Check, ChevronDown, ChevronRight, Loader2, Pencil, X } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Check, ChevronDown, ChevronRight, Loader2, Pencil, Trash2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { updateDescriptorReviewAction, updateQualityIndicatorAction } from "../actions";
+import { updateDescriptorReviewAction, updateQualityIndicatorAction, deleteDescriptorAction } from "../actions";
 import type { SearchResult } from "@/lib/search-descriptors";
+import type { Facets } from "@/lib/queries/facet-counts";
 
 const QUALITY_OPTIONS: { value: QualityIndicator; label: string; color: string }[] = [
   { value: "NEEDS_REVIEW", label: "Needs Review", color: "bg-amber-100 text-amber-800" },
@@ -27,7 +38,14 @@ const QUALITY_OPTIONS: { value: QualityIndicator; label: string; color: string }
   { value: "EXCELLENT", label: "Excellent", color: "bg-green-100 text-green-800" },
 ];
 
-export function ReviewList({ results }: { results: SearchResult[] }) {
+const NO_CATEGORY = "__none__";
+
+interface ReviewListProps {
+  results: SearchResult[];
+  facets: Facets;
+}
+
+export function ReviewList({ results, facets }: ReviewListProps) {
   if (results.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
@@ -39,17 +57,23 @@ export function ReviewList({ results }: { results: SearchResult[] }) {
   return (
     <div className="space-y-3">
       {results.map((descriptor) => (
-        <ReviewCard key={descriptor.id} descriptor={descriptor} />
+        <ReviewCard key={descriptor.id} descriptor={descriptor} facets={facets} />
       ))}
     </div>
   );
 }
 
-function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
+interface ReviewCardProps {
+  descriptor: SearchResult;
+  facets: Facets;
+}
+
+function ReviewCard({ descriptor, facets }: ReviewCardProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [deleted, setDeleted] = useState(false);
 
   // Form state
   const [criterionName, setCriterionName] = useState(descriptor.criterionName);
@@ -58,6 +82,8 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
   const [score1, setScore1] = useState(descriptor.score1 || "");
   const [score0, setScore0] = useState(descriptor.score0 || "");
   const [quality, setQuality] = useState<QualityIndicator>(descriptor.qualityIndicator);
+  const [skillName, setSkillName] = useState(descriptor.skillName);
+  const [category, setCategory] = useState(descriptor.category || "");
 
   const handleQuickQualityChange = (newQuality: QualityIndicator) => {
     startTransition(async () => {
@@ -80,6 +106,8 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
     formData.set("score1", score1);
     formData.set("score0", score0);
     formData.set("qualityIndicator", quality);
+    formData.set("skillName", skillName);
+    formData.set("category", category);
 
     startTransition(async () => {
       const result = await updateDescriptorReviewAction(formData);
@@ -92,6 +120,18 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
     });
   };
 
+  const handleDelete = () => {
+    startTransition(async () => {
+      const result = await deleteDescriptorAction(descriptor.id);
+      if (result.error) {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      } else {
+        toast({ title: "Deleted", description: "Descriptor has been deleted" });
+        setDeleted(true);
+      }
+    });
+  };
+
   const handleCancel = () => {
     setCriterionName(descriptor.criterionName);
     setScore3(descriptor.score3 || "");
@@ -99,10 +139,17 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
     setScore1(descriptor.score1 || "");
     setScore0(descriptor.score0 || "");
     setQuality(descriptor.qualityIndicator);
+    setSkillName(descriptor.skillName);
+    setCategory(descriptor.category || "");
     setEditing(false);
   };
 
   const qualityOption = QUALITY_OPTIONS.find((q) => q.value === quality);
+
+  // Don't render if deleted
+  if (deleted) {
+    return null;
+  }
 
   return (
     <Card>
@@ -138,13 +185,13 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
                   {descriptor.source}
                 </Badge>
               )}
-              <span>{descriptor.skillName}</span>
+              <span>{skillName}</span>
               <span>•</span>
               <span>{descriptor.code}</span>
-              {descriptor.category && (
+              {category && (
                 <>
                   <span>•</span>
-                  <span>{descriptor.category}</span>
+                  <span>{category}</span>
                 </>
               )}
             </div>
@@ -190,6 +237,45 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
           <div className="ml-7 pt-3 border-t space-y-4">
             {editing ? (
               <>
+                {/* Skill and Category row */}
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor={`skill-${descriptor.id}`}>Skill</Label>
+                    <Select value={skillName} onValueChange={setSkillName}>
+                      <SelectTrigger id={`skill-${descriptor.id}`}>
+                        <SelectValue placeholder="Select skill" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {facets.skillAreas.map(({ name }) => (
+                          <SelectItem key={name} value={name}>
+                            {name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`category-${descriptor.id}`}>Category</Label>
+                    <Select
+                      value={category || NO_CATEGORY}
+                      onValueChange={(v) => setCategory(v === NO_CATEGORY ? "" : v)}
+                    >
+                      <SelectTrigger id={`category-${descriptor.id}`}>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NO_CATEGORY}>No Category</SelectItem>
+                        {facets.categories.map(({ name }) => (
+                          <SelectItem key={name} value={name}>
+                            {name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Score fields */}
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor={`score3-${descriptor.id}`} className="text-green-700">
@@ -199,7 +285,7 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
                       id={`score3-${descriptor.id}`}
                       value={score3}
                       onChange={(e) => setScore3(e.target.value)}
-                      rows={6}
+                      rows={12}
                       className="text-sm"
                     />
                   </div>
@@ -211,7 +297,7 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
                       id={`score2-${descriptor.id}`}
                       value={score2}
                       onChange={(e) => setScore2(e.target.value)}
-                      rows={6}
+                      rows={12}
                       className="text-sm"
                     />
                   </div>
@@ -223,7 +309,7 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
                       id={`score1-${descriptor.id}`}
                       value={score1}
                       onChange={(e) => setScore1(e.target.value)}
-                      rows={6}
+                      rows={12}
                       className="text-sm"
                     />
                   </div>
@@ -235,25 +321,52 @@ function ReviewCard({ descriptor }: { descriptor: SearchResult }) {
                       id={`score0-${descriptor.id}`}
                       value={score0}
                       onChange={(e) => setScore0(e.target.value)}
-                      rows={6}
+                      rows={12}
                       className="text-sm"
                     />
                   </div>
                 </div>
 
-                <div className="flex gap-2 justify-end">
-                  <Button variant="outline" size="sm" onClick={handleCancel} disabled={isPending}>
-                    <X className="h-4 w-4 mr-1" />
-                    Cancel
-                  </Button>
-                  <Button size="sm" onClick={handleSave} disabled={isPending}>
-                    {isPending ? (
-                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                    ) : (
-                      <Check className="h-4 w-4 mr-1" />
-                    )}
-                    Save Changes
-                  </Button>
+                <div className="flex gap-2 justify-between">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="destructive" size="sm" disabled={isPending}>
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Delete Descriptor</DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to delete this descriptor? This action can be undone by an administrator.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <DialogClose asChild>
+                          <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={handleCancel} disabled={isPending}>
+                      <X className="h-4 w-4 mr-1" />
+                      Cancel
+                    </Button>
+                    <Button size="sm" onClick={handleSave} disabled={isPending}>
+                      {isPending ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <Check className="h-4 w-4 mr-1" />
+                      )}
+                      Save Changes
+                    </Button>
+                  </div>
                 </div>
               </>
             ) : (

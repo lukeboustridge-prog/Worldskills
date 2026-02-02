@@ -15,6 +15,20 @@ const updateDescriptorSchema = z.object({
   score1: z.string().optional(),
   score0: z.string().optional(),
   qualityIndicator: z.nativeEnum(QualityIndicator),
+  skillName: z.string().min(1, "Skill name is required"),
+  category: z.string().optional(),
+});
+
+const createDescriptorSchema = z.object({
+  code: z.string().min(1, "Code is required"),
+  criterionName: z.string().min(3, "Criterion name must be at least 3 characters"),
+  score3: z.string().optional(),
+  score2: z.string().optional(),
+  score1: z.string().optional(),
+  score0: z.string().optional(),
+  skillName: z.string().min(1, "Skill name is required"),
+  category: z.string().optional(),
+  qualityIndicator: z.nativeEnum(QualityIndicator).optional(),
 });
 
 /**
@@ -37,6 +51,8 @@ export async function updateDescriptorReviewAction(formData: FormData) {
     score1: formData.get("score1") || undefined,
     score0: formData.get("score0") || undefined,
     qualityIndicator: formData.get("qualityIndicator"),
+    skillName: formData.get("skillName"),
+    category: formData.get("category") || undefined,
   });
 
   if (!parsedResult.success) {
@@ -56,12 +72,103 @@ export async function updateDescriptorReviewAction(formData: FormData) {
         score1 = ${data.score1?.trim() || null},
         score0 = ${data.score0?.trim() || null},
         "qualityIndicator" = ${data.qualityIndicator}::"QualityIndicator",
+        "skillName" = ${data.skillName.trim()},
+        category = ${data.category?.trim() || null},
         "updatedAt" = NOW()
       WHERE id = ${data.id}
     `;
   } catch (error) {
     console.error("Failed to update descriptor", error);
     return { error: "Unable to update descriptor" };
+  }
+
+  revalidatePath("/hub/descriptors");
+  revalidatePath("/hub/descriptors/review");
+
+  return { success: true };
+}
+
+/**
+ * Create a new descriptor
+ */
+export async function createDescriptorAction(formData: FormData) {
+  const session = await requireUser();
+
+  const allowedRoles = ["SA", "SCM", "Secretariat", "Admin"];
+  if (!allowedRoles.includes(session.role)) {
+    return { error: "You do not have permission to create descriptors" };
+  }
+
+  const parsedResult = createDescriptorSchema.safeParse({
+    code: formData.get("code"),
+    criterionName: formData.get("criterionName"),
+    score3: formData.get("score3") || undefined,
+    score2: formData.get("score2") || undefined,
+    score1: formData.get("score1") || undefined,
+    score0: formData.get("score0") || undefined,
+    skillName: formData.get("skillName"),
+    category: formData.get("category") || undefined,
+    qualityIndicator: formData.get("qualityIndicator") || undefined,
+  });
+
+  if (!parsedResult.success) {
+    const firstError = parsedResult.error.errors[0]?.message ?? "Please review the form";
+    return { error: firstError };
+  }
+
+  const data = parsedResult.data;
+
+  try {
+    await prisma.descriptor.create({
+      data: {
+        code: data.code.trim(),
+        criterionName: data.criterionName.trim(),
+        score3: data.score3?.trim() || null,
+        score2: data.score2?.trim() || null,
+        score1: data.score1?.trim() || null,
+        score0: data.score0?.trim() || null,
+        skillName: data.skillName.trim(),
+        category: data.category?.trim() || null,
+        source: "Manual",
+        qualityIndicator: data.qualityIndicator || "NEEDS_REVIEW",
+      },
+    });
+  } catch (error: unknown) {
+    console.error("Failed to create descriptor", error);
+    if (error instanceof Error && error.message.includes("Unique constraint")) {
+      return { error: "A descriptor with this code already exists for this skill" };
+    }
+    return { error: "Unable to create descriptor" };
+  }
+
+  revalidatePath("/hub/descriptors");
+  revalidatePath("/hub/descriptors/review");
+
+  return { success: true };
+}
+
+/**
+ * Soft delete a descriptor
+ */
+export async function deleteDescriptorAction(id: string) {
+  const session = await requireUser();
+
+  const allowedRoles = ["SA", "SCM", "Secretariat", "Admin"];
+  if (!allowedRoles.includes(session.role)) {
+    return { error: "You do not have permission to delete descriptors" };
+  }
+
+  try {
+    await prisma.descriptor.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        deletedBy: session.id,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to delete descriptor", error);
+    return { error: "Unable to delete descriptor" };
   }
 
   revalidatePath("/hub/descriptors");
