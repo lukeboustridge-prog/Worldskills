@@ -20,6 +20,7 @@ import {
   getDeliverableTemplates,
   recalculateDeliverableSchedule
 } from "@/lib/deliverables";
+import { sendPasswordResetEmail } from "@/lib/email/password-reset";
 import { sendWelcomeEmail } from "@/lib/email/welcome";
 import {
   applyMilestoneTemplateUpdate,
@@ -906,5 +907,69 @@ export async function createInvitationAction(formData: FormData) {
   revalidatePath("/settings");
 
   const params = new URLSearchParams({ inviteCreated: "1", inviteEmail: normalizedEmail, emailSent: "1" });
+  return redirect(`/settings?${params.toString()}`);
+}
+
+const sendPasswordResetSchema = z.object({
+  userId: z.string().min(1, "User ID is required")
+});
+
+export async function sendPasswordResetAction(formData: FormData) {
+  await requireAdminUser();
+
+  const parsedResult = sendPasswordResetSchema.safeParse({
+    userId: formData.get("userId")
+  });
+
+  if (!parsedResult.success) {
+    const firstError = parsedResult.error.errors[0]?.message ?? "Unable to send password reset.";
+    const params = new URLSearchParams({ userError: firstError });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  const { userId } = parsedResult.data;
+
+  const targetUser = await prisma.user.findUnique({
+    where: { id: userId }
+  });
+
+  if (!targetUser) {
+    const params = new URLSearchParams({ userError: "User not found." });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  try {
+    // Generate cryptographically secure token
+    const token = randomUUID();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+    // Create password reset token
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: targetUser.id,
+        token,
+        expiresAt
+      }
+    });
+
+    // Build reset URL
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const resetUrl = `${baseUrl}/reset-password/${token}`;
+
+    // Send email
+    await sendPasswordResetEmail({
+      to: targetUser.email,
+      resetUrl,
+      userName: targetUser.name ?? undefined
+    });
+  } catch (error) {
+    console.error("Failed to send password reset email", error);
+    const params = new URLSearchParams({ userError: "Unable to send password reset email. Please try again." });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  revalidatePath("/settings");
+
+  const params = new URLSearchParams({ passwordResetSent: "1", resetEmail: targetUser.email });
   return redirect(`/settings?${params.toString()}`);
 }

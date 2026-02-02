@@ -31,7 +31,8 @@ import {
   updateMilestoneTemplateAction,
   updateUserRoleAction,
   updateUserDetailsAction,
-  deleteUserAction
+  deleteUserAction,
+  sendPasswordResetAction
 } from "./actions";
 import { prisma } from "@/lib/prisma";
 import { getUserDisplayName } from "@/lib/users";
@@ -168,6 +169,8 @@ export default async function SettingsPage({
   const userUpdated = typeof searchParams?.userUpdated === "string";
   const userDetailsUpdated = typeof searchParams?.userDetailsUpdated === "string";
   const userDeleted = typeof searchParams?.userDeleted === "string";
+  const passwordResetSent = typeof searchParams?.passwordResetSent === "string";
+  const resetEmail = typeof searchParams?.resetEmail === "string" ? searchParams.resetEmail : null;
   const userQuery = typeof searchParams?.userQuery === "string" ? searchParams.userQuery.trim() : "";
   const inviteCreated = typeof searchParams?.inviteCreated === "string";
   const inviteToken = typeof searchParams?.inviteToken === "string" ? searchParams.inviteToken : null;
@@ -311,7 +314,13 @@ export default async function SettingsPage({
             </Button>
           </div>
         </form>
-        <div className="mt-3 flex justify-end border-t pt-3">
+        <div className="mt-3 flex justify-end gap-2 border-t pt-3">
+          <form action={sendPasswordResetAction}>
+            <input type="hidden" name="userId" value={record.id} />
+            <Button type="submit" variant="outline" size="sm">
+              Send Password Reset
+            </Button>
+          </form>
           <form action={deleteUserAction}>
             <input type="hidden" name="userId" value={record.id} />
             <Button type="submit" variant="destructive" size="sm">
@@ -441,6 +450,11 @@ export default async function SettingsPage({
         {userDeleted ? (
           <div className="rounded-md border border-red-400 bg-red-50 p-4 text-sm text-red-900">
             User deleted successfully.
+          </div>
+        ) : null}
+        {passwordResetSent ? (
+          <div className="rounded-md border border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
+            Password reset email sent{resetEmail ? ` to ${resetEmail}` : ""}. The link will expire in 1 hour.
           </div>
         ) : null}
       </div>
@@ -796,7 +810,7 @@ export default async function SettingsPage({
       <CollapsibleSection
         title="User management"
         description="Adjust base roles and admin access. Admins automatically appear in Skill Advisor lists."
-        defaultOpen={userUpdated || userDeleted || userQuery.length > 0}
+        defaultOpen={userUpdated || userDeleted || passwordResetSent || userQuery.length > 0}
       >
         <details className="rounded-md border p-4" open={userQuery.length > 0}>
           <summary className="cursor-pointer font-medium">Search &amp; filters</summary>
