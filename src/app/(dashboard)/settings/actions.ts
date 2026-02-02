@@ -20,6 +20,7 @@ import {
   getDeliverableTemplates,
   recalculateDeliverableSchedule
 } from "@/lib/deliverables";
+import { sendWelcomeEmail } from "@/lib/email/welcome";
 import {
   applyMilestoneTemplateUpdate,
   ensureStandardMilestonesForSkill,
@@ -829,10 +830,12 @@ export async function createInvitationAction(formData: FormData) {
   const parsed = parsedResult.data;
   const normalizedEmail = parsed.email.toLowerCase();
   const isAdmin = parsed.isAdmin === "on";
-  const token = randomUUID();
+  const inviteToken = randomUUID();
+  const setupToken = randomUUID();
   const expiresAt = addDays(new Date(), 7);
 
   try {
+    // Delete any pending invitations for this email
     await prisma.invitation.deleteMany({
       where: {
         email: normalizedEmail,
@@ -840,16 +843,59 @@ export async function createInvitationAction(formData: FormData) {
       }
     });
 
+    // Create or update the user record
+    let invitedUser = await prisma.user.findUnique({
+      where: { email: normalizedEmail }
+    });
+
+    if (!invitedUser) {
+      invitedUser = await prisma.user.create({
+        data: {
+          name: parsed.name.trim(),
+          email: normalizedEmail,
+          role: parsed.role,
+          isAdmin
+        }
+      });
+    }
+
+    // Delete any existing verification tokens for this email
+    await prisma.verificationToken.deleteMany({
+      where: { identifier: normalizedEmail }
+    });
+
+    // Create verification token for account setup
+    await prisma.verificationToken.create({
+      data: {
+        identifier: normalizedEmail,
+        token: setupToken,
+        expires: expiresAt
+      }
+    });
+
+    // Create invitation record for tracking
     await prisma.invitation.create({
       data: {
         name: parsed.name.trim(),
         email: normalizedEmail,
         role: parsed.role,
         isAdmin,
-        token,
+        token: inviteToken,
         expiresAt,
         createdBy: user.id
       }
+    });
+
+    // Send welcome email
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://skill-tracker.worldskills2026.com";
+    const setupUrl = `${baseUrl}/setup-account?token=${setupToken}`;
+
+    await sendWelcomeEmail({
+      to: normalizedEmail,
+      name: parsed.name.trim(),
+      token: setupToken,
+      role: parsed.role,
+      setupUrl
     });
   } catch (error) {
     console.error("Failed to create invitation", error);
@@ -859,6 +905,6 @@ export async function createInvitationAction(formData: FormData) {
 
   revalidatePath("/settings");
 
-  const params = new URLSearchParams({ inviteCreated: "1", inviteToken: token, inviteEmail: normalizedEmail });
+  const params = new URLSearchParams({ inviteCreated: "1", inviteEmail: normalizedEmail, emailSent: "1" });
   return redirect(`/settings?${params.toString()}`);
 }

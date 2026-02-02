@@ -241,6 +241,11 @@ function processMessages(skills: MinimalSkill[], messages: Message[], now: Date)
     let pendingSaMessage: Message | null = null;
 
     for (const message of conversation) {
+      // Skip system-generated messages (they start with "System:")
+      if (message.body.startsWith("System:")) {
+        continue;
+      }
+
       const isFromSa = message.authorId === skill.saId;
       const isFromScm = Boolean(skill.scmId && message.authorId === skill.scmId);
 

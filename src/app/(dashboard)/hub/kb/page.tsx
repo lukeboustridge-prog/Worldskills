@@ -107,12 +107,12 @@ export default async function KnowledgeBasePage() {
           <CardContent>
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {externalLinks.map((resource) => (
-                <li key={resource.id}>
+                <li key={resource.id} className="h-full">
                   <a
                     href={resource.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-muted"
+                    className="flex h-full items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-muted"
                   >
                     <ExternalLink className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
                     <div className="min-w-0 flex-1">
@@ -163,12 +163,12 @@ export default async function KnowledgeBasePage() {
               <CardContent>
                 <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {resources.map((resource) => (
-                    <li key={resource.id}>
+                    <li key={resource.id} className="h-full">
                       <a
                         href={resource.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-muted"
+                        className="flex h-full items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-muted"
                       >
                         <ExternalLink className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
                         <div className="min-w-0 flex-1">

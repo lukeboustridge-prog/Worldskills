@@ -294,6 +294,11 @@ export default async function DashboardPage({
     let pendingSaMessage: (typeof conversation)[number] | null = null;
 
     for (const message of conversation) {
+      // Skip system-generated messages (they start with "System:")
+      if (message.body.startsWith("System:")) {
+        continue;
+      }
+
       const isFromSa = message.authorId === skill.saId;
       const isFromScm = Boolean(skill.scmId && message.authorId === skill.scmId);
 
@@ -402,8 +407,8 @@ export default async function DashboardPage({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="flex flex-col">
+          <CardHeader className="pb-2 min-h-[5rem]">
             <CardTitle>Overdue deliverables</CardTitle>
             <CardDescription>Requires immediate attention</CardDescription>
           </CardHeader>
@@ -418,8 +423,8 @@ export default async function DashboardPage({
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="flex flex-col">
+          <CardHeader className="pb-2 min-h-[5rem]">
             <CardTitle>Due within 30 days</CardTitle>
             <CardDescription>Upcoming deadlines</CardDescription>
           </CardHeader>
@@ -432,8 +437,8 @@ export default async function DashboardPage({
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="flex flex-col">
+          <CardHeader className="pb-2 min-h-[5rem]">
             <CardTitle>Average SCM response</CardTitle>
             <CardDescription>Time to respond to Skill Advisor messages</CardDescription>
           </CardHeader>
@@ -446,8 +451,8 @@ export default async function DashboardPage({
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="flex flex-col">
+          <CardHeader className="pb-2 min-h-[5rem]">
             <CardTitle>Awaiting SCM replies</CardTitle>
             <CardDescription>Conversations needing action</CardDescription>
           </CardHeader>
