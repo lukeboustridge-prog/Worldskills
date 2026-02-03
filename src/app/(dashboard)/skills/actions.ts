@@ -12,6 +12,7 @@ import { ensureStandardDeliverablesForSkill } from "@/lib/deliverables";
 import { ensureStandardMilestonesForSkill } from "@/lib/milestones";
 import { requireAppSettings } from "@/lib/settings";
 import { SKILL_CATALOG } from "@/lib/skill-catalog";
+import { sendSkillConversationNotification } from "@/lib/email/notifications";
 
 function normalizeOptionalId(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.length > 0 ? value : null;
@@ -231,7 +232,15 @@ export async function messageAllSkillsAction(formData: FormData) {
     throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
   }
 
-  const skills = await prisma.skill.findMany({ select: { id: true } });
+  const skills = await prisma.skill.findMany({
+    select: {
+      id: true,
+      name: true,
+      sa: true,
+      scm: true,
+      teamMembers: { include: { user: true } }
+    }
+  });
 
   if (skills.length === 0) {
     revalidatePath("/skills");
@@ -256,6 +265,37 @@ export async function messageAllSkillsAction(formData: FormData) {
       action: "MessagePosted",
       payload: { body: preview }
     });
+
+    // Send email notification to skill team members
+    // Note: This is an FYI broadcast - it won't trigger SCM reply timers
+    // because the author is not the SA
+    try {
+      const participants = [
+        skill.sa,
+        skill.scm,
+        ...skill.teamMembers.map((member) => member.user)
+      ];
+
+      const recipientEmails = participants
+        .filter((participant): participant is NonNullable<typeof participant> => Boolean(participant))
+        .map((participant) => participant.email)
+        .filter((email): email is string => Boolean(email));
+
+      if (recipientEmails.length > 0) {
+        await sendSkillConversationNotification({
+          skillId: skill.id,
+          skillName: skill.name,
+          messageContent: body,
+          authorName: user.name ?? "Secretariat",
+          to: recipientEmails
+        });
+      }
+    } catch (error) {
+      console.error("Failed to send broadcast notification for skill", {
+        skillId: skill.id,
+        error
+      });
+    }
 
     revalidatePath(`/skills/${skill.id}`);
   }
