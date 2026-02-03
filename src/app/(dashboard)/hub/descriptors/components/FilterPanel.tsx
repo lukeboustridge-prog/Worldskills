@@ -77,11 +77,11 @@ export function FilterPanel({ facets }: { facets: Facets }) {
           value={category || ALL_VALUE}
           onValueChange={handleCategoryChange}
         >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="All Categories" />
+          <SelectTrigger className="w-[220px]">
+            <SelectValue placeholder="All WSOS Sections" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL_VALUE}>All Categories</SelectItem>
+            <SelectItem value={ALL_VALUE}>All WSOS Sections</SelectItem>
             {facets.categories.map(({ name, count }) => (
               <SelectItem key={name} value={name}>
                 {name} ({count})
