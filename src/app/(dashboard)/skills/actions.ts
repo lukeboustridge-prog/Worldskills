@@ -12,7 +12,7 @@ import { ensureStandardDeliverablesForSkill } from "@/lib/deliverables";
 import { ensureStandardMilestonesForSkill } from "@/lib/milestones";
 import { requireAppSettings } from "@/lib/settings";
 import { SKILL_CATALOG } from "@/lib/skill-catalog";
-import { sendSkillConversationNotification } from "@/lib/email/notifications";
+import { sendBroadcastNotification } from "@/lib/email/notifications";
 
 function normalizeOptionalId(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.length > 0 ? value : null;
@@ -250,7 +250,11 @@ export async function messageAllSkillsAction(formData: FormData) {
   const body = parsed.data.body;
   const preview = body.length > 140 ? body.slice(0, 140) : body;
 
+  // Collect unique email addresses across all skills
+  const uniqueEmails = new Set<string>();
+
   for (const skill of skills) {
+    // Create message in each skill's conversation
     await prisma.message.create({
       data: {
         skillId: skill.id,
@@ -266,38 +270,34 @@ export async function messageAllSkillsAction(formData: FormData) {
       payload: { body: preview }
     });
 
-    // Send email notification to skill team members
-    // Note: This is an FYI broadcast - it won't trigger SCM reply timers
-    // because the author is not the SA
-    try {
-      const participants = [
-        skill.sa,
-        skill.scm,
-        ...skill.teamMembers.map((member) => member.user)
-      ];
+    // Collect unique recipients (SA, SCM, team members)
+    const participants = [
+      skill.sa,
+      skill.scm,
+      ...skill.teamMembers.map((member) => member.user)
+    ];
 
-      const recipientEmails = participants
-        .filter((participant): participant is NonNullable<typeof participant> => Boolean(participant))
-        .map((participant) => participant.email)
-        .filter((email): email is string => Boolean(email));
-
-      if (recipientEmails.length > 0) {
-        await sendSkillConversationNotification({
-          skillId: skill.id,
-          skillName: skill.name,
-          messageContent: body,
-          authorName: user.name ?? "Secretariat",
-          to: recipientEmails
-        });
+    for (const participant of participants) {
+      if (participant?.email) {
+        uniqueEmails.add(participant.email);
       }
-    } catch (error) {
-      console.error("Failed to send broadcast notification for skill", {
-        skillId: skill.id,
-        error
-      });
     }
 
     revalidatePath(`/skills/${skill.id}`);
+  }
+
+  // Send ONE broadcast email to all unique recipients
+  // This ensures each person only receives one email regardless of how many skills they're associated with
+  if (uniqueEmails.size > 0) {
+    try {
+      await sendBroadcastNotification({
+        to: Array.from(uniqueEmails),
+        messageContent: body,
+        authorName: user.name ?? "Secretariat"
+      });
+    } catch (error) {
+      console.error("Failed to send broadcast notification", { error });
+    }
   }
 
   revalidatePath("/skills");
