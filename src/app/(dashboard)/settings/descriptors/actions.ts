@@ -16,7 +16,7 @@ const baseDescriptorSchema = z.object({
   score2: z.string().optional(),
   score1: z.string().optional(),
   score0: z.string().optional(),
-  skillNames: z.string().min(1, "At least one skill is required"), // Comma-separated, parsed below
+  skillNames: z.string().optional(), // Comma-separated, parsed below
   sector: z.string().optional(),
   categories: z.string().optional(), // Comma-separated, parsed below
   tags: z.string().optional(), // Comma-separated, parsed below
@@ -90,10 +90,6 @@ export async function createDescriptorAction(formData: FormData) {
   const categories = parseCommaSeparated(data.categories);
   const tags = parseTags(data.tags);
 
-  if (skillNames.length === 0) {
-    const params = new URLSearchParams({ error: "At least one skill is required" });
-    return redirect(`/settings/descriptors/create?${params.toString()}`);
-  }
 
   try {
     await prisma.$executeRaw`
@@ -169,10 +165,6 @@ export async function updateDescriptorAction(formData: FormData) {
   const categories = parseCommaSeparated(data.categories);
   const tags = parseTags(data.tags);
 
-  if (skillNames.length === 0) {
-    const params = new URLSearchParams({ error: "At least one skill is required" });
-    return redirect(`/settings/descriptors/${data.id}/edit?${params.toString()}`);
-  }
 
   try {
     await prisma.$executeRaw`

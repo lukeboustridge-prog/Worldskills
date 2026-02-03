@@ -15,7 +15,7 @@ const updateDescriptorSchema = z.object({
   score1: z.string().optional(),
   score0: z.string().optional(),
   qualityIndicator: z.nativeEnum(QualityIndicator),
-  skillNames: z.array(z.string()).min(1, "At least one skill is required"),
+  skillNames: z.array(z.string()).optional(),
   categories: z.array(z.string()).optional(),
 });
 
@@ -26,7 +26,7 @@ const createDescriptorSchema = z.object({
   score2: z.string().optional(),
   score1: z.string().optional(),
   score0: z.string().optional(),
-  skillNames: z.array(z.string()).min(1, "At least one skill is required"),
+  skillNames: z.array(z.string()).optional(),
   categories: z.array(z.string()).optional(),
   qualityIndicator: z.nativeEnum(QualityIndicator).optional(),
 });
@@ -89,7 +89,7 @@ export async function updateDescriptorReviewAction(formData: FormData) {
         score1: data.score1?.trim() || null,
         score0: data.score0?.trim() || null,
         qualityIndicator: data.qualityIndicator,
-        skillNames: data.skillNames.map(s => s.trim()),
+        skillNames: data.skillNames?.map(s => s.trim()) || [],
         categories: data.categories?.map(c => c.trim()) || [],
       },
     });
@@ -160,7 +160,7 @@ export async function createDescriptorAction(formData: FormData) {
         score2: data.score2?.trim() || null,
         score1: data.score1?.trim() || null,
         score0: data.score0?.trim() || null,
-        skillNames: data.skillNames.map(s => s.trim()),
+        skillNames: data.skillNames?.map(s => s.trim()) || [],
         categories: data.categories?.map(c => c.trim()) || [],
         source: "Manual",
         qualityIndicator: data.qualityIndicator || "NEEDS_REVIEW",
