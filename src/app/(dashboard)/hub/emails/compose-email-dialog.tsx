@@ -20,10 +20,18 @@ interface Recipient {
   role: string;
 }
 
+interface SkillMember {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string;
+}
+
 interface Skill {
   id: string;
   name: string;
   sector: string | null;
+  members: SkillMember[];
 }
 
 interface ComposeEmailDialogProps {
@@ -33,6 +41,7 @@ interface ComposeEmailDialogProps {
   skills: Skill[];
   defaultTab: "skill" | "internal";
   onSent: () => void;
+  currentUserId: string;
 }
 
 export function ComposeEmailDialog({
@@ -42,6 +51,7 @@ export function ComposeEmailDialog({
   skills,
   defaultTab,
   onSent,
+  currentUserId,
 }: ComposeEmailDialogProps) {
   const [activeTab, setActiveTab] = useState(defaultTab);
 
@@ -71,7 +81,7 @@ export function ComposeEmailDialog({
           </TabsList>
 
           <TabsContent value="skill" className="mt-4">
-            <SkillEmailForm skills={skills} onSuccess={handleSuccess} />
+            <SkillEmailForm skills={skills} currentUserId={currentUserId} onSuccess={handleSuccess} />
           </TabsContent>
 
           <TabsContent value="internal" className="mt-4">

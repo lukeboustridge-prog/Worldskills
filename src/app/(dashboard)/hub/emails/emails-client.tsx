@@ -19,10 +19,18 @@ interface Recipient {
   role: string;
 }
 
+interface SkillMember {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string;
+}
+
 interface Skill {
   id: string;
   name: string;
   sector: string | null;
+  members: SkillMember[];
 }
 
 interface CurrentUser {
@@ -124,6 +132,7 @@ export function EmailsClient({
         skills={skills}
         defaultTab={activeTab}
         onSent={handleEmailSent}
+        currentUserId={currentUser.id}
       />
     </div>
   );

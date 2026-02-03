@@ -22,6 +22,7 @@ const skillEmailSchema = z.object({
   subject: z.string().min(1, "Subject is required").max(200),
   body: z.string().min(1, "Message body is required"),
   attachments: z.array(attachmentSchema).default([]),
+  selectedRecipientIds: z.array(z.string()).optional(), // If provided, only send to these recipients
 });
 
 const internalEmailSchema = z.object({
@@ -156,19 +157,21 @@ export async function sendSkillEmailAction(formData: FormData) {
 
   const skillIdsRaw = formData.get("skillIds");
   const attachmentsRaw = formData.get("attachments");
+  const selectedRecipientIdsRaw = formData.get("selectedRecipientIds");
 
   const parsed = skillEmailSchema.safeParse({
     skillIds: skillIdsRaw ? JSON.parse(skillIdsRaw as string) : [],
     subject: formData.get("subject"),
     body: formData.get("body"),
     attachments: attachmentsRaw ? JSON.parse(attachmentsRaw as string) : [],
+    selectedRecipientIds: selectedRecipientIdsRaw ? JSON.parse(selectedRecipientIdsRaw as string) : undefined,
   });
 
   if (!parsed.success) {
     throw new Error(parsed.error.errors.map((e) => e.message).join(", "));
   }
 
-  const { skillIds, subject, body, attachments } = parsed.data;
+  const { skillIds, subject, body, attachments, selectedRecipientIds } = parsed.data;
 
   // Verify user has access to selected skills
   const whereClause = user.role === Role.SA && !user.isAdmin
@@ -191,35 +194,45 @@ export async function sendSkillEmailAction(formData: FormData) {
   // Collect unique recipients across all skills
   const recipientMap = new Map<string, { email: string; name: string | null; role: string; userId: string | null }>();
 
+  // If selectedRecipientIds is provided, create a set for quick lookup
+  const selectedSet = selectedRecipientIds ? new Set(selectedRecipientIds) : null;
+
   for (const skill of skills) {
     // Add SA
     if (skill.sa) {
-      recipientMap.set(skill.sa.email, {
-        email: skill.sa.email,
-        name: skill.sa.name,
-        role: "SA",
-        userId: skill.sa.id,
-      });
+      // Only add if no filter or user is in the selected list
+      if (!selectedSet || selectedSet.has(skill.sa.id)) {
+        recipientMap.set(skill.sa.email, {
+          email: skill.sa.email,
+          name: skill.sa.name,
+          role: "SA",
+          userId: skill.sa.id,
+        });
+      }
     }
 
     // Add SCM
     if (skill.scm) {
-      recipientMap.set(skill.scm.email, {
-        email: skill.scm.email,
-        name: skill.scm.name,
-        role: "SCM",
-        userId: skill.scm.id,
-      });
+      if (!selectedSet || selectedSet.has(skill.scm.id)) {
+        recipientMap.set(skill.scm.email, {
+          email: skill.scm.email,
+          name: skill.scm.name,
+          role: "SCM",
+          userId: skill.scm.id,
+        });
+      }
     }
 
     // Add team members
     for (const member of skill.teamMembers) {
-      recipientMap.set(member.user.email, {
-        email: member.user.email,
-        name: member.user.name,
-        role: "SkillTeam",
-        userId: member.user.id,
-      });
+      if (!selectedSet || selectedSet.has(member.user.id)) {
+        recipientMap.set(member.user.email, {
+          email: member.user.email,
+          name: member.user.name,
+          role: "SkillTeam",
+          userId: member.user.id,
+        });
+      }
     }
   }
 
@@ -488,9 +501,39 @@ export async function getSkillsForEmailAction() {
       id: true,
       name: true,
       sector: true,
+      sa: { select: { id: true, name: true, email: true } },
+      scm: { select: { id: true, name: true, email: true } },
+      teamMembers: {
+        select: {
+          user: { select: { id: true, name: true, email: true } }
+        }
+      },
     },
     orderBy: { name: "asc" },
   });
 
-  return skills;
+  // Transform to include members array
+  return skills.map((skill) => {
+    const members: { id: string; name: string | null; email: string; role: string }[] = [];
+
+    if (skill.sa) {
+      members.push({ id: skill.sa.id, name: skill.sa.name, email: skill.sa.email, role: "SA" });
+    }
+    if (skill.scm) {
+      members.push({ id: skill.scm.id, name: skill.scm.name, email: skill.scm.email, role: "SCM" });
+    }
+    for (const tm of skill.teamMembers) {
+      // Avoid duplicates if SA or SCM is also a team member
+      if (!members.some((m) => m.id === tm.user.id)) {
+        members.push({ id: tm.user.id, name: tm.user.name, email: tm.user.email, role: "Team" });
+      }
+    }
+
+    return {
+      id: skill.id,
+      name: skill.name,
+      sector: skill.sector,
+      members,
+    };
+  });
 }

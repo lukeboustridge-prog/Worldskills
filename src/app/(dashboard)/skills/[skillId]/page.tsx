@@ -21,7 +21,8 @@ import { getUserDisplayName } from "@/lib/users";
 import { deleteMilestoneAction, updateMilestoneStatusAction, inviteSkillTeamMemberAction } from "./actions";
 import { DeliverablesTable, type DeliverableRow } from "./deliverables-table";
 import { CreateMilestoneForm } from "./create-milestone-form";
-import { MessageForm } from "./message-form";
+import { SkillEmailForm } from "./skill-email-form";
+import { MessageList } from "./message-list";
 import { MeetingList, type MeetingData, type TeamMemberOption } from "./meeting-list";
 import { SkillNotes } from "./skill-notes";
 import {
@@ -129,7 +130,10 @@ export default async function SkillDetailPage({
             }
           }
         },
-        include: { author: true },
+        include: {
+          author: true,
+          attachments: true
+        },
         orderBy: { createdAt: "desc" }
       },
       meetings: {
@@ -329,7 +333,7 @@ export default async function SkillDetailPage({
         <TabsList>
           <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
           <TabsTrigger value="meetings">Meetings</TabsTrigger>
-          <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsTrigger value="emails">Emails</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           {canViewNotes && <TabsTrigger value="notes">SA Notes</TabsTrigger>}
@@ -467,39 +471,57 @@ export default async function SkillDetailPage({
           </Card>
         </TabsContent>
 
-        <TabsContent value="messages" className="space-y-6">
+        <TabsContent value="emails" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Conversation</CardTitle>
-              <CardDescription>Use this thread to keep each other informed.</CardDescription>
+              <CardTitle>Send Email</CardTitle>
+              <CardDescription>Send an email to selected team members for this skill.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               {canPostMessage ? (
-                <MessageForm skillId={skill.id} />
+                <SkillEmailForm
+                  skillId={skill.id}
+                  skillName={skill.name}
+                  teamMembers={teamMembersForMeetings.map((m) => ({
+                    id: m.id,
+                    name: m.name,
+                    email: m.email,
+                    role: m.role,
+                  }))}
+                  currentUserId={user.id}
+                />
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  You can read previous messages but do not have permission to post in this conversation.
+                  You do not have permission to send emails for this skill.
                 </p>
               )}
-              <div className="space-y-4">
-                {skill.messages.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No messages yet.</p>
-                ) : (
-                  skill.messages.map((message) => (
-                    <div key={message.id} className="rounded-md border p-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">
-                          {getUserDisplayName(message.author)}
-                        </p>
-                        <span className="text-xs text-muted-foreground">
-                          {format(message.createdAt, "dd MMM yyyy HH:mm")}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm whitespace-pre-line">{message.body}</p>
-                    </div>
-                  ))
-                )}
-              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Email History</CardTitle>
+              <CardDescription>Previous messages sent to the team.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MessageList
+                messages={skill.messages.map((m) => ({
+                  id: m.id,
+                  body: m.body,
+                  createdAt: m.createdAt.toISOString(),
+                  author: {
+                    id: m.author.id,
+                    name: m.author.name,
+                    email: m.author.email,
+                  },
+                  attachments: m.attachments.map((a) => ({
+                    id: a.id,
+                    fileName: a.fileName,
+                    fileSize: a.fileSize,
+                    mimeType: a.mimeType,
+                  })),
+                }))}
+                getUserDisplayName={getUserDisplayName}
+              />
             </CardContent>
           </Card>
         </TabsContent>

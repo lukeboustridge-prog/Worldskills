@@ -797,17 +797,28 @@ export async function deleteMilestoneAction(formData: FormData) {
   revalidateSkill(parsed.data.skillId);
 }
 
+const attachmentSchema = z.object({
+  storageKey: z.string(),
+  fileName: z.string(),
+  fileSize: z.number(),
+  mimeType: z.string(),
+});
+
 const messageSchema = z.object({
   skillId: z.string().min(1),
-  body: z.string().min(2)
+  body: z.string().min(2),
+  attachments: z.array(attachmentSchema).default([]),
 });
 
 export async function createMessageAction(formData: FormData) {
   const user = await requireUser();
 
+  const attachmentsRaw = formData.get("attachments");
+
   const parsed = messageSchema.safeParse({
     skillId: formData.get("skillId"),
-    body: formData.get("body")
+    body: formData.get("body"),
+    attachments: attachmentsRaw ? JSON.parse(attachmentsRaw as string) : [],
   });
 
   if (!parsed.success) {
@@ -829,11 +840,21 @@ export async function createMessageAction(formData: FormData) {
     throw new Error("You do not have access to this conversation");
   }
 
+  const { attachments } = parsed.data;
+
   await prisma.message.create({
     data: {
       skillId: parsed.data.skillId,
       authorId: user.id,
-      body: parsed.data.body
+      body: parsed.data.body,
+      attachments: {
+        create: attachments.map((a) => ({
+          storageKey: a.storageKey,
+          fileName: a.fileName,
+          fileSize: a.fileSize,
+          mimeType: a.mimeType,
+        })),
+      },
     }
   });
 
@@ -885,6 +906,197 @@ export async function createMessageAction(formData: FormData) {
   });
 
   revalidateSkill(parsed.data.skillId);
+}
+
+const skillEmailAttachmentSchema = z.object({
+  storageKey: z.string(),
+  fileName: z.string(),
+  fileSize: z.number(),
+  mimeType: z.string(),
+});
+
+const skillEmailWithRecipientsSchema = z.object({
+  skillId: z.string().min(1),
+  recipientIds: z.array(z.string()).min(1, "Select at least one recipient"),
+  subject: z.string().min(1, "Subject is required").max(200),
+  body: z.string().min(1, "Message is required"),
+  attachments: z.array(skillEmailAttachmentSchema).default([]),
+});
+
+export async function sendSkillEmailWithRecipientsAction(formData: FormData) {
+  const user = await requireUser();
+
+  const recipientIdsRaw = formData.get("recipientIds");
+  const attachmentsRaw = formData.get("attachments");
+
+  const parsed = skillEmailWithRecipientsSchema.safeParse({
+    skillId: formData.get("skillId"),
+    recipientIds: recipientIdsRaw ? JSON.parse(recipientIdsRaw as string) : [],
+    subject: formData.get("subject"),
+    body: formData.get("body"),
+    attachments: attachmentsRaw ? JSON.parse(attachmentsRaw as string) : [],
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((e) => e.message).join(", "));
+  }
+
+  const { skillId, recipientIds, subject, body, attachments } = parsed.data;
+
+  const skill = await ensureSkill(skillId);
+  const permittedUserIds = [
+    skill.saId,
+    skill.scmId,
+    ...skill.teamMembers.map((member) => member.userId)
+  ].filter(Boolean) as string[];
+
+  const canSend =
+    user.isAdmin ||
+    user.role === Role.Secretariat ||
+    permittedUserIds.includes(user.id);
+
+  if (!canSend) {
+    throw new Error("You do not have permission to send emails for this skill");
+  }
+
+  // Fetch recipients
+  const recipients = await prisma.user.findMany({
+    where: { id: { in: recipientIds } },
+    select: { id: true, email: true, name: true, role: true }
+  });
+
+  if (recipients.length === 0) {
+    throw new Error("No valid recipients selected");
+  }
+
+  // Import sendEmail dynamically to avoid circular dependencies
+  const { sendEmail } = await import("@/lib/email/resend");
+  const { S3Client, GetObjectCommand } = await import("@aws-sdk/client-s3");
+  const { getStorageEnv } = await import("@/lib/env");
+
+  // Prepare attachments for Resend
+  let resendAttachments: { content: string; filename: string }[] = [];
+  if (attachments.length > 0) {
+    const storage = getStorageEnv();
+    const client = new S3Client({
+      region: storage.region,
+      endpoint: storage.endpoint,
+      forcePathStyle: storage.forcePathStyle,
+      credentials: {
+        accessKeyId: storage.accessKeyId,
+        secretAccessKey: storage.secretAccessKey,
+      },
+    });
+
+    for (const attachment of attachments) {
+      const command = new GetObjectCommand({
+        Bucket: storage.bucket,
+        Key: attachment.storageKey,
+      });
+      const response = await client.send(command);
+      const bodyStream = response.Body;
+      if (bodyStream) {
+        const chunks: Uint8Array[] = [];
+        for await (const chunk of bodyStream as AsyncIterable<Uint8Array>) {
+          chunks.push(chunk);
+        }
+        const buffer = Buffer.concat(chunks);
+        resendAttachments.push({
+          content: buffer.toString("base64"),
+          filename: attachment.fileName,
+        });
+      }
+    }
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://skill-tracker.worldskills2026.com";
+  const dashboardUrl = `${baseUrl}/skills/${skillId}`;
+  const logoUrl = "https://skill-tracker.worldskills2026.com/logo.png";
+
+  const attachmentNote =
+    attachments.length > 0
+      ? `<p style="margin: 16px 0 0 0; font-size: 13px; color: #64748b;">This email includes ${attachments.length} attachment${attachments.length > 1 ? "s" : ""}.</p>`
+      : "";
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f5;">
+        <div style="background-color: #f4f4f5; padding: 40px 20px;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+            <div style="background-color: #2563eb; padding: 24px 24px 18px; text-align: center; border-bottom: 1px solid #1d4ed8;">
+              <img src="${logoUrl}" alt="WorldSkills logo" style="height: 48px; width: auto; display: block; margin: 0 auto 16px; border-radius: 8px; background: #f8fafc; padding: 6px;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">
+                Worldskills Skill Tracker
+              </h1>
+            </div>
+            <div style="padding: 28px 24px 32px;">
+              <p style="margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #334155; line-height: 1.5;">
+                <strong>${user.name ?? "A team member"}</strong> sent you a message about <strong>${skill.name}</strong>.
+              </p>
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Subject</p>
+                <p style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #1e293b;">${subject}</p>
+                <p style="margin: 0; font-family: Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; color: #475569; white-space: pre-wrap; line-height: 1.6;">${body}</p>
+                ${attachmentNote}
+              </div>
+              <div style="text-align: center;">
+                <a href="${dashboardUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px;">
+                  View Skill Workspace
+                </a>
+              </div>
+            </div>
+          </div>
+          <div style="text-align: center; margin-top: 24px;">
+            <p style="font-size: 12px; color: #94a3b8;">
+              Sent via Worldskills Skill Tracker
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 12px;">
+            <p style="font-size: 11px; color: #cbd5e1;">
+              This is an automated notification. Please do not reply directly to this email.
+            </p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  const text = `${user.name ?? "A team member"} sent you a message about ${skill.name}.\n\nSubject: ${subject}\n\n${body}${attachments.length > 0 ? `\n\nThis email includes ${attachments.length} attachment${attachments.length > 1 ? "s" : ""}.` : ""}`;
+
+  // Send individual emails
+  const emailPromises = recipients.map((recipient) =>
+    sendEmail({
+      to: recipient.email,
+      subject: `[${skill.name}] ${subject}`,
+      html,
+      text,
+      attachments: resendAttachments,
+    }).catch((err) => {
+      console.error(`Failed to send email to ${recipient.email}`, err);
+      return null;
+    })
+  );
+
+  await Promise.all(emailPromises);
+
+  await logActivity({
+    skillId,
+    userId: user.id,
+    action: "SkillEmailSent",
+    payload: {
+      subject,
+      recipientCount: recipients.length,
+      attachmentCount: attachments.length
+    }
+  });
+
+  revalidateSkill(skillId);
+
+  return { success: true, recipientCount: recipients.length };
 }
 
 const updateNotesSchema = z.object({

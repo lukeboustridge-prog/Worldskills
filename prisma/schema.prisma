@@ -210,11 +210,26 @@ model Message {
   body      String   @db.Text
   createdAt DateTime @default(now())
 
-  skill  Skill @relation(fields: [skillId], references: [id])
-  author User  @relation(fields: [authorId], references: [id])
+  skill       Skill               @relation(fields: [skillId], references: [id])
+  author      User                @relation(fields: [authorId], references: [id])
+  attachments MessageAttachment[]
 
   @@index([skillId])
   @@index([authorId])
+}
+
+model MessageAttachment {
+  id         String   @id @default(cuid())
+  messageId  String
+  storageKey String
+  fileName   String
+  fileSize   Int
+  mimeType   String
+  createdAt  DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
 }
 
 model ActivityLog {
