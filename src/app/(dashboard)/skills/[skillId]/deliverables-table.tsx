@@ -41,6 +41,7 @@ export interface DeliverableRow {
   key: string;
   templateKey: string | null;
   label: string;
+  description: string | null;
   cMonthLabel: string | null;
   cMonthOffset: number | null;
   dueDateISO: string;
@@ -324,6 +325,9 @@ export function DeliverablesTable({
                         ) : null}
                       </div>
                       <h3 className="text-lg font-semibold text-foreground">{deliverable.label}</h3>
+                      {deliverable.description ? (
+                        <p className="text-sm text-muted-foreground">{deliverable.description}</p>
+                      ) : null}
                       <p className="text-sm text-muted-foreground">
                         Due {format(dueDate, "dd MMM yyyy")}
                         {isDueSoon ? ` · ${daysUntilDue} day${daysUntilDue === 1 ? "" : "s"} remaining` : ""}

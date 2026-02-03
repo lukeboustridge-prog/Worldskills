@@ -179,6 +179,7 @@ export default async function SkillDetailPage({
     key: deliverable.key,
     templateKey: deliverable.templateKey ?? null,
     label: deliverable.label,
+    description: deliverable.description ?? null,
     cMonthLabel: deliverable.cMonthLabel,
     cMonthOffset: deliverable.cMonthOffset,
     dueDateISO: deliverable.dueDate.toISOString(),

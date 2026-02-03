@@ -18,6 +18,7 @@ export const DUE_SOON_THRESHOLD_DAYS = 30;
 export interface DefaultDeliverableTemplate {
   key: string;
   label: string;
+  description?: string;
   scheduleType: DeliverableScheduleType;
   offsetMonths?: number;
   calendarDueDate?: Date;
@@ -28,6 +29,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "ITPDIdentified",
     label: "ITPD Identified",
+    description: "Independent Test Project Designer identified. The SCM identifies and investigates a potential ITPD who will design the competition Test Project. Nomination forwarded to DSC for approval.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 12,
     position: 1
@@ -35,6 +37,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "ITPDAgreementKickoff",
     label: "ITPD Agreement and Kick-off",
+    description: "DSC formalizes agreement with ITPD including: understanding of Competition Rules, Code of Ethics, signing Confidentiality and Professionalism Agreement. SCM organizes initial meeting with SCM, Chief Expert, Skill Advisor, and ITPD.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 10,
     position: 2
@@ -42,6 +45,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "WSOSAlignmentPlanning",
     label: "WSOS Alignment and Initial Planning",
+    description: "WorldSkills Occupational Standards alignment. SCM begins reviewing the Standards and Assessment Guide (SAG) to ensure accuracy and clarity. Also identifies potential ITPV (Validator). Expert and TD details entered into Registration System.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 9,
     position: 3
@@ -49,6 +53,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "TestProjectDraftV1",
     label: "Test Project Draft Version 1",
+    description: "First draft of the Test Project is developed by ITPD and SCM. This coincides with CPW (Competition Preparation Week) where infrastructure, workshop layout, and workforce are finalized.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 8,
     position: 4
@@ -56,6 +61,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "ILConfirmationCPW",
     label: "IL Confirmation at CPW",
+    description: "Infrastructure List confirmed at Competition Preparation Week. Workshop Manager and SCM finalize equipment, tools, machines, and workshop layout requirements.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 8,
     position: 5
@@ -63,6 +69,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "MarkingSchemeDraftWSOS",
     label: "Marking Scheme Draft aligned to WSOS",
+    description: "Draft Marking Scheme created, aligned to WorldSkills Occupational Standards. SCM organizes meeting with Chief Expert, Skill Advisor, and ITPV.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 7,
     position: 6
@@ -70,6 +77,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "PrototypeFeasibilityReview",
     label: "Prototype and Feasibility Review",
+    description: "Test Project prototyped and reviewed for feasibility. SAG uploaded to Discussion Forum for Expert review and feedback. Members submit CVs for new Experts.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 6,
     position: 7
@@ -77,6 +85,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "ITPVQuestionnaireCompleted",
     label: "ITPV Questionnaire Completed",
+    description: "Independent Test Project Validator completes validation questionnaire. CVs reviewed by SCM with feedback to DSC.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 5,
     position: 8
@@ -84,6 +93,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "FinalTPMSPackage",
     label: "Final TP and MS Package",
+    description: "Final Test Project and Marking Scheme package completed. Definitive Registration deadline - Members finalize which skill competitions they will participate in.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 4,
     position: 9
@@ -91,6 +101,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "ValidationDocumentUploads",
     label: "Validation and Document Uploads",
+    description: "All validation documents uploaded. ITPV sends completed validation questionnaire and Statement of Validation to DSC.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 4,
     position: 10
@@ -98,6 +109,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "SAGFinalReadyMAT",
     label: "SAG Final Ready for MAT",
+    description: "Standards and Assessment Guide finalized and ready for Mandatory Assessment Training. New Experts complete Access Programme. Familiarization time extensions approved.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 3,
     position: 11
@@ -105,6 +117,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
   {
     key: "PreCompetitionReadinessReview",
     label: "Pre-Competition Readiness Review",
+    description: "Final readiness check. All Experts, Competitors, and delegates at 100% in their respective Centres. Workstation draws completed. All preparation complete before C-4 to C-1 preparation period at venue.",
     scheduleType: DeliverableScheduleType.CMonth,
     offsetMonths: 1,
     position: 12
@@ -177,6 +190,18 @@ const DEFAULT_DOCUMENT_STATUS: DocumentEvidenceStatus = "available";
 
 export function findDocumentEvidence(items: DeliverableEvidenceItem[]) {
   return items.find((item): item is DeliverableEvidenceDocument => isDocumentEvidence(item)) ?? null;
+}
+
+export function findAllDocumentEvidences(items: DeliverableEvidenceItem[]): DeliverableEvidenceDocument[] {
+  return items.filter((item): item is DeliverableEvidenceDocument => isDocumentEvidence(item));
+}
+
+export function addDocumentEvidenceItem(params: {
+  items: DeliverableEvidenceItem[];
+  document: DeliverableEvidenceDocument;
+}) {
+  const { items, document } = params;
+  return [...items, document];
 }
 
 export function upsertDocumentEvidenceItem(params: {
@@ -496,6 +521,7 @@ export async function ensureDeliverableTemplatesSeeded() {
     data: DEFAULT_DELIVERABLE_TEMPLATES.map((template) => ({
       key: template.key,
       label: template.label,
+      description: template.description ?? null,
       offsetMonths: template.offsetMonths ?? null,
       calendarDueDate: template.calendarDueDate ?? null,
       scheduleType: template.scheduleType,
@@ -546,6 +572,7 @@ export async function ensureStandardDeliverablesForSkill(params: {
           key: definition.key,
           templateKey: definition.key,
           label: definition.label,
+          description: definition.description ?? null,
           cMonthOffset: usingCMonth ? offset : null,
           cMonthLabel: usingCMonth && offset !== null ? buildCMonthLabel(offset) : null,
           scheduleType: definition.scheduleType,

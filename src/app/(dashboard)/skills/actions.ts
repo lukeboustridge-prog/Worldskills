@@ -303,3 +303,90 @@ export async function messageAllSkillsAction(formData: FormData) {
   revalidatePath("/skills");
   redirect("/skills?broadcast=sent");
 }
+
+export async function messageMySkillsAction(formData: FormData) {
+  const user = await requireUser();
+
+  if (user.role !== Role.SA && !user.isAdmin) {
+    throw new Error("Only Skill Advisors can send messages to their skills");
+  }
+
+  const parsed = broadcastMessageSchema.safeParse({
+    body: formData.get("body")
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const skills = await prisma.skill.findMany({
+    where: { saId: user.id },
+    select: {
+      id: true,
+      name: true,
+      sa: true,
+      scm: true,
+      teamMembers: { include: { user: true } }
+    }
+  });
+
+  if (skills.length === 0) {
+    revalidatePath("/skills");
+    redirect("/skills?sabroadcast=none");
+  }
+
+  const body = parsed.data.body;
+  const preview = body.length > 140 ? body.slice(0, 140) : body;
+
+  // Collect unique email addresses across all SA's skills
+  const uniqueEmails = new Set<string>();
+
+  for (const skill of skills) {
+    // Create message in each skill's conversation
+    await prisma.message.create({
+      data: {
+        skillId: skill.id,
+        authorId: user.id,
+        body
+      }
+    });
+
+    await logActivity({
+      skillId: skill.id,
+      userId: user.id,
+      action: "MessagePosted",
+      payload: { body: preview }
+    });
+
+    // Collect unique recipients (SA, SCM, team members)
+    const participants = [
+      skill.sa,
+      skill.scm,
+      ...skill.teamMembers.map((member) => member.user)
+    ];
+
+    for (const participant of participants) {
+      if (participant?.email) {
+        uniqueEmails.add(participant.email);
+      }
+    }
+
+    revalidatePath(`/skills/${skill.id}`);
+  }
+
+  // Send ONE broadcast email to all unique recipients
+  if (uniqueEmails.size > 0) {
+    try {
+      await sendBroadcastNotification({
+        to: Array.from(uniqueEmails),
+        messageContent: body,
+        authorName: user.name ?? "Skill Advisor"
+      });
+    } catch (error) {
+      console.error("Failed to send SA broadcast notification", { error });
+    }
+  }
+
+  revalidatePath("/skills");
+  redirect("/skills?sabroadcast=sent");
+}

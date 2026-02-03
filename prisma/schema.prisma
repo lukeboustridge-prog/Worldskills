@@ -122,6 +122,7 @@ model DeliverableTemplate {
   id              String                  @id @default(cuid())
   key             String                  @unique
   label           String
+  description     String?
   offsetMonths    Int?
   calendarDueDate DateTime?
   scheduleType    DeliverableScheduleType @default(CMonth)
@@ -138,6 +139,7 @@ model Deliverable {
   key               String
   templateKey       String?
   label             String
+  description       String?
   cMonthOffset      Int?
   dueDate           DateTime
   cMonthLabel       String?

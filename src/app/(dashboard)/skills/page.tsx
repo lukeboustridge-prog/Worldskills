@@ -16,6 +16,7 @@ import { deleteSkillAction } from "./actions";
 import { CreateSkillDialog } from "./create-skill-dialog";
 import { SkillAssignmentForm } from "./skill-assignment-form";
 import { BroadcastMessageForm } from "./broadcast-message-form";
+import { SABroadcastMessageForm } from "./sa-broadcast-message-form";
 import { IndividualMessageForm } from "./individual-message-form";
 
 export default async function SkillsPage({
@@ -68,6 +69,7 @@ export default async function SkillsPage({
             key: true,
             templateKey: true,
             label: true,
+            description: true,
             cMonthOffset: true,
             dueDate: true,
             cMonthLabel: true,
@@ -135,6 +137,12 @@ export default async function SkillsPage({
   const broadcastParam = searchParams?.broadcast;
   const broadcastStatus = Array.isArray(broadcastParam) ? broadcastParam[0] : broadcastParam;
 
+  const saBroadcastParam = searchParams?.sabroadcast;
+  const saBroadcastStatus = Array.isArray(saBroadcastParam) ? saBroadcastParam[0] : saBroadcastParam;
+
+  // Get skills belonging to the current SA (for SA broadcast feature)
+  const saSkills = skills.filter((skill) => skill.saId === user.id);
+
   const advisorLookup = new Map(advisors.map((advisor) => [advisor.id, advisor]));
 
   const groupedByAdvisor = advisorOptions
@@ -198,6 +206,29 @@ export default async function SkillsPage({
         </div>
       ) : null}
 
+      {saBroadcastStatus === "sent" ? (
+        <div className="flex items-start justify-between gap-4 rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+          <p className="font-medium">Message sent to all your skill conversation threads.</p>
+          <Link
+            href="/skills"
+            className="text-xs font-semibold uppercase tracking-wide text-emerald-700 underline-offset-4 hover:underline"
+          >
+            Dismiss
+          </Link>
+        </div>
+      ) : null}
+      {saBroadcastStatus === "none" ? (
+        <div className="flex items-start justify-between gap-4 rounded-md border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
+          <p className="font-medium">You don&apos;t have any skills assigned to send a message to.</p>
+          <Link
+            href="/skills"
+            className="text-xs font-semibold uppercase tracking-wide text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Dismiss
+          </Link>
+        </div>
+      ) : null}
+
       {(isAdmin || isSecretariat) && skills.length > 0 ? (
         <Card>
           <CardHeader className="space-y-1">
@@ -209,6 +240,21 @@ export default async function SkillsPage({
           </CardHeader>
           <CardContent>
             <BroadcastMessageForm />
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {isSkillAdvisor && !isAdmin && !isSecretariat && saSkills.length > 0 ? (
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle>Message my skills</CardTitle>
+            <CardDescription>
+              Post an announcement to all your skill conversation threads. The message will appear for each SCM and
+              team member across your {saSkills.length} skill{saSkills.length === 1 ? "" : "s"}.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SABroadcastMessageForm skillCount={saSkills.length} />
           </CardContent>
         </Card>
       ) : null}
