@@ -27,10 +27,13 @@ interface Message {
 
 interface MessageListProps {
   messages: Message[];
-  getUserDisplayName: (user: { name: string | null; email: string }) => string;
 }
 
-export function MessageList({ messages, getUserDisplayName }: MessageListProps) {
+function getDisplayName(user: { name: string | null; email: string }): string {
+  return user.name ?? user.email;
+}
+
+export function MessageList({ messages }: MessageListProps) {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const handleDownload = async (attachment: MessageAttachment) => {
@@ -59,7 +62,7 @@ export function MessageList({ messages, getUserDisplayName }: MessageListProps) 
         <div key={message.id} className="rounded-md border p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">
-              {getUserDisplayName(message.author)}
+              {getDisplayName(message.author)}
             </p>
             <span className="text-xs text-muted-foreground">
               {format(new Date(message.createdAt), "dd MMM yyyy HH:mm")}

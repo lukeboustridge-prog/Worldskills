@@ -304,9 +304,6 @@ export default async function SkillsPage({
   const saBroadcastParam = searchParams?.sabroadcast;
   const saBroadcastStatus = Array.isArray(saBroadcastParam) ? saBroadcastParam[0] : saBroadcastParam;
 
-  // Get skills belonging to the current SA (for SA broadcast feature)
-  const saSkills = skills.filter((skill) => skill.saId === user.id);
-
   const advisorLookup = new Map(advisors.map((advisor) => [advisor.id, advisor]));
 
   // Group skills by advisor
@@ -322,13 +319,9 @@ export default async function SkillsPage({
       return nameA.localeCompare(nameB);
     });
 
-  // For SA users: separate their own group from others
-  const currentUserGroup = isSkillAdvisor && !isAdmin
-    ? allGroups.find((g) => g.advisor?.id === user.id)
-    : null;
-  const otherGroups = isSkillAdvisor && !isAdmin
-    ? allGroups.filter((g) => g.advisor?.id !== user.id)
-    : allGroups;
+  // Separate current user's skills from others (show user's skills first regardless of role)
+  const currentUserGroup = allGroups.find((g) => g.advisor?.id === user.id) ?? null;
+  const otherGroups = allGroups.filter((g) => g.advisor?.id !== user.id);
 
   const unassignedSkills = skills.filter((skill) => !skill.saId || !skill.sa);
 
@@ -464,18 +457,18 @@ export default async function SkillsPage({
             </details>
           )}
 
-          {/* For SA users: Show "Message my skills" after their skills */}
-          {isSkillAdvisor && !isAdmin && !isSecretariat && saSkills.length > 0 ? (
+          {/* Show "Message my skills" after user's skills if they have any */}
+          {currentUserGroup && currentUserGroup.skills.length > 0 ? (
             <Card>
               <CardHeader className="space-y-1">
                 <CardTitle>Message my skills</CardTitle>
                 <CardDescription>
                   Post an announcement to all your skill conversation threads. The message will appear for each SCM and
-                  team member across your {saSkills.length} skill{saSkills.length === 1 ? "" : "s"}.
+                  team member across your {currentUserGroup.skills.length} skill{currentUserGroup.skills.length === 1 ? "" : "s"}.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <SABroadcastMessageForm skillCount={saSkills.length} />
+                <SABroadcastMessageForm skillCount={currentUserGroup.skills.length} />
               </CardContent>
             </Card>
           ) : null}

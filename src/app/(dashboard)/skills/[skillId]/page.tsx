@@ -520,7 +520,6 @@ export default async function SkillDetailPage({
                     mimeType: a.mimeType,
                   })),
                 }))}
-                getUserDisplayName={getUserDisplayName}
               />
             </CardContent>
           </Card>
