@@ -18,7 +18,7 @@ import type { StorageHealthResponse } from "@/lib/storage/diagnostics";
 interface DocumentEvidenceManagerProps {
   deliverableId: string;
   skillId: string;
-  evidence: DeliverableEvidenceDocument | null;
+  documents: DeliverableEvidenceDocument[];
   canEdit: boolean;
   showUploader: boolean;
 }
@@ -90,7 +90,7 @@ function resolveMimeType(file: File) {
 export function DocumentEvidenceManager({
   deliverableId,
   skillId,
-  evidence,
+  documents,
   canEdit,
   showUploader
 }: DocumentEvidenceManagerProps) {
@@ -115,8 +115,8 @@ export function DocumentEvidenceManager({
   const [uploadDebug, setUploadDebug] = useState<UploadDebugInfo | null>(null);
 
   const disabled = status !== "idle";
-  const hasEvidence = Boolean(evidence);
-  const shouldRender = hasEvidence || showUploader || !canEdit;
+  const hasDocuments = documents.length > 0;
+  const shouldRender = hasDocuments || showUploader || !canEdit;
   const uploadDisabled = disabled || storageStatus !== "ready";
 
   const resetNotices = () => {
@@ -431,29 +431,24 @@ export function DocumentEvidenceManager({
       if (!file) {
         return;
       }
-      await handleUpload(file, evidence?.id ?? null);
+      // Always add new documents on drop (don't replace)
+      await handleUpload(file, null);
     },
-    [canEdit, showUploader, handleUpload, evidence?.id]
+    [canEdit, showUploader, handleUpload]
   );
 
-  const onReplaceClick = () => {
-    if (!evidence) {
-      return;
-    }
-    pendingReplaceId.current = evidence.id;
+  const onReplaceClick = (evidenceId: string) => {
+    pendingReplaceId.current = evidenceId;
     fileInputRef.current?.click();
   };
 
   const onUploadClick = () => {
-    pendingReplaceId.current = evidence?.id ?? null;
+    // Always add new documents (don't replace)
+    pendingReplaceId.current = null;
     fileInputRef.current?.click();
   };
 
-  const onRemove = async () => {
-    if (!evidence) {
-      return;
-    }
-
+  const onRemove = async (doc: DeliverableEvidenceDocument) => {
     if (!window.confirm("Remove the uploaded file from this deliverable?")) {
       return;
     }
@@ -463,7 +458,7 @@ export function DocumentEvidenceManager({
 
     try {
       const response = await fetch(
-        `/api/deliverables/${deliverableId}/documents/${evidence.id}?skillId=${skillId}`,
+        `/api/deliverables/${deliverableId}/documents/${doc.id}?skillId=${skillId}`,
         { method: "DELETE" }
       );
 
@@ -524,114 +519,95 @@ export function DocumentEvidenceManager({
 
   return (
     <div className="space-y-3 rounded-md border border-dashed border-muted-foreground/40 p-4">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-sm font-medium">Document or image evidence</p>
-          {evidence ? (
-            <>
-              <p className="text-sm text-muted-foreground">
-                {evidence.fileName} · {formatFileSize(evidence.fileSize)} · Uploaded {" "}
-                {format(new Date(evidence.addedAt), "d MMM yyyy 'at' HH:mm")}
-              </p>
-              {evidence.status === "processing" ? (
-                <p className="text-xs text-muted-foreground">Scanning in progress. The file will be available shortly.</p>
-              ) : null}
-              {evidence.status === "blocked" ? (
-                <p className="text-xs text-destructive">Download is temporarily disabled while we investigate a potential issue with this file.</p>
-              ) : null}
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">No document or image uploaded yet.</p>
-          )}
-        </div>
-        {canEdit && evidence ? (
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              asChild
-              aria-label="View file"
-              disabled={evidence.status === "blocked"}
-            >
-              <a
-                href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download?preview=true`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Eye className="mr-1 h-4 w-4" />
-                View
-              </a>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              asChild
-              aria-label="Download file"
-              disabled={evidence.status === "blocked"}
-            >
-              <a href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download`}>
-                Download
-              </a>
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={onReplaceClick}
-              disabled={disabled}
-              aria-label="Replace file"
-            >
-              {status === "uploading" || status === "committing" ? "Replacing…" : "Replace"}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              onClick={onRemove}
-              disabled={disabled}
-              aria-label="Remove file"
-            >
-              Remove
-            </Button>
-          </div>
-        ) : (
-          evidence ? (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                asChild
-                aria-label="View file"
-                disabled={evidence.status === "blocked"}
-              >
-                <a
-                  href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download?preview=true`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Eye className="mr-1 h-4 w-4" />
-                  View
-                </a>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                asChild
-                aria-label="Download file"
-                disabled={evidence.status === "blocked"}
-              >
-                <a href={`/api/deliverables/${deliverableId}/documents/${evidence.id}/download`}>
-                  Download
-                </a>
-              </Button>
-            </div>
-          ) : null
-        )}
+      <div>
+        <p className="text-sm font-medium">Document evidence</p>
+        {!hasDocuments ? (
+          <p className="text-sm text-muted-foreground">No documents uploaded yet.</p>
+        ) : null}
       </div>
+
+      {hasDocuments ? (
+        <div className="space-y-2">
+          {documents.map((doc) => (
+            <div
+              key={doc.id}
+              className="flex flex-col gap-2 rounded-md border bg-background p-3 md:flex-row md:items-center md:justify-between"
+            >
+              <div className="space-y-0.5">
+                <p className="text-sm text-foreground">
+                  {doc.fileName} · {formatFileSize(doc.fileSize)} · Uploaded{" "}
+                  {format(new Date(doc.addedAt), "d MMM yyyy")}
+                </p>
+                {doc.status === "processing" ? (
+                  <p className="text-xs text-muted-foreground">
+                    Scanning in progress. The file will be available shortly.
+                  </p>
+                ) : null}
+                {doc.status === "blocked" ? (
+                  <p className="text-xs text-destructive">
+                    Download is temporarily disabled while we investigate a potential issue with this file.
+                  </p>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  aria-label={`View ${doc.fileName}`}
+                  disabled={doc.status === "blocked"}
+                >
+                  <a
+                    href={`/api/deliverables/${deliverableId}/documents/${doc.id}/download?preview=true`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Eye className="mr-1 h-4 w-4" />
+                    View
+                  </a>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  aria-label={`Download ${doc.fileName}`}
+                  disabled={doc.status === "blocked"}
+                >
+                  <a href={`/api/deliverables/${deliverableId}/documents/${doc.id}/download`}>
+                    Download
+                  </a>
+                </Button>
+                {canEdit ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => onReplaceClick(doc.id)}
+                      disabled={disabled}
+                      aria-label={`Replace ${doc.fileName}`}
+                    >
+                      Replace
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => onRemove(doc)}
+                      disabled={disabled}
+                      aria-label={`Remove ${doc.fileName}`}
+                    >
+                      Remove
+                    </Button>
+                  </>
+                ) : null}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {canEdit && showUploader ? (
         <div
@@ -643,7 +619,7 @@ export function DocumentEvidenceManager({
           }`}
         >
           <p className="text-sm font-medium">
-            {hasEvidence ? "Drop a file to replace the upload" : "Drop a document or image to upload"}
+            {hasDocuments ? "Drop a file to add another document" : "Drop a document or image to upload"}
           </p>
           <p className="text-xs text-muted-foreground">
             Supported types: PDF, Word, Excel, CSV, JPEG, PNG · Max size {formatFileSize(DOCUMENT_MAX_BYTES)}
@@ -654,12 +630,12 @@ export function DocumentEvidenceManager({
             size="sm"
             onClick={onUploadClick}
             disabled={uploadDisabled}
-            aria-label={hasEvidence ? "Replace file" : "Upload file"}
+            aria-label={hasDocuments ? "Upload another file" : "Upload file"}
           >
             {storageStatus === "checking"
               ? "Checking storage…"
-              : hasEvidence
-                ? "Replace file"
+              : hasDocuments
+                ? "Upload another file"
                 : "Upload file"}
           </Button>
           {SHOW_READY_HINT && storageReady && lastHealthCheck?.payload.provider ? (
