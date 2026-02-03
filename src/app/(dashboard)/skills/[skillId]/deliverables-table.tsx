@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Minus, Plus } from "lucide-react";
 import {
   EVIDENCE_TYPE_OPTIONS,
@@ -283,9 +284,9 @@ export function DeliverablesTable({
             const isDueSoon =
               !deliverable.isOverdue && daysUntilDue >= 0 && daysUntilDue <= dueSoonThresholdDays;
             const evidenceCount = deliverable.evidence.length;
-            const documentEvidence = deliverable.evidence.find((item) =>
+            const documentEvidences = deliverable.evidence.filter((item) =>
               isDocumentEvidence(item)
-            ) as DeliverableEvidenceDocument | undefined;
+            ) as DeliverableEvidenceDocument[];
             const evidenceEntries = deliverable.evidence.map((item, index) => ({ item, index }));
             const linkEvidence = evidenceEntries.filter(
               (
@@ -470,7 +471,7 @@ export function DeliverablesTable({
                         <DocumentEvidenceManager
                           deliverableId={deliverable.id}
                           skillId={skillId}
-                          evidence={documentEvidence ?? null}
+                          documents={documentEvidences}
                           canEdit={canEdit}
                           showUploader={canEdit && selectedEvidenceType === "Document"}
                         />
@@ -898,6 +899,7 @@ interface DeliverableStateUpdaterProps {
 
 function DeliverableStateUpdater({ deliverable, skillId, canValidate }: DeliverableStateUpdaterProps) {
   const [selectedState, setSelectedState] = useState<DeliverableState>(deliverable.state);
+  const [comment, setComment] = useState("");
   const [isSaving, startTransition] = useTransition();
 
   const hasChanges = selectedState !== deliverable.state;
@@ -909,47 +911,98 @@ function DeliverableStateUpdater({ deliverable, skillId, canValidate }: Delivera
     formData.append("skillId", skillId);
     formData.append("deliverableId", deliverable.id);
     formData.append("state", selectedState);
+    if (comment.trim()) {
+      formData.append("comment", comment.trim());
+    }
 
     startTransition(async () => {
       await updateDeliverableStateAction(formData);
+      setComment("");
     });
   };
 
+  const handleCancel = () => {
+    setSelectedState(deliverable.state);
+    setComment("");
+  };
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
-    >
-      <select
-        name="state"
-        value={selectedState}
-        onChange={(e) => setSelectedState(e.target.value as DeliverableState)}
-        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-[220px]"
-        disabled={isSaving}
-      >
-        {Object.values(DeliverableState).map((state) => (
-          <option
-            key={state}
-            value={state}
-            disabled={
-              !canValidate &&
-              state === DeliverableState.Validated &&
-              deliverable.state !== DeliverableState.Validated
-            }
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+        <select
+          name="state"
+          value={selectedState}
+          onChange={(e) => setSelectedState(e.target.value as DeliverableState)}
+          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-[220px]"
+          disabled={isSaving}
+        >
+          {Object.values(DeliverableState).map((state) => (
+            <option
+              key={state}
+              value={state}
+              disabled={
+                !canValidate &&
+                state === DeliverableState.Validated &&
+                deliverable.state !== DeliverableState.Validated
+              }
+            >
+              {formatDeliverableState(state)}
+            </option>
+          ))}
+        </select>
+        {!hasChanges && (
+          <Button
+            type="submit"
+            size="sm"
+            disabled={isSaving}
+            variant="secondary"
           >
-            {formatDeliverableState(state)}
-          </option>
-        ))}
-      </select>
-      <Button
-        type="submit"
-        size="sm"
-        disabled={isSaving}
-        className={hasChanges ? "bg-black text-white hover:bg-black/90" : ""}
-        variant={hasChanges ? "default" : "secondary"}
-      >
-        {isSaving ? "Updating..." : "Update"}
-      </Button>
+            {isSaving ? "Updating..." : "Update"}
+          </Button>
+        )}
+      </div>
+
+      {hasChanges && (
+        <div className="space-y-3 rounded-md border border-amber-200 bg-amber-50 p-3">
+          <div className="space-y-2">
+            <Label htmlFor={`comment-${deliverable.id}`} className="text-sm font-medium text-amber-900">
+              Add a comment about this change (optional)
+            </Label>
+            <Textarea
+              id={`comment-${deliverable.id}`}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="e.g., Uploaded draft for review, waiting on final approval..."
+              rows={2}
+              className="resize-none bg-white text-sm"
+              maxLength={1000}
+              disabled={isSaving}
+            />
+            <p className="text-xs text-amber-700">
+              Team members will be notified of this status change via email.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isSaving}
+              className="bg-amber-600 text-white hover:bg-amber-700"
+            >
+              {isSaving ? "Updating..." : "Update Status"}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

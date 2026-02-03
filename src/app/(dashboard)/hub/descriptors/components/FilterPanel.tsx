@@ -13,7 +13,6 @@ import {
 import { X } from "lucide-react";
 
 interface Facets {
-  skillAreas: Array<{ name: string; count: number }>;
   categories: Array<{ name: string; count: number }>;
   qualities: Array<{ name: string; count: number }>;
 }
@@ -28,20 +27,14 @@ const QUALITY_LABELS: Record<string, string> = {
 const ALL_VALUE = "__all__";
 
 export function FilterPanel({ facets }: { facets: Facets }) {
-  const [skill, setSkill] = useQueryState("skill", { shallow: false });
   const [category, setCategory] = useQueryState("category", { shallow: false });
   const [quality, setQuality] = useQueryState("quality", { shallow: false });
 
-  const hasFilters = skill || category || quality;
+  const hasFilters = category || quality;
 
   const clearAll = () => {
-    setSkill(null);
     setCategory(null);
     setQuality(null);
-  };
-
-  const handleSkillChange = (value: string) => {
-    setSkill(value === ALL_VALUE ? null : value);
   };
 
   const handleCategoryChange = (value: string) => {
@@ -56,23 +49,6 @@ export function FilterPanel({ facets }: { facets: Facets }) {
     <div className="space-y-3">
       {/* Filter dropdowns row */}
       <div className="flex flex-wrap gap-2">
-        <Select
-          value={skill || ALL_VALUE}
-          onValueChange={handleSkillChange}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All Skills" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL_VALUE}>All Skills</SelectItem>
-            {facets.skillAreas.map(({ name, count }) => (
-              <SelectItem key={name} value={name}>
-                {name} ({count})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         <Select
           value={category || ALL_VALUE}
           onValueChange={handleCategoryChange}
@@ -118,14 +94,6 @@ export function FilterPanel({ facets }: { facets: Facets }) {
       {/* Active filters display */}
       {hasFilters && (
         <div className="flex flex-wrap gap-2">
-          {skill && (
-            <Badge variant="outline" className="gap-1">
-              {skill}
-              <button onClick={() => setSkill(null)} className="ml-1 hover:text-destructive">
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          )}
           {category && (
             <Badge variant="outline" className="gap-1">
               {category}

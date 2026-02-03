@@ -81,7 +81,6 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
   const [score1, setScore1] = useState(descriptor.score1 || "");
   const [score0, setScore0] = useState(descriptor.score0 || "");
   const [quality, setQuality] = useState<QualityIndicator>(descriptor.qualityIndicator);
-  const [skillNames, setSkillNames] = useState<string[]>(descriptor.skillNames || []);
   const [categories, setCategories] = useState<string[]>(descriptor.categories || []);
 
   const handleQuickQualityChange = (newQuality: QualityIndicator) => {
@@ -97,11 +96,6 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
   };
 
   const handleSave = () => {
-    if (skillNames.length === 0) {
-      toast({ title: "Error", description: "At least one skill is required", variant: "destructive" });
-      return;
-    }
-
     const formData = new FormData();
     formData.set("id", descriptor.id);
     formData.set("criterionName", criterionName);
@@ -110,7 +104,6 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
     formData.set("score1", score1);
     formData.set("score0", score0);
     formData.set("qualityIndicator", quality);
-    formData.set("skillNames", JSON.stringify(skillNames));
     formData.set("categories", JSON.stringify(categories));
 
     startTransition(async () => {
@@ -143,15 +136,8 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
     setScore1(descriptor.score1 || "");
     setScore0(descriptor.score0 || "");
     setQuality(descriptor.qualityIndicator);
-    setSkillNames(descriptor.skillNames || []);
     setCategories(descriptor.categories || []);
     setEditing(false);
-  };
-
-  const toggleSkill = (skill: string) => {
-    setSkillNames(prev =>
-      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
-    );
   };
 
   const toggleCategory = (category: string) => {
@@ -201,8 +187,6 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
                   {descriptor.source}
                 </Badge>
               )}
-              <span>{skillNames.join(", ") || "No skills"}</span>
-              <span>•</span>
               <span>{descriptor.code}</span>
               {categories.length > 0 && (
                 <>
@@ -253,39 +237,9 @@ function ReviewCard({ descriptor, facets }: ReviewCardProps) {
           <div className="ml-7 pt-3 border-t space-y-4">
             {editing ? (
               <>
-                {/* Skills multi-select */}
+                {/* WSOS Sections multi-select */}
                 <div className="space-y-2">
-                  <Label>Skills *</Label>
-                  <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {facets.skillAreas.map(({ name }) => (
-                        <label key={name} className="flex items-center gap-2 text-sm cursor-pointer">
-                          <Checkbox
-                            checked={skillNames.includes(name)}
-                            onCheckedChange={() => toggleSkill(name)}
-                          />
-                          {name}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  {skillNames.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {skillNames.map(skill => (
-                        <Badge key={skill} variant="outline" className="text-xs">
-                          {skill}
-                          <button onClick={() => toggleSkill(skill)} className="ml-1">
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Categories multi-select */}
-                <div className="space-y-2">
-                  <Label>Categories</Label>
+                  <Label>WSOS Sections</Label>
                   <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {facets.categories.map(({ name }) => (

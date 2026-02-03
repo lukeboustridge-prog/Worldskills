@@ -26,7 +26,7 @@ import {
   normaliseEvidenceItems,
   serialiseEvidenceItems
 } from "@/lib/deliverables";
-import { sendSkillConversationNotification } from "@/lib/email/notifications";
+import { sendDeliverableStatusNotification, sendSkillConversationNotification } from "@/lib/email/notifications";
 import { requireAppSettings } from "@/lib/settings";
 import { canManageSkill } from "@/lib/permissions";
 
@@ -51,7 +51,8 @@ function revalidateSkill(skillId: string) {
 const deliverableStateSchema = z.object({
   deliverableId: z.string().min(1),
   skillId: z.string().min(1),
-  state: z.nativeEnum(DeliverableState)
+  state: z.nativeEnum(DeliverableState),
+  comment: z.string().max(1000).optional()
 });
 
 export async function updateDeliverableStateAction(formData: FormData) {
@@ -60,7 +61,8 @@ export async function updateDeliverableStateAction(formData: FormData) {
   const parsed = deliverableStateSchema.safeParse({
     deliverableId: formData.get("deliverableId"),
     skillId: formData.get("skillId"),
-    state: formData.get("state")
+    state: formData.get("state"),
+    comment: formData.get("comment") || undefined
   });
 
   if (!parsed.success) {
@@ -78,10 +80,28 @@ export async function updateDeliverableStateAction(formData: FormData) {
     throw new Error("Only the assigned Skill Advisor or an administrator can set a deliverable to Validated");
   }
 
+  // Get the deliverable to check current state
+  const deliverable = await prisma.deliverable.findUnique({
+    where: { id: parsed.data.deliverableId },
+    select: { state: true, label: true }
+  });
+
+  if (!deliverable) {
+    throw new Error("Deliverable not found");
+  }
+
+  const previousState = deliverable.state;
+  const newState = parsed.data.state;
+
+  // Only proceed if state actually changed
+  if (previousState === newState) {
+    return;
+  }
+
   const updated = await prisma.deliverable.update({
     where: { id: parsed.data.deliverableId },
     data: {
-      state: parsed.data.state,
+      state: newState,
       updatedBy: user.id
     }
   });
@@ -92,9 +112,69 @@ export async function updateDeliverableStateAction(formData: FormData) {
     action: "DeliverableStateChanged",
     payload: {
       deliverableId: updated.id,
-      state: updated.state
+      previousState,
+      state: updated.state,
+      comment: parsed.data.comment || null
     }
   });
+
+  // Send email notification to skill team
+  try {
+    const skillWithTeam = await prisma.skill.findUnique({
+      where: { id: parsed.data.skillId },
+      include: {
+        sa: true,
+        scm: true,
+        teamMembers: { include: { user: true } }
+      }
+    });
+
+    if (skillWithTeam) {
+      const participants = [
+        skillWithTeam.sa,
+        skillWithTeam.scm,
+        ...skillWithTeam.teamMembers.map((member) => member.user)
+      ];
+
+      // Get emails of all team members except the person who made the change
+      const recipientEmails = participants
+        .filter((participant): participant is NonNullable<typeof participant> => Boolean(participant))
+        .filter((participant) => participant.id !== user.id)
+        .map((participant) => participant.email)
+        .filter((email): email is string => Boolean(email));
+
+      if (recipientEmails.length > 0) {
+        const formatState = (state: DeliverableState) => {
+          const labels: Record<DeliverableState, string> = {
+            NotStarted: "Not Started",
+            Draft: "Draft",
+            InProgress: "In Progress",
+            Uploaded: "Uploaded",
+            Finalised: "Finalised",
+            Validated: "Validated"
+          };
+          return labels[state] || state;
+        };
+
+        await sendDeliverableStatusNotification({
+          to: recipientEmails,
+          skillName: skillWithTeam.name,
+          skillId: skillWithTeam.id,
+          deliverableLabel: deliverable.label,
+          previousStatus: formatState(previousState),
+          newStatus: formatState(newState),
+          changedByName: user.name ?? "A team member",
+          comment: parsed.data.comment || null
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Failed to send deliverable status notification", {
+      skillId: parsed.data.skillId,
+      deliverableId: parsed.data.deliverableId,
+      error
+    });
+  }
 
   revalidateSkill(parsed.data.skillId);
 }
@@ -791,6 +871,51 @@ export async function createMessageAction(formData: FormData) {
   });
 
   revalidateSkill(parsed.data.skillId);
+}
+
+const updateNotesSchema = z.object({
+  skillId: z.string().min(1),
+  notes: z.string().max(5000, "Notes cannot exceed 5000 characters")
+});
+
+export async function updateSkillNotesAction(formData: FormData) {
+  const user = await requireUser();
+
+  const parsed = updateNotesSchema.safeParse({
+    skillId: formData.get("skillId"),
+    notes: formData.get("notes") ?? ""
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.errors.map((e) => e.message).join(", ") };
+  }
+
+  const skill = await ensureSkill(parsed.data.skillId);
+
+  // Only SA, Secretariat, and Admin can edit notes
+  const canEditNotes =
+    user.isAdmin ||
+    user.role === Role.Secretariat ||
+    user.id === skill.saId;
+
+  if (!canEditNotes) {
+    return { error: "You do not have permission to edit notes for this skill" };
+  }
+
+  await prisma.skill.update({
+    where: { id: parsed.data.skillId },
+    data: { notes: parsed.data.notes || null }
+  });
+
+  await logActivity({
+    skillId: parsed.data.skillId,
+    userId: user.id,
+    action: "SkillNotesUpdated",
+    payload: { notesLength: parsed.data.notes.length }
+  });
+
+  revalidateSkill(parsed.data.skillId);
+  return { success: true };
 }
 
 const inviteSkillTeamSchema = z.object({

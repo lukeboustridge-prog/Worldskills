@@ -9,32 +9,32 @@ async function testFilterCombination() {
   const searchOnly = await searchDescriptors({ query: "safety", limit: 100 });
   console.log("Search only:", searchOnly.total);
 
-  // Get a skill that has safety results
-  const skillsWithSafety = [...new Set(searchOnly.results.flatMap(r => r.skillNames))];
-  const testSkill = skillsWithSafety[0];
-  console.log("Testing with skill:", testSkill);
+  // Get a category that has safety results
+  const categoriesWithSafety = [...new Set(searchOnly.results.flatMap(r => r.categories))];
+  const testCategory = categoriesWithSafety[0];
+  console.log("Testing with category:", testCategory);
 
   // Search + filter
   const filtered = await searchDescriptors({
     query: "safety",
-    skillName: testSkill,
+    category: testCategory,
     limit: 100
   });
-  console.log("With skill filter:", filtered.total);
+  console.log("With category filter:", filtered.total);
 
   // Verify: filtered count should be less than or equal to search-only
   const filterNarrows = filtered.total <= searchOnly.total;
   console.log("Filter narrows results:", filterNarrows);
 
-  // Verify: all filtered results have the skill
-  const allMatchSkill = filtered.results.every(r => r.skillNames.includes(testSkill));
-  console.log("All results match skill:", allMatchSkill);
+  // Verify: all filtered results have the category
+  const allMatchCategory = filtered.results.every(r => r.categories.includes(testCategory));
+  console.log("All results match category:", allMatchCategory);
 
   // Verify: search still active (results are ranked)
   const hasRank = filtered.results.every(r => r.rank !== null);
   console.log("Results still ranked:", hasRank);
 
-  return filterNarrows && allMatchSkill && hasRank;
+  return filterNarrows && allMatchCategory && hasRank;
 }
 
 async function testPerformance() {
@@ -57,7 +57,7 @@ async function testPerformance() {
 
     console.log(
       `Query '${q}': ${searchResponse.total} results, ` +
-      `${facets.skillAreas.length} skills, ` +
+      `${facets.categories.length} categories, ` +
       `${duration}ms ${passed ? "✓" : "✗ EXCEEDED 100ms"}`
     );
 

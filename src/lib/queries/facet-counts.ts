@@ -7,7 +7,6 @@ export interface FacetCount {
 }
 
 export interface Facets {
-  skillAreas: FacetCount[];
   categories: FacetCount[];
   qualities: FacetCount[];
 }
@@ -35,14 +34,7 @@ export async function getFacetCounts(searchQuery?: string): Promise<Facets> {
 
   // Execute all facet queries in parallel
   // Use unnest() to expand arrays for counting
-  const [skillAreas, categories, qualities] = await Promise.all([
-    prisma.$queryRaw<FacetCount[]>`
-      SELECT skill_name as name, COUNT(DISTINCT d.id)::int as count
-      FROM "Descriptor" d, unnest(d."skillNames") as skill_name
-      WHERE ${ftsCondition} d."deletedAt" IS NULL
-      GROUP BY skill_name
-      ORDER BY count DESC, name ASC
-    `,
+  const [categories, qualities] = await Promise.all([
     prisma.$queryRaw<FacetCount[]>`
       SELECT cat as name, COUNT(DISTINCT d.id)::int as count
       FROM "Descriptor" d, unnest(d."categories") as cat
@@ -59,5 +51,5 @@ export async function getFacetCounts(searchQuery?: string): Promise<Facets> {
     `,
   ]);
 
-  return { skillAreas, categories, qualities };
+  return { categories, qualities };
 }

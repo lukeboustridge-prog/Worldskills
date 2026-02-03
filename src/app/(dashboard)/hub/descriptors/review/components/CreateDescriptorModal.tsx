@@ -52,7 +52,6 @@ export function CreateDescriptorModal({ facets }: CreateDescriptorModalProps) {
   const [score2, setScore2] = useState("");
   const [score1, setScore1] = useState("");
   const [score0, setScore0] = useState("");
-  const [skillNames, setSkillNames] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [quality, setQuality] = useState<QualityIndicator>("NEEDS_REVIEW");
 
@@ -63,15 +62,8 @@ export function CreateDescriptorModal({ facets }: CreateDescriptorModalProps) {
     setScore2("");
     setScore1("");
     setScore0("");
-    setSkillNames([]);
     setCategories([]);
     setQuality("NEEDS_REVIEW");
-  };
-
-  const toggleSkill = (skill: string) => {
-    setSkillNames(prev =>
-      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
-    );
   };
 
   const toggleCategory = (category: string) => {
@@ -81,10 +73,10 @@ export function CreateDescriptorModal({ facets }: CreateDescriptorModalProps) {
   };
 
   const handleCreate = () => {
-    if (!code.trim() || !criterionName.trim() || skillNames.length === 0) {
+    if (!code.trim() || !criterionName.trim()) {
       toast({
         title: "Validation Error",
-        description: "Code, criterion name, and at least one skill are required",
+        description: "Code and criterion name are required",
         variant: "destructive",
       });
       return;
@@ -97,7 +89,6 @@ export function CreateDescriptorModal({ facets }: CreateDescriptorModalProps) {
     formData.set("score2", score2);
     formData.set("score1", score1);
     formData.set("score0", score0);
-    formData.set("skillNames", JSON.stringify(skillNames));
     formData.set("categories", JSON.stringify(categories));
     formData.set("qualityIndicator", quality);
 
@@ -169,39 +160,9 @@ export function CreateDescriptorModal({ facets }: CreateDescriptorModalProps) {
             />
           </div>
 
-          {/* Skills multi-select */}
+          {/* WSOS Sections multi-select */}
           <div className="space-y-2">
-            <Label>Skills *</Label>
-            <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {facets.skillAreas.map(({ name }) => (
-                  <label key={name} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <Checkbox
-                      checked={skillNames.includes(name)}
-                      onCheckedChange={() => toggleSkill(name)}
-                    />
-                    {name}
-                  </label>
-                ))}
-              </div>
-            </div>
-            {skillNames.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {skillNames.map(skill => (
-                  <Badge key={skill} variant="outline" className="text-xs">
-                    {skill}
-                    <button onClick={() => toggleSkill(skill)} className="ml-1">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Categories multi-select */}
-          <div className="space-y-2">
-            <Label>Categories</Label>
+            <Label>WSOS Sections</Label>
             <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {facets.categories.map(({ name }) => (

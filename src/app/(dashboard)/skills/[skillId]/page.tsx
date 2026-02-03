@@ -23,6 +23,7 @@ import { DeliverablesTable, type DeliverableRow } from "./deliverables-table";
 import { CreateMilestoneForm } from "./create-milestone-form";
 import { MessageForm } from "./message-form";
 import { MeetingList, type MeetingData, type TeamMemberOption } from "./meeting-list";
+import { SkillNotes } from "./skill-notes";
 import {
   DUE_SOON_THRESHOLD_DAYS,
   classifyDeliverables,
@@ -213,6 +214,7 @@ export default async function SkillDetailPage({
   }));
 
   const canManageMeetings = isAdmin || user.id === skill.saId || user.id === skill.scmId || isSkillTeamMember;
+  const canViewNotes = isAdmin || isSecretariat || user.id === skill.saId;
 
   // Build team member options for meeting invitations
   const teamMembersForMeetings: TeamMemberOption[] = [];
@@ -256,7 +258,6 @@ export default async function SkillDetailPage({
           <h1 className="text-3xl font-semibold">{skill.name}</h1>
           <p className="text-muted-foreground">SA: {advisorLabel} · SCM: {managerLabel}</p>
           <p className="text-sm text-muted-foreground">Sector: {skill.sector ?? "Not recorded"}</p>
-          <p className="text-sm text-muted-foreground">{skill.notes ?? "No notes added yet."}</p>
         </div>
         <div className="flex gap-3">
           <Card className="min-w-[160px]">
@@ -303,6 +304,7 @@ export default async function SkillDetailPage({
           <TabsTrigger value="messages">Messages</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
+          {canViewNotes && <TabsTrigger value="notes">SA Notes</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="deliverables" className="space-y-6">
@@ -525,6 +527,12 @@ export default async function SkillDetailPage({
             </CardContent>
           </Card>
         </TabsContent>
+
+        {canViewNotes && (
+          <TabsContent value="notes" className="space-y-6">
+            <SkillNotes skillId={skill.id} initialNotes={skill.notes} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

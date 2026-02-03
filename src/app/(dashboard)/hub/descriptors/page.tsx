@@ -14,7 +14,6 @@ import { QualityIndicator } from "@prisma/client";
 interface PageProps {
   searchParams: Promise<{
     q?: string;
-    skill?: string;
     category?: string;
     quality?: string;
     page?: string;
@@ -38,7 +37,6 @@ export default async function DescriptorsPage({ searchParams }: PageProps) {
   const [searchResponse, facets] = await Promise.all([
     searchDescriptors({
       query: params.q,
-      skillName: params.skill,
       category: params.category,
       qualityIndicator: params.quality as QualityIndicator | undefined,
       excludeQualityIndicators: excludeForSCM,

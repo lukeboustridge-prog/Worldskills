@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface Facets {
-  skillAreas: Array<{ name: string; count: number }>;
   categories: Array<{ name: string; count: number }>;
   qualities: Array<{ name: string; count: number }>;
 }
