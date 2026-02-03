@@ -34,6 +34,14 @@ import {
   deleteUserAction,
   sendPasswordResetAction
 } from "./actions";
+import {
+  createSCMQuestionAction,
+  updateSCMQuestionAction,
+  deleteSCMQuestionAction,
+  toggleSCMQuestionActiveAction,
+  sendSCMQuestionsReminderAction,
+  getSCMQuestionsWithStats
+} from "./scm-questions-actions";
 import { prisma } from "@/lib/prisma";
 import { getUserDisplayName } from "@/lib/users";
 import { UserImporter } from "./user-importer";
@@ -178,15 +186,22 @@ export default async function SettingsPage({
   const inviteLink = inviteToken ? new URL(`/register?token=${inviteToken}`, appBaseUrl).toString() : null;
   const inviteError = typeof searchParams?.inviteError === "string" ? searchParams.inviteError : null;
   const userErrorMessage = typeof searchParams?.userError === "string" ? searchParams.userError : null;
+  const scmQuestionCreated = typeof searchParams?.scmQuestionCreated === "string";
+  const scmQuestionUpdated = typeof searchParams?.scmQuestionUpdated === "string";
+  const scmQuestionDeleted = typeof searchParams?.scmQuestionDeleted === "string";
+  const scmQuestionToggled = typeof searchParams?.scmQuestionToggled === "string";
+  const scmReminderSent = typeof searchParams?.scmReminderSent === "string" ? searchParams.scmReminderSent : null;
+  const scmReminderError = typeof searchParams?.scmReminderError === "string" ? searchParams.scmReminderError : null;
   const errorMessages = [
     inviteError ? { id: "invite-error", message: inviteError } : null,
-    userErrorMessage ? { id: "user-error", message: userErrorMessage } : null
+    userErrorMessage ? { id: "user-error", message: userErrorMessage } : null,
+    scmReminderError ? { id: "scm-reminder-error", message: scmReminderError } : null
   ].filter((entry): entry is { id: string; message: string } => entry !== null);
 
   const milestoneTemplateSupportPromise = hasMilestoneTemplateCatalogSupport();
   const invitationSupportPromise = hasInvitationTable();
 
-  const [templates, milestoneTemplates, users, invitationsSupported] = await Promise.all([
+  const [templates, milestoneTemplates, users, invitationsSupported, scmQuestions] = await Promise.all([
     getDeliverableTemplates(),
     getMilestoneTemplates(),
     prisma.user.findMany({
@@ -200,7 +215,8 @@ export default async function SettingsPage({
         : undefined,
       orderBy: [{ name: "asc" }, { email: "asc" }]
     }),
-    invitationSupportPromise
+    invitationSupportPromise,
+    getSCMQuestionsWithStats()
   ]);
 
   const milestoneTemplatesSupported = await milestoneTemplateSupportPromise;
@@ -455,6 +471,33 @@ export default async function SettingsPage({
         {passwordResetSent ? (
           <div className="rounded-md border border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
             Password reset email sent{resetEmail ? ` to ${resetEmail}` : ""}. The link will expire in 1 hour.
+          </div>
+        ) : null}
+        {scmQuestionCreated ? (
+          <div className="rounded-md border border-green-400 bg-green-50 p-4 text-sm text-green-900">
+            SCM question created successfully.
+          </div>
+        ) : null}
+        {scmQuestionUpdated ? (
+          <div className="rounded-md border border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
+            SCM question updated successfully.
+          </div>
+        ) : null}
+        {scmQuestionDeleted ? (
+          <div className="rounded-md border border-red-400 bg-red-50 p-4 text-sm text-red-900">
+            SCM question deleted successfully.
+          </div>
+        ) : null}
+        {scmQuestionToggled ? (
+          <div className="rounded-md border border-slate-400 bg-slate-50 p-4 text-sm text-slate-900">
+            SCM question status updated successfully.
+          </div>
+        ) : null}
+        {scmReminderSent !== null ? (
+          <div className="rounded-md border border-emerald-400 bg-emerald-50 p-4 text-sm text-emerald-900">
+            {scmReminderSent === "0"
+              ? "All SCM users have already answered all questions."
+              : `Reminder emails sent to ${scmReminderSent} SCM user${scmReminderSent === "1" ? "" : "s"}.`}
           </div>
         ) : null}
       </div>
@@ -990,6 +1033,103 @@ export default async function SettingsPage({
         <p className="text-xs text-muted-foreground">
           Use this if new skills were added before the catalogs were introduced or if C1 changed significantly.
         </p>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="SCM Questions"
+        description="Create questions for SCM users to answer. Questions appear in a modal when they log in."
+        defaultOpen={scmQuestionCreated || scmQuestionUpdated || scmQuestionDeleted || scmQuestionToggled || scmReminderSent !== null}
+      >
+        <form
+          action={createSCMQuestionAction}
+          className="grid gap-4 rounded-md border border-dashed p-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] md:items-end"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="new-question">New question</Label>
+            <Input id="new-question" name="question" placeholder="What are your main goals for the competition?" required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="new-question-description">Description (optional)</Label>
+            <Input id="new-question-description" name="description" placeholder="Additional context or guidance" />
+          </div>
+          <div className="flex items-end">
+            <Button type="submit">Add question</Button>
+          </div>
+        </form>
+
+        {scmQuestions.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No questions created yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {scmQuestions.map((question) => (
+              <div key={question.id} className={`rounded-md border p-4 ${!question.isActive ? "opacity-60" : ""}`}>
+                <form
+                  action={updateSCMQuestionAction}
+                  className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto_auto] md:items-end"
+                >
+                  <input type="hidden" name="id" value={question.id} />
+                  <div className="space-y-2">
+                    <Label htmlFor={`question-${question.id}`}>Question</Label>
+                    <Input id={`question-${question.id}`} name="question" defaultValue={question.question} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`description-${question.id}`}>Description</Label>
+                    <Input id={`description-${question.id}`} name="description" defaultValue={question.description ?? ""} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`position-${question.id}`}>Position</Label>
+                    <Input
+                      id={`position-${question.id}`}
+                      name="position"
+                      type="number"
+                      min={0}
+                      defaultValue={question.position}
+                      className="w-20"
+                      required
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <Button type="submit" variant="outline">Save</Button>
+                  </div>
+                </form>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span>{question.responseCount} response{question.responseCount === 1 ? "" : "s"}</span>
+                    <span>Created by {question.createdBy}</span>
+                    <span>{question.isActive ? "Active" : "Inactive"}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <form action={toggleSCMQuestionActiveAction}>
+                      <input type="hidden" name="id" value={question.id} />
+                      {question.isActive ? null : <input type="hidden" name="isActive" value="on" />}
+                      <Button type="submit" variant="outline" size="sm">
+                        {question.isActive ? "Deactivate" : "Activate"}
+                      </Button>
+                    </form>
+                    <form action={deleteSCMQuestionAction}>
+                      <input type="hidden" name="id" value={question.id} />
+                      <Button type="submit" variant="destructive" size="sm">Delete</Button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="rounded-md border border-dashed p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Send reminder emails</p>
+              <p className="text-xs text-muted-foreground">
+                Email all SCM users who have unanswered questions with a link to log in.
+              </p>
+            </div>
+            <form action={sendSCMQuestionsReminderAction}>
+              <Button type="submit" variant="outline">Send reminders</Button>
+            </form>
+          </div>
+        </div>
       </CollapsibleSection>
     </div>
   );

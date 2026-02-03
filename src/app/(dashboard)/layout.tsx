@@ -4,8 +4,10 @@ import { redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/layout/sign-out-button";
 import { NavLink } from "@/components/layout/nav-link";
+import { SCMQuestionsModal } from "@/components/scm-questions/SCMQuestionsModal";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserDisplayName } from "@/lib/users";
+import { getUnansweredQuestionsForUser } from "./settings/scm-questions-actions";
 
 const ROLE_LABELS: Record<Role, string> = {
   [Role.Pending]: "Pending access",
@@ -29,6 +31,10 @@ export default async function DashboardLayout({
   if (!user.isAdmin && user.role === Role.Pending) {
     redirect("/awaiting-access");
   }
+
+  const unansweredQuestions = user.role === Role.SCM
+    ? await getUnansweredQuestionsForUser(user.id)
+    : [];
 
   const navItems: { href: string; label: string }[] = [];
   if (user.isAdmin || user.role === Role.Secretariat || user.role === Role.SA) {
@@ -56,6 +62,9 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-muted/30">
+      {unansweredQuestions.length > 0 && (
+        <SCMQuestionsModal questions={unansweredQuestions} />
+      )}
       <header className="border-b bg-background">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link href="/dashboard" className="flex items-center gap-3 text-lg font-semibold">
