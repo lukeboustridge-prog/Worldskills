@@ -50,6 +50,11 @@ enum QualityIndicator {
   NEEDS_REVIEW // Imported, requires admin review
 }
 
+enum EmailType {
+  SKILL_BROADCAST // SA broadcast to their skills
+  INTERNAL // SA/Secretariat internal communication
+}
+
 enum GateScheduleType {
   Calendar
   CMonth
@@ -77,6 +82,9 @@ model User {
   favoriteDescriptors  DescriptorFavorite[]
   scmQuestionsCreated  SCMQuestion[]         @relation("SCMQuestionCreator")
   scmQuestionResponses SCMQuestionResponse[] @relation("SCMQuestionResponses")
+  emailsSent            Email[]               @relation("EmailSender")
+  emailsReceived        EmailRecipient[]      @relation("EmailRecipients")
+  deliverableComments   DeliverableComment[]  @relation("DeliverableComments")
 }
 
 model Skill {
@@ -97,7 +105,9 @@ model Skill {
   messages     Message[]
   activity     ActivityLog[]
   meetings     Meeting[]
-  teamMembers  SkillMember[]
+  teamMembers          SkillMember[]
+  emails               EmailSkill[]
+  deliverableComments  DeliverableComment[]
 
   @@unique([name])
   @@index([scmId])
@@ -154,6 +164,7 @@ model Deliverable {
 
   skill    Skill                @relation(fields: [skillId], references: [id])
   template DeliverableTemplate? @relation(fields: [templateKey], references: [key])
+  comments DeliverableComment[]
 
   @@unique([skillId, key])
   @@index([skillId])
@@ -447,4 +458,85 @@ model SCMQuestionResponse {
   @@unique([questionId, userId])
   @@index([questionId])
   @@index([userId])
+}
+
+model Email {
+  id        String    @id @default(cuid())
+  type      EmailType
+  subject   String
+  body      String    @db.Text
+  senderId  String
+  createdAt DateTime  @default(now())
+
+  sender      User              @relation("EmailSender", fields: [senderId], references: [id])
+  recipients  EmailRecipient[]
+  attachments EmailAttachment[]
+  skills      EmailSkill[]
+
+  @@index([senderId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model EmailRecipient {
+  id             String  @id @default(cuid())
+  emailId        String
+  userId         String?
+  recipientEmail String
+  recipientName  String?
+  recipientRole  String?
+
+  email Email @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  user  User? @relation("EmailRecipients", fields: [userId], references: [id])
+
+  @@index([emailId])
+  @@index([userId])
+}
+
+model EmailAttachment {
+  id         String   @id @default(cuid())
+  emailId    String
+  storageKey String
+  fileName   String
+  fileSize   Int
+  mimeType   String
+  createdAt  DateTime @default(now())
+
+  email Email @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  @@index([emailId])
+}
+
+model EmailSkill {
+  id      String @id @default(cuid())
+  emailId String
+  skillId String
+
+  email Email @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([emailId, skillId])
+  @@index([emailId])
+  @@index([skillId])
+}
+
+model DeliverableComment {
+  id            String   @id @default(cuid())
+  deliverableId String
+  skillId       String
+  userId        String
+  body          String   @db.Text
+  previousState String?
+  newState      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  deliverable Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+  skill       Skill       @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user        User        @relation("DeliverableComments", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([deliverableId])
+  @@index([skillId])
+  @@index([userId])
+  @@index([createdAt])
 }

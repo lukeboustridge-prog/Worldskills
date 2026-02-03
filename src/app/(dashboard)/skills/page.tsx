@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Mail } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAppSettings } from "@/lib/settings";
@@ -14,10 +14,174 @@ import { SKILL_CATALOG } from "@/lib/skill-catalog";
 import { getUserDisplayName } from "@/lib/users";
 import { deleteSkillAction } from "./actions";
 import { CreateSkillDialog } from "./create-skill-dialog";
-import { SkillAssignmentForm } from "./skill-assignment-form";
 import { BroadcastMessageForm } from "./broadcast-message-form";
 import { SABroadcastMessageForm } from "./sa-broadcast-message-form";
-import { IndividualMessageForm } from "./individual-message-form";
+
+interface SkillCardProps {
+  skill: {
+    id: string;
+    name: string;
+    saId: string;
+    scmId: string | null;
+    sa: { id: string; name: string | null; email: string };
+    scm: { id: string; name: string | null; email: string } | null;
+    overdueCount: number;
+    hiddenCount: number;
+    deliverables: Array<{ isHidden: boolean }>;
+  };
+  catalogEntry?: { code: string } | null;
+  isAdmin: boolean;
+}
+
+function SkillCard({ skill, catalogEntry, isAdmin }: SkillCardProps) {
+  const scmLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
+
+  return (
+    <Card className="h-full">
+      <CardContent className="p-6">
+        <div className="flex flex-col gap-4">
+          {/* Header with skill code */}
+          {catalogEntry && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium uppercase text-muted-foreground">
+                Skill {catalogEntry.code}
+              </span>
+            </div>
+          )}
+
+          {/* Skill name and SCM info */}
+          <div className="space-y-1">
+            <p className="text-xl font-semibold text-foreground">{skill.name}</p>
+            <p className="text-sm text-muted-foreground">SCM: {scmLabel}</p>
+            {skill.scm?.email && (
+              <p className="text-xs text-muted-foreground">{skill.scm.email}</p>
+            )}
+          </div>
+
+          {/* Status badges */}
+          <div className="flex flex-wrap items-center gap-2">
+            {skill.overdueCount > 0 ? (
+              <Badge variant="destructive" className="whitespace-nowrap">
+                {skill.overdueCount} overdue
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="whitespace-nowrap border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10"
+              >
+                On track
+              </Badge>
+            )}
+            {skill.hiddenCount > 0 && (
+              <Badge variant="outline" className="whitespace-nowrap border-dashed text-muted-foreground">
+                {skill.hiddenCount} hidden
+              </Badge>
+            )}
+            <Badge variant="outline" className="whitespace-nowrap text-xs text-muted-foreground">
+              SA {getUserDisplayName(skill.sa)}
+            </Badge>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 pt-2">
+            <Button asChild size="sm">
+              <Link href={`/skills/${skill.id}`}>Open workspace</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/hub/emails">
+                <Mail className="h-4 w-4" />
+              </Link>
+            </Button>
+            {isAdmin && (
+              <form action={deleteSkillAction} className="ml-auto">
+                <input type="hidden" name="skillId" value={skill.id} />
+                <Button type="submit" size="sm" variant="destructive">
+                  Delete
+                </Button>
+              </form>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function UnassignedSkillCard({
+  skill,
+  catalogEntry,
+  isAdmin,
+}: {
+  skill: {
+    id: string;
+    name: string;
+    overdueCount: number;
+    hiddenCount: number;
+    deliverables: Array<{ isHidden: boolean }>;
+  };
+  catalogEntry?: { code: string } | null;
+  isAdmin: boolean;
+}) {
+  return (
+    <Card className="h-full">
+      <CardContent className="p-6">
+        <div className="flex flex-col gap-4">
+          {catalogEntry && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium uppercase text-muted-foreground">
+                Skill {catalogEntry.code}
+              </span>
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <p className="text-xl font-semibold text-foreground">{skill.name}</p>
+            <p className="text-sm text-muted-foreground">Assign a Skill Advisor to manage deliverables.</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {skill.overdueCount > 0 ? (
+              <Badge variant="destructive" className="whitespace-nowrap">
+                {skill.overdueCount} overdue
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="whitespace-nowrap text-muted-foreground">
+                No overdue
+              </Badge>
+            )}
+            {skill.hiddenCount > 0 && (
+              <Badge variant="outline" className="whitespace-nowrap border-dashed text-muted-foreground">
+                {skill.hiddenCount} hidden
+              </Badge>
+            )}
+            <Badge variant="outline" className="whitespace-nowrap text-xs text-muted-foreground">
+              {skill.deliverables.filter((d) => !d.isHidden).length} active deliverables
+            </Badge>
+          </div>
+
+          <div className="flex items-center gap-2 pt-2">
+            <Button asChild size="sm">
+              <Link href={`/skills/${skill.id}`}>Open workspace</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/hub/emails">
+                <Mail className="h-4 w-4" />
+              </Link>
+            </Button>
+            {isAdmin && (
+              <form action={deleteSkillAction} className="ml-auto">
+                <input type="hidden" name="skillId" value={skill.id} />
+                <Button type="submit" size="sm" variant="destructive">
+                  Delete
+                </Button>
+              </form>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default async function SkillsPage({
   searchParams
@@ -145,7 +309,8 @@ export default async function SkillsPage({
 
   const advisorLookup = new Map(advisors.map((advisor) => [advisor.id, advisor]));
 
-  const groupedByAdvisor = advisorOptions
+  // Group skills by advisor
+  const allGroups = advisorOptions
     .map(({ id }) => ({
       advisor: advisorLookup.get(id),
       skills: skills.filter((skill) => skill.saId === id)
@@ -156,6 +321,14 @@ export default async function SkillsPage({
       const nameB = getUserDisplayName(b.advisor!);
       return nameA.localeCompare(nameB);
     });
+
+  // For SA users: separate their own group from others
+  const currentUserGroup = isSkillAdvisor && !isAdmin
+    ? allGroups.find((g) => g.advisor?.id === user.id)
+    : null;
+  const otherGroups = isSkillAdvisor && !isAdmin
+    ? allGroups.filter((g) => g.advisor?.id !== user.id)
+    : allGroups;
 
   const unassignedSkills = skills.filter((skill) => !skill.saId || !skill.sa);
 
@@ -229,6 +402,7 @@ export default async function SkillsPage({
         </div>
       ) : null}
 
+      {/* For Admin/Secretariat: Show "Message all skills" at top */}
       {(isAdmin || isSecretariat) && skills.length > 0 ? (
         <Card>
           <CardHeader className="space-y-1">
@@ -244,21 +418,6 @@ export default async function SkillsPage({
         </Card>
       ) : null}
 
-      {isSkillAdvisor && !isAdmin && !isSecretariat && saSkills.length > 0 ? (
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle>Message my skills</CardTitle>
-            <CardDescription>
-              Post an announcement to all your skill conversation threads. The message will appear for each SCM and
-              team member across your {saSkills.length} skill{saSkills.length === 1 ? "" : "s"}.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SABroadcastMessageForm skillCount={saSkills.length} />
-          </CardContent>
-        </Card>
-      ) : null}
-
       {skills.length === 0 ? (
         <Card>
           <CardHeader>
@@ -270,7 +429,59 @@ export default async function SkillsPage({
         </Card>
       ) : (
         <div className="space-y-6">
-          {groupedByAdvisor.map((group) => {
+          {/* For SA users: Show their skills first, expanded */}
+          {currentUserGroup && (
+            <details open className="group rounded-lg border bg-card">
+              <summary className="flex cursor-pointer items-center justify-between gap-3 px-6 py-4 text-left font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold">My Skills</p>
+                  <p className="text-sm text-muted-foreground">
+                    {currentUserGroup.skills.length} skill{currentUserGroup.skills.length === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline">
+                    {currentUserGroup.skills.length} skill{currentUserGroup.skills.length === 1 ? "" : "s"}
+                  </Badge>
+                  <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
+                </div>
+              </summary>
+              <div className="border-t">
+                <div className="grid gap-4 p-6 lg:grid-cols-2">
+                  {currentUserGroup.skills
+                    .slice()
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((skill) => (
+                      <SkillCard
+                        key={skill.id}
+                        skill={skill}
+                        catalogEntry={catalogByName.get(skill.name)}
+                        isAdmin={isAdmin}
+                      />
+                    ))}
+                </div>
+              </div>
+            </details>
+          )}
+
+          {/* For SA users: Show "Message my skills" after their skills */}
+          {isSkillAdvisor && !isAdmin && !isSecretariat && saSkills.length > 0 ? (
+            <Card>
+              <CardHeader className="space-y-1">
+                <CardTitle>Message my skills</CardTitle>
+                <CardDescription>
+                  Post an announcement to all your skill conversation threads. The message will appear for each SCM and
+                  team member across your {saSkills.length} skill{saSkills.length === 1 ? "" : "s"}.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SABroadcastMessageForm skillCount={saSkills.length} />
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {/* Other advisors' caseloads (collapsed for SA users, normal for admin/secretariat) */}
+          {otherGroups.map((group) => {
             const advisor = group.advisor!;
             const advisorName = getUserDisplayName(advisor);
             const plural = group.skills.length === 1 ? "skill" : "skills";
@@ -292,113 +503,14 @@ export default async function SkillsPage({
                     {group.skills
                       .slice()
                       .sort((a, b) => a.name.localeCompare(b.name))
-                      .map((skill) => {
-                        const catalogEntry = catalogByName.get(skill.name);
-                        const scmLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
-
-                        const overdueCount = skill.overdueCount;
-
-                        return (
-                          <Card key={skill.id} className="h-full overflow-hidden">
-                            <details className="group">
-                            <summary className="grid gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto]">
-                              <div className="space-y-3">
-                                <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
-                                  {catalogEntry ? (
-                                    <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
-                                      Skill {catalogEntry.code}
-                                    </span>
-                                  ) : null}
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-xl font-semibold text-foreground">{skill.name}</p>
-                                  <p className="text-sm text-muted-foreground">SCM: {scmLabel}</p>
-                                  {skill.scm?.email ? (
-                                    <p className="text-xs text-muted-foreground">{skill.scm.email}</p>
-                                  ) : null}
-                                </div>
-                              </div>
-                            <div className="flex flex-col items-end gap-4 text-right">
-                              <div className="flex flex-wrap justify-end gap-2">
-                                {overdueCount > 0 ? (
-                                  <Badge variant="destructive" className="whitespace-nowrap">
-                                    {overdueCount} overdue
-                                  </Badge>
-                                ) : (
-                                  <Badge
-                                    variant="outline"
-                                    className="whitespace-nowrap border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10"
-                                  >
-                                    On track
-                                  </Badge>
-                                )}
-                                {skill.hiddenCount > 0 ? (
-                                  <Badge variant="outline" className="whitespace-nowrap border-dashed text-muted-foreground">
-                                    {skill.hiddenCount} hidden
-                                  </Badge>
-                                ) : null}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="whitespace-nowrap text-xs text-muted-foreground">
-                                  SA {getUserDisplayName(skill.sa)}
-                                </Badge>
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-input bg-background">
-                                  <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
-                                </div>
-                              </div>
-                            </div>
-                            </summary>
-                            <CardContent className="space-y-4 border-t bg-muted/10 px-6 py-6">
-                              <div className="rounded-lg border bg-background p-4 shadow-sm">
-                                {isAdmin || (isSkillAdvisor && skill.saId === user.id) ? (
-                                  <SkillAssignmentForm
-                                    skillId={skill.id}
-                                    defaultSaId={skill.saId ?? null}
-                                    defaultScmId={skill.scmId ?? null}
-                                    advisorOptions={advisorOptions}
-                                    managerOptions={managerOptions}
-                                    workspaceHref={`/skills/${skill.id}`}
-                                  />
-                                ) : (
-                                  <div className="space-y-3">
-                                    <p className="text-sm text-muted-foreground">
-                                      View the workspace to manage assignments.
-                                    </p>
-                                    <Button asChild size="sm" variant="outline">
-                                      <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="rounded-lg border bg-background p-4 shadow-sm">
-                                <div className="space-y-2">
-                                  <p className="text-sm font-semibold text-foreground">Send a message</p>
-                                  {user.isAdmin ||
-                                  isSecretariat ||
-                                  user.id === skill.saId ||
-                                  user.id === skill.scmId ||
-                                  skill.teamMembers.some((member) => member.userId === user.id) ? (
-                                    <IndividualMessageForm skillId={skill.id} />
-                                  ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                      Open the workspace to view the full conversation thread.
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                              {isAdmin ? (
-                                <form action={deleteSkillAction} className="flex justify-end">
-                                  <input type="hidden" name="skillId" value={skill.id} />
-                                  <Button type="submit" size="sm" variant="destructive">
-                                    Delete skill
-                                  </Button>
-                                </form>
-                              ) : null}
-                            </CardContent>
-                            </details>
-                          </Card>
-                        );
-                      })}
+                      .map((skill) => (
+                        <SkillCard
+                          key={skill.id}
+                          skill={skill}
+                          catalogEntry={catalogByName.get(skill.name)}
+                          isAdmin={isAdmin}
+                        />
+                      ))}
                   </div>
                 </div>
               </details>
@@ -407,22 +519,16 @@ export default async function SkillsPage({
 
           {unassignedSkills.length > 0 ? (
             <details className="group rounded-lg border bg-card">
-              <summary className="grid gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto]">
+              <summary className="flex cursor-pointer items-center justify-between gap-3 px-6 py-4 text-left font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <div className="space-y-1">
-                  <p className="text-xl font-semibold text-foreground">Unassigned skills</p>
+                  <p className="text-lg font-semibold">Unassigned skills</p>
                   <p className="text-sm text-muted-foreground">
                     {unassignedSkills.length} {unassignedSkills.length === 1 ? "skill" : "skills"} awaiting assignment
                   </p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="flex flex-col items-end gap-2 text-right">
-                    <div className="flex flex-wrap justify-end gap-2">
-                      <Badge variant="destructive" className="whitespace-nowrap">Needs advisor</Badge>
-                    </div>
-                  </div>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full border border-input bg-background">
-                    <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
-                  </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant="destructive">Needs advisor</Badge>
+                  <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
                 </div>
               </summary>
               <div className="border-t">
@@ -430,107 +536,14 @@ export default async function SkillsPage({
                   {unassignedSkills
                     .slice()
                     .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((skill) => {
-                      const catalogEntry = catalogByName.get(skill.name);
-                      const overdueCount = skill.overdueCount;
-
-                      return (
-                        <Card key={skill.id} className="h-full overflow-hidden">
-                          <details className="group">
-                          <summary className="grid gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto]">
-                            <div className="space-y-3">
-                              <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
-                                {catalogEntry ? (
-                                  <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
-                                    Skill {catalogEntry.code}
-                                  </span>
-                                ) : null}
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-xl font-semibold text-foreground">{skill.name}</p>
-                                <p className="text-sm text-muted-foreground">Assign a Skill Advisor to manage deliverables.</p>
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-end gap-4 text-right">
-                              <div className="flex flex-wrap justify-end gap-2">
-                                {overdueCount > 0 ? (
-                                  <Badge variant="destructive" className="whitespace-nowrap">
-                                    {overdueCount} overdue
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="outline" className="whitespace-nowrap text-muted-foreground">
-                                    No overdue
-                                  </Badge>
-                                )}
-                                {skill.hiddenCount > 0 ? (
-                                  <Badge variant="outline" className="whitespace-nowrap border-dashed text-muted-foreground">
-                                    {skill.hiddenCount} hidden
-                                  </Badge>
-                                ) : null}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="whitespace-nowrap text-xs text-muted-foreground">
-                                  {skill.deliverables.length - skill.hiddenCount} active deliverables
-                                </Badge>
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-input bg-background">
-                                  <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
-                                </div>
-                              </div>
-                            </div>
-                          </summary>
-                          <CardContent className="space-y-4 border-t bg-muted/10 px-6 py-6">
-                            <div className="rounded-lg border bg-background p-4 shadow-sm">
-                              {isAdmin ? (
-                                <SkillAssignmentForm
-                                  skillId={skill.id}
-                                  defaultSaId={skill.saId ?? null}
-                                  defaultScmId={skill.scmId ?? null}
-                                  advisorOptions={advisorOptions}
-                                  managerOptions={managerOptions}
-                                  workspaceHref={`/skills/${skill.id}`}
-                                  isUnassigned
-                                />
-                              ) : (
-                                <div className="space-y-3">
-                                  <p className="text-sm text-muted-foreground">
-                                    View the workspace to manage assignments.
-                                  </p>
-                                  <Button asChild size="sm" variant="outline">
-                                    <Link href={`/skills/${skill.id}`}>Open workspace</Link>
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                            <div className="rounded-lg border bg-background p-4 shadow-sm">
-                              <div className="space-y-2">
-                                <p className="text-sm font-semibold text-foreground">Send a message</p>
-                                {user.isAdmin ||
-                                isSecretariat ||
-                                user.id === skill.saId ||
-                                user.id === skill.scmId ||
-                                skill.teamMembers.some((member) => member.userId === user.id) ? (
-                                  <IndividualMessageForm skillId={skill.id} />
-                                ) : (
-                                  <p className="text-sm text-muted-foreground">
-                                    Open the workspace to view the full conversation thread.
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-
-                            {isAdmin ? (
-                              <form action={deleteSkillAction} className="flex justify-end">
-                                <input type="hidden" name="skillId" value={skill.id} />
-                                <Button type="submit" size="sm" variant="destructive">
-                                  Delete skill
-                                </Button>
-                              </form>
-                            ) : null}
-                          </CardContent>
-                          </details>
-                        </Card>
-                      );
-                    })}
+                    .map((skill) => (
+                      <UnassignedSkillCard
+                        key={skill.id}
+                        skill={skill}
+                        catalogEntry={catalogByName.get(skill.name)}
+                        isAdmin={isAdmin}
+                      />
+                    ))}
                 </div>
               </div>
             </details>

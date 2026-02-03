@@ -111,7 +111,15 @@ export default async function SkillDetailPage({
       sa: true,
       scm: true,
       teamMembers: { include: { user: true } },
-      deliverables: { orderBy: { dueDate: "asc" } },
+      deliverables: {
+        orderBy: { dueDate: "asc" },
+        include: {
+          comments: {
+            include: { user: { select: { id: true, name: true, email: true } } },
+            orderBy: { createdAt: "desc" }
+          }
+        }
+      },
       gates: { orderBy: { dueDate: "asc" } },
       messages: {
         where: {
@@ -174,22 +182,41 @@ export default async function SkillDetailPage({
     (summary.stateCounts[DeliverableState.Uploaded] ?? 0) +
     (summary.stateCounts[DeliverableState.Validated] ?? 0);
 
-  const deliverablesForClient: DeliverableRow[] = decoratedDeliverables.map((deliverable) => ({
-    id: deliverable.id,
-    key: deliverable.key,
-    templateKey: deliverable.templateKey ?? null,
-    label: deliverable.label,
-    description: deliverable.description ?? null,
-    cMonthLabel: deliverable.cMonthLabel,
-    cMonthOffset: deliverable.cMonthOffset,
-    dueDateISO: deliverable.dueDate.toISOString(),
-    scheduleType: deliverable.scheduleType,
-    state: deliverable.state,
-    evidence: deliverable.evidenceItems,
-    isOverdue: deliverable.isOverdue,
-    overdueByDays: deliverable.overdueByDays,
-    isHidden: deliverable.isHidden
-  }));
+  const deliverablesForClient: DeliverableRow[] = decoratedDeliverables.map((deliverable) => {
+    // Type guard to access comments from deliverable with includes
+    const deliverableWithComments = skill.deliverables.find((d) => d.id === deliverable.id);
+    const comments = deliverableWithComments?.comments ?? [];
+
+    return {
+      id: deliverable.id,
+      key: deliverable.key,
+      templateKey: deliverable.templateKey ?? null,
+      label: deliverable.label,
+      description: deliverable.description ?? null,
+      cMonthLabel: deliverable.cMonthLabel,
+      cMonthOffset: deliverable.cMonthOffset,
+      dueDateISO: deliverable.dueDate.toISOString(),
+      scheduleType: deliverable.scheduleType,
+      state: deliverable.state,
+      evidence: deliverable.evidenceItems,
+      isOverdue: deliverable.isOverdue,
+      overdueByDays: deliverable.overdueByDays,
+      isHidden: deliverable.isHidden,
+      comments: comments.map((c) => ({
+        id: c.id,
+        body: c.body,
+        previousState: c.previousState,
+        newState: c.newState,
+        createdAt: c.createdAt.toISOString(),
+        updatedAt: c.updatedAt.toISOString(),
+        user: {
+          id: c.user.id,
+          name: c.user.name,
+          email: c.user.email
+        }
+      }))
+    };
+  });
 
   const meetingsForClient: MeetingData[] = skill.meetings.map((meeting) => ({
     id: meeting.id,
@@ -333,6 +360,8 @@ export default async function SkillDetailPage({
                   overdueCount={summary.overdue}
                   stateCounts={summary.stateCounts}
                   dueSoonThresholdDays={DUE_SOON_THRESHOLD_DAYS}
+                  currentUserId={user.id}
+                  isAdmin={isAdmin}
                 />
               )}
             </CardContent>

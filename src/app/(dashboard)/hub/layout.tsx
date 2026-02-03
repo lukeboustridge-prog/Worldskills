@@ -28,7 +28,7 @@ export default async function HubLayout({
 
   return (
     <div className="flex gap-6">
-      <HubNav />
+      <HubNav userRole={user.role} isAdmin={user.isAdmin} />
       <div className="flex-1">{children}</div>
     </div>
   );

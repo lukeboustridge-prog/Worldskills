@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState, useTransition, useCallback } from "react";
 import { DeliverableScheduleType, DeliverableState } from "@prisma/client";
 import { differenceInCalendarDays, format } from "date-fns";
+import { MessageSquare, Pencil, Trash2, X, Check } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,9 @@ import {
   unhideDeliverableAction,
   updateEvidenceTypeAction,
   updateDeliverableScheduleAction,
-  updateDeliverableStateAction
+  updateDeliverableStateAction,
+  updateDeliverableCommentAction,
+  deleteDeliverableCommentAction
 } from "./actions";
 import { DocumentEvidenceManager } from "./document-evidence-manager";
 
@@ -35,6 +38,20 @@ const EVIDENCE_TYPE_LABELS: Record<EvidenceType, string> = {
   Document: "Document or image upload",
   Other: "Other reference"
 };
+
+export interface DeliverableComment {
+  id: string;
+  body: string;
+  previousState: string | null;
+  newState: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
+}
 
 export interface DeliverableRow {
   id: string;
@@ -51,6 +68,7 @@ export interface DeliverableRow {
   isOverdue: boolean;
   overdueByDays: number;
   isHidden: boolean;
+  comments: DeliverableComment[];
 }
 
 interface DeliverablesTableProps {
@@ -61,6 +79,8 @@ interface DeliverablesTableProps {
   overdueCount: number;
   stateCounts: Record<DeliverableState, number>;
   dueSoonThresholdDays: number;
+  currentUserId: string;
+  isAdmin: boolean;
 }
 
 type FilterKey = "all" | "overdue" | "dueSoon";
@@ -83,7 +103,9 @@ export function DeliverablesTable({
   canValidate,
   overdueCount,
   stateCounts,
-  dueSoonThresholdDays
+  dueSoonThresholdDays,
+  currentUserId,
+  isAdmin
 }: DeliverablesTableProps) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [isExporting, startExport] = useTransition();
@@ -402,18 +424,30 @@ export function DeliverablesTable({
                     ) : null}
 
                     <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
-                      <div className="space-y-3">
-                        <p className="text-xs font-semibold uppercase text-muted-foreground">Status</p>
-                        {canEdit ? (
-                          <DeliverableStateUpdater
-                            deliverable={deliverable}
+                      <div className="space-y-4">
+                        <div className="space-y-3">
+                          <p className="text-xs font-semibold uppercase text-muted-foreground">Status</p>
+                          {canEdit ? (
+                            <DeliverableStateUpdater
+                              deliverable={deliverable}
+                              skillId={skillId}
+                              canValidate={canValidate}
+                            />
+                          ) : (
+                            <Badge variant="default" className="w-fit">
+                              {formatDeliverableState(deliverable.state)}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Comment History */}
+                        {deliverable.comments.length > 0 && (
+                          <CommentHistory
+                            comments={deliverable.comments}
                             skillId={skillId}
-                            canValidate={canValidate}
+                            currentUserId={currentUserId}
+                            isAdmin={isAdmin}
                           />
-                        ) : (
-                          <Badge variant="default" className="w-fit">
-                            {formatDeliverableState(deliverable.state)}
-                          </Badge>
                         )}
                       </div>
 
@@ -1008,5 +1042,182 @@ function DeliverableStateUpdater({ deliverable, skillId, canValidate }: Delivera
         </div>
       )}
     </form>
+  );
+}
+
+interface CommentHistoryProps {
+  comments: DeliverableComment[];
+  skillId: string;
+  currentUserId: string;
+  isAdmin: boolean;
+}
+
+function CommentHistory({ comments, skillId, currentUserId, isAdmin }: CommentHistoryProps) {
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [isUpdating, startUpdateTransition] = useTransition();
+  const [isDeleting, startDeleteTransition] = useTransition();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleStartEdit = (comment: DeliverableComment) => {
+    setEditingCommentId(comment.id);
+    setEditText(comment.body);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditText("");
+  };
+
+  const handleSaveEdit = (commentId: string) => {
+    if (!editText.trim()) return;
+
+    const formData = new FormData();
+    formData.append("commentId", commentId);
+    formData.append("skillId", skillId);
+    formData.append("body", editText.trim());
+
+    startUpdateTransition(async () => {
+      await updateDeliverableCommentAction(formData);
+      setEditingCommentId(null);
+      setEditText("");
+    });
+  };
+
+  const handleDelete = (commentId: string) => {
+    if (!window.confirm("Are you sure you want to delete this comment?")) return;
+
+    setDeletingId(commentId);
+    const formData = new FormData();
+    formData.append("commentId", commentId);
+    formData.append("skillId", skillId);
+
+    startDeleteTransition(async () => {
+      await deleteDeliverableCommentAction(formData);
+      setDeletingId(null);
+    });
+  };
+
+  const canEditComment = (comment: DeliverableComment) => {
+    return comment.user.id === currentUserId || isAdmin;
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+        <MessageSquare className="h-3.5 w-3.5" />
+        <span>Status Change History ({comments.length})</span>
+      </div>
+      <div className="space-y-2 max-h-64 overflow-y-auto">
+        {comments.map((comment) => {
+          const isEditing = editingCommentId === comment.id;
+          const canModify = canEditComment(comment);
+          const wasEdited = comment.createdAt !== comment.updatedAt;
+
+          return (
+            <div
+              key={comment.id}
+              className="rounded-md border bg-muted/30 p-3 text-sm"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-1">
+                    <span className="font-medium text-foreground">
+                      {comment.user.name ?? comment.user.email}
+                    </span>
+                    <span>·</span>
+                    <span>{format(new Date(comment.createdAt), "dd MMM yyyy, h:mm a")}</span>
+                    {wasEdited && (
+                      <>
+                        <span>·</span>
+                        <span className="italic">edited</span>
+                      </>
+                    )}
+                  </div>
+                  {comment.previousState && comment.newState && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {formatDeliverableState(comment.previousState as DeliverableState)}
+                      </Badge>
+                      <span>→</span>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {formatDeliverableState(comment.newState as DeliverableState)}
+                      </Badge>
+                    </div>
+                  )}
+                  {isEditing ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        rows={2}
+                        className="resize-none text-sm"
+                        maxLength={1000}
+                        disabled={isUpdating}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => handleSaveEdit(comment.id)}
+                          disabled={isUpdating || !editText.trim()}
+                        >
+                          {isUpdating ? (
+                            "Saving..."
+                          ) : (
+                            <>
+                              <Check className="h-3 w-3 mr-1" />
+                              Save
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={handleCancelEdit}
+                          disabled={isUpdating}
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="whitespace-pre-wrap text-foreground">{comment.body}</p>
+                  )}
+                </div>
+                {canModify && !isEditing && (
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => handleStartEdit(comment)}
+                      disabled={isDeleting && deletingId === comment.id}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      <span className="sr-only">Edit comment</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                      onClick={() => handleDelete(comment.id)}
+                      disabled={isDeleting && deletingId === comment.id}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      <span className="sr-only">Delete comment</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

@@ -106,6 +106,20 @@ export async function updateDeliverableStateAction(formData: FormData) {
     }
   });
 
+  // Create a comment record if comment was provided
+  if (parsed.data.comment?.trim()) {
+    await prisma.deliverableComment.create({
+      data: {
+        deliverableId: parsed.data.deliverableId,
+        skillId: parsed.data.skillId,
+        userId: user.id,
+        body: parsed.data.comment.trim(),
+        previousState,
+        newState
+      }
+    });
+  }
+
   await logActivity({
     skillId: parsed.data.skillId,
     userId: user.id,
@@ -1052,4 +1066,102 @@ export async function inviteSkillTeamMemberAction(formData: FormData) {
 
   const params = new URLSearchParams({ invite: "sent" });
   redirect(`/skills/${skill.id}?${params.toString()}`);
+}
+
+const updateCommentSchema = z.object({
+  commentId: z.string().min(1),
+  skillId: z.string().min(1),
+  body: z.string().min(1, "Comment cannot be empty").max(1000)
+});
+
+export async function updateDeliverableCommentAction(formData: FormData) {
+  const user = await requireUser();
+
+  const parsed = updateCommentSchema.safeParse({
+    commentId: formData.get("commentId"),
+    skillId: formData.get("skillId"),
+    body: formData.get("body")
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const comment = await prisma.deliverableComment.findUnique({
+    where: { id: parsed.data.commentId },
+    include: { skill: true }
+  });
+
+  if (!comment) {
+    throw new Error("Comment not found");
+  }
+
+  // Only the comment author or admin can edit
+  if (comment.userId !== user.id && !user.isAdmin) {
+    throw new Error("You can only edit your own comments");
+  }
+
+  await prisma.deliverableComment.update({
+    where: { id: parsed.data.commentId },
+    data: { body: parsed.data.body.trim() }
+  });
+
+  await logActivity({
+    skillId: parsed.data.skillId,
+    userId: user.id,
+    action: "DeliverableCommentUpdated",
+    payload: {
+      commentId: parsed.data.commentId,
+      deliverableId: comment.deliverableId
+    }
+  });
+
+  revalidateSkill(parsed.data.skillId);
+}
+
+const deleteCommentSchema = z.object({
+  commentId: z.string().min(1),
+  skillId: z.string().min(1)
+});
+
+export async function deleteDeliverableCommentAction(formData: FormData) {
+  const user = await requireUser();
+
+  const parsed = deleteCommentSchema.safeParse({
+    commentId: formData.get("commentId"),
+    skillId: formData.get("skillId")
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const comment = await prisma.deliverableComment.findUnique({
+    where: { id: parsed.data.commentId }
+  });
+
+  if (!comment) {
+    throw new Error("Comment not found");
+  }
+
+  // Only the comment author or admin can delete
+  if (comment.userId !== user.id && !user.isAdmin) {
+    throw new Error("You can only delete your own comments");
+  }
+
+  await prisma.deliverableComment.delete({
+    where: { id: parsed.data.commentId }
+  });
+
+  await logActivity({
+    skillId: parsed.data.skillId,
+    userId: user.id,
+    action: "DeliverableCommentDeleted",
+    payload: {
+      commentId: parsed.data.commentId,
+      deliverableId: comment.deliverableId
+    }
+  });
+
+  revalidateSkill(parsed.data.skillId);
 }
