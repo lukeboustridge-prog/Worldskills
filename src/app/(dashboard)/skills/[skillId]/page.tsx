@@ -31,6 +31,7 @@ import {
   decorateDeliverable,
   ensureOverdueNotifications
 } from "@/lib/deliverables";
+import { SKILL_CATALOG } from "@/lib/skill-catalog";
 import type { MeetingDocument, MeetingLink } from "./meeting-actions";
 import type { Prisma } from "@prisma/client";
 
@@ -167,6 +168,7 @@ export default async function SkillDetailPage({
   const canInviteSkillTeam = user.isAdmin || user.id === skill.saId;
   const advisorLabel = getUserDisplayName(skill.sa);
   const managerLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
+  const catalogEntry = SKILL_CATALOG.find((entry) => entry.name === skill.name);
 
   const decoratedDeliverables = skill.deliverables.map((deliverable) => decorateDeliverable(deliverable));
   if (user.role === Role.SA || user.isAdmin) {
@@ -287,7 +289,14 @@ export default async function SkillDetailPage({
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold">{skill.name}</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            {catalogEntry && (
+              <span className="rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+                Skill {catalogEntry.code}
+              </span>
+            )}
+            <h1 className="text-3xl font-semibold">{skill.name}</h1>
+          </div>
           <p className="text-muted-foreground">SA: {advisorLabel} · SCM: {managerLabel}</p>
           <p className="text-sm text-muted-foreground">Sector: {skill.sector ?? "Not recorded"}</p>
         </div>

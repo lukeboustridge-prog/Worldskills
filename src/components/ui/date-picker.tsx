@@ -109,7 +109,7 @@ export function DatePicker({
             }}
             initialFocus
           />
-          <div className="flex items-center justify-between border-t bg-muted/40 px-3 py-2">
+          <div className="flex items-center justify-between border-t bg-muted px-3 py-2">
             <Button
               type="button"
               variant="ghost"

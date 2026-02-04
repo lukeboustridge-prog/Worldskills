@@ -30,7 +30,8 @@ import {
   updateDeliverableScheduleAction,
   updateDeliverableStateAction,
   updateDeliverableCommentAction,
-  deleteDeliverableCommentAction
+  deleteDeliverableCommentAction,
+  updateCustomDeliverableLabelAction
 } from "./actions";
 import { DocumentEvidenceManager } from "./document-evidence-manager";
 
@@ -110,6 +111,9 @@ export function DeliverablesTable({
   const [filter, setFilter] = useState<FilterKey>("all");
   const [isExporting, startExport] = useTransition();
   const [editingDeliverableId, setEditingDeliverableId] = useState<string | null>(null);
+  const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
+  const [editingLabelValue, setEditingLabelValue] = useState("");
+  const [isUpdatingLabel, startLabelTransition] = useTransition();
   const [typeSelections, setTypeSelections] = useState<Record<string, EvidenceType>>({});
   const [showHidden, setShowHidden] = useState(false);
   const [isCreatingCustom, setIsCreatingCustom] = useState(false);
@@ -346,7 +350,68 @@ export function DeliverablesTable({
                           </span>
                         ) : null}
                       </div>
-                      <h3 className="text-lg font-semibold text-foreground">{deliverable.label}</h3>
+                      {editingLabelId === deliverable.id ? (
+                        <form
+                          className="flex items-center gap-2"
+                          onSubmit={(event) => {
+                            event.preventDefault();
+                            if (editingLabelValue.trim().length < 3) return;
+                            const formData = new FormData();
+                            formData.append("deliverableId", deliverable.id);
+                            formData.append("skillId", skillId);
+                            formData.append("label", editingLabelValue.trim());
+                            startLabelTransition(async () => {
+                              await updateCustomDeliverableLabelAction(formData);
+                              setEditingLabelId(null);
+                              setEditingLabelValue("");
+                            });
+                          }}
+                        >
+                          <Input
+                            value={editingLabelValue}
+                            onChange={(event) => setEditingLabelValue(event.target.value)}
+                            className="h-8 text-base font-semibold"
+                            disabled={isUpdatingLabel}
+                            autoFocus
+                          />
+                          <Button type="submit" size="sm" disabled={isUpdatingLabel || editingLabelValue.trim().length < 3}>
+                            {isUpdatingLabel ? "Saving..." : <Check className="h-4 w-4" />}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingLabelId(null);
+                              setEditingLabelValue("");
+                            }}
+                            disabled={isUpdatingLabel}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </form>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-semibold text-foreground">{deliverable.label}</h3>
+                          {isCustom && canEdit && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                setEditingLabelId(deliverable.id);
+                                setEditingLabelValue(deliverable.label);
+                              }}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              <span className="sr-only">Edit label</span>
+                            </Button>
+                          )}
+                        </div>
+                      )}
                       {deliverable.description ? (
                         <p className="text-sm text-muted-foreground">{deliverable.description}</p>
                       ) : null}

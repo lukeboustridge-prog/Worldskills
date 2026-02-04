@@ -541,6 +541,67 @@ export async function createCustomDeliverableAction(formData: FormData) {
   revalidateSkill(skill.id);
 }
 
+const updateCustomDeliverableLabelSchema = z.object({
+  deliverableId: z.string().min(1),
+  skillId: z.string().min(1),
+  label: z.string().min(3, "Label must be at least 3 characters").max(200, "Label cannot exceed 200 characters")
+});
+
+export async function updateCustomDeliverableLabelAction(formData: FormData) {
+  const user = await requireUser();
+
+  const parsed = updateCustomDeliverableLabelSchema.safeParse({
+    deliverableId: formData.get("deliverableId"),
+    skillId: formData.get("skillId"),
+    label: formData.get("label")
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors.map((error) => error.message).join(", "));
+  }
+
+  const skill = await ensureSkill(parsed.data.skillId);
+  if (!canManageSkill(user, { saId: skill.saId, scmId: skill.scmId, teamMemberIds: skill.teamMembers.map((member) => member.userId) })) {
+    throw new Error("You do not have permission to update this deliverable");
+  }
+
+  const deliverable = await prisma.deliverable.findUnique({
+    where: { id: parsed.data.deliverableId },
+    select: { templateKey: true, label: true }
+  });
+
+  if (!deliverable) {
+    throw new Error("Deliverable not found");
+  }
+
+  if (deliverable.templateKey !== null) {
+    throw new Error("Only custom deliverables can have their label edited");
+  }
+
+  const label = parsed.data.label.trim();
+
+  await prisma.deliverable.update({
+    where: { id: parsed.data.deliverableId },
+    data: {
+      label,
+      updatedBy: user.id
+    }
+  });
+
+  await logActivity({
+    skillId: parsed.data.skillId,
+    userId: user.id,
+    action: "DeliverableLabelUpdated",
+    payload: {
+      deliverableId: parsed.data.deliverableId,
+      previousLabel: deliverable.label,
+      newLabel: label
+    }
+  });
+
+  revalidateSkill(parsed.data.skillId);
+}
+
 const milestoneSchema = z.discriminatedUnion("scheduleType", [
   z.object({
     scheduleType: z.literal("calendar"),
