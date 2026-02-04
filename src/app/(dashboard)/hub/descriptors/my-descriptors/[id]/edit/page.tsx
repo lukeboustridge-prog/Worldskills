@@ -11,7 +11,7 @@ import { requireUser } from "@/lib/auth";
 import { getAllWSOSSections } from "@/lib/wsos-sections";
 import { getSCMDescriptorById } from "@/lib/scm-descriptors";
 import { WSOSSectionSelect } from "@/components/descriptors/wsos-section-select";
-import { updateSCMDescriptorAction } from "../../actions";
+import { updateSCMDescriptorAction, updateReturnedDescriptorAction } from "../../actions";
 
 export default async function EditDescriptorPage({
   params,
@@ -37,9 +37,13 @@ export default async function EditDescriptorPage({
     notFound();
   }
 
-  // Can only edit DRAFT descriptors
-  if (descriptor.batchStatus !== DescriptorBatchStatus.DRAFT) {
-    redirect("/hub/descriptors/my-descriptors?error=Only%20draft%20descriptors%20can%20be%20edited");
+  // Can only edit DRAFT or RETURNED descriptors
+  const canEdit =
+    descriptor.batchStatus === DescriptorBatchStatus.DRAFT ||
+    descriptor.batchStatus === DescriptorBatchStatus.RETURNED;
+
+  if (!canEdit) {
+    redirect("/hub/descriptors/my-descriptors?error=This%20descriptor%20cannot%20be%20edited");
   }
 
   const sections = await getAllWSOSSections();
@@ -58,7 +62,9 @@ export default async function EditDescriptorPage({
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Edit Descriptor</h1>
         <p className="mt-2 text-muted-foreground">
-          Update your draft descriptor before submitting for review.
+          {descriptor.batchStatus === DescriptorBatchStatus.RETURNED
+            ? "Address the SA feedback and save to move back to draft, then resubmit."
+            : "Update your draft descriptor before submitting for review."}
         </p>
       </div>
 
@@ -66,6 +72,15 @@ export default async function EditDescriptorPage({
         <Card className="border-destructive bg-destructive/10">
           <CardContent className="py-4">
             <p className="text-sm text-destructive">{search.error}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {descriptor.batchStatus === DescriptorBatchStatus.RETURNED && descriptor.reviewComment && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="py-4">
+            <p className="text-sm font-medium text-red-700">SA Feedback:</p>
+            <p className="text-sm text-red-600 mt-1">{descriptor.reviewComment}</p>
           </CardContent>
         </Card>
       )}
@@ -78,7 +93,13 @@ export default async function EditDescriptorPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={updateSCMDescriptorAction} className="space-y-6">
+          <form
+            action={descriptor.batchStatus === DescriptorBatchStatus.RETURNED
+              ? updateReturnedDescriptorAction
+              : updateSCMDescriptorAction
+            }
+            className="space-y-6"
+          >
             <input type="hidden" name="id" value={descriptor.id} />
 
             {/* WSOS Section - Required */}

@@ -240,7 +240,14 @@ export default async function MyDescriptorsPage({
                       </p>
                     )}
                   </div>
-                  {/* Note: Edit functionality for returned items will be added in Phase 8 */}
+                  <div className="flex gap-2">
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/hub/descriptors/my-descriptors/${descriptor.id}/edit`}>
+                        <Pencil className="h-4 w-4 mr-1" />
+                        Edit
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
