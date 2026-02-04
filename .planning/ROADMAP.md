@@ -137,7 +137,7 @@ This roadmap enables SCMs to contribute new descriptors to the library with SA a
 - [x] **Phase 6: WSOS Section Management** - Create WSOS section entity with duplicate detection and SCM browsing
 - [x] **Phase 7: SCM Descriptor Creation & Batch Workflow** - Enable SCMs to create descriptors and batch submissions
 - [x] **Phase 8: SA Approval Workflow** - Build SA review interface with approve/edit/return actions
-- [ ] **Phase 9: Email Notifications** - Implement notification emails for submission and approval events
+- [x] **Phase 9: Email Notifications** - Implement notification emails for submission and approval events
 
 ## Phase Details
 
@@ -208,8 +208,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 09-01-PLAN.md — Create email notification functions (descriptor-notifications.ts)
-- [ ] 09-02-PLAN.md — Integrate notifications into Server Actions
+- [x] 09-01-PLAN.md — Create email notification functions (descriptor-notifications.ts)
+- [x] 09-02-PLAN.md — Integrate notifications into Server Actions
 
 ## Progress
 
@@ -221,8 +221,8 @@ Phases execute in numeric order: 6 → 7 → 8 → 9
 | 6. WSOS Section Management | 2/2 | Complete | 2026-02-04 |
 | 7. SCM Descriptor Creation & Batch Workflow | 4/4 | Complete | 2026-02-04 |
 | 8. SA Approval Workflow | 4/4 | Complete | 2026-02-04 |
-| 9. Email Notifications | 0/2 | Planned | — |
+| 9. Email Notifications | 2/2 | Complete | 2026-02-04 |
 
 ---
 *Roadmap created: 2026-02-04*
-*Last updated: 2026-02-04 after Phase 9 planning*
+*Last updated: 2026-02-04 — v2.0 milestone complete*

@@ -38,11 +38,11 @@
 
 ### Email Notifications
 
-- [ ] **NOTIF-01**: Email to SA when SCM submits batch for review
-- [ ] **NOTIF-02**: Email to SCM when descriptors approved
-- [ ] **NOTIF-03**: Approval email indicates if wording was modified
-- [ ] **NOTIF-04**: Email to SCM when descriptors returned with comments
-- [ ] **NOTIF-05**: Email to SA when SCM resubmits revised descriptors
+- [x] **NOTIF-01**: Email to SA when SCM submits batch for review
+- [x] **NOTIF-02**: Email to SCM when descriptors approved
+- [x] **NOTIF-03**: Approval email indicates if wording was modified
+- [x] **NOTIF-04**: Email to SCM when descriptors returned with comments
+- [x] **NOTIF-05**: Email to SA when SCM resubmits revised descriptors
 
 ## Previous Milestone (v1.0) — Complete
 
@@ -99,11 +99,11 @@ Features explicitly excluded from v2.0 milestone:
 | APPR-04 | Phase 8 | Complete |
 | APPR-05 | Phase 8 | Complete |
 | APPR-06 | Phase 8 | Complete |
-| NOTIF-01 | Phase 9 | Pending |
-| NOTIF-02 | Phase 9 | Pending |
-| NOTIF-03 | Phase 9 | Pending |
-| NOTIF-04 | Phase 9 | Pending |
-| NOTIF-05 | Phase 9 | Pending |
+| NOTIF-01 | Phase 9 | Complete |
+| NOTIF-02 | Phase 9 | Complete |
+| NOTIF-03 | Phase 9 | Complete |
+| NOTIF-04 | Phase 9 | Complete |
+| NOTIF-05 | Phase 9 | Complete |
 
 **Coverage Summary:**
 - v2 requirements: 17 total across 5 categories
@@ -112,4 +112,4 @@ Features explicitly excluded from v2.0 milestone:
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04*
+*Last updated: 2026-02-04 — v2.0 milestone complete, all 22 requirements delivered*
