@@ -141,3 +141,11 @@ export async function requireAdminUser() {
   }
   return user;
 }
+
+export async function requireAdminOrSecretariat() {
+  const user = await requireUser();
+  if (!user.isAdmin && user.role !== Role.Secretariat) {
+    throw new Error("Action restricted to Administrators and Secretariat");
+  }
+  return user;
+}

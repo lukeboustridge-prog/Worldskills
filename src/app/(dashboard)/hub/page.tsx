@@ -3,7 +3,7 @@ import type { ResourceLink } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { differenceInCalendarDays, format } from "date-fns";
-import { Upload, Video, Receipt, ExternalLink } from "lucide-react";
+import { Upload, Video, Receipt, ExternalLink, Vote, Monitor, Settings2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -132,6 +132,16 @@ export default async function SkillsHubPage() {
     canUserSeeResource(r, user.role, user.isAdmin)
   );
 
+  // Check for active CPW session
+  const activeCPWSession = await prisma.cPWSession.findFirst({
+    where: { isActive: true },
+  });
+
+  // Check if user is admin or secretariat (can manage CPW)
+  const canManageCPW = user.isAdmin || user.role === Role.Secretariat;
+  // Check if user is SCM (can vote)
+  const canVoteCPW = user.role === Role.SCM;
+
   const nextMeeting = skillIds.length
     ? await prisma.meeting.findFirst({
         where: {
@@ -212,6 +222,50 @@ export default async function SkillsHubPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* CPW Section - Only shown when there's an active session and user can participate */}
+      {activeCPWSession && (canVoteCPW || canManageCPW) && (
+        <Card className="border-primary/50 bg-primary/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2">
+              <Vote className="h-5 w-5" />
+              CPW Final Verdict
+            </CardTitle>
+            <CardDescription>
+              {activeCPWSession.name}
+              {activeCPWSession.isLocked && " - Voting Locked"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3">
+              {canVoteCPW && !activeCPWSession.isLocked && (
+                <Button asChild>
+                  <Link href="/cpw/vote">
+                    <Vote className="mr-2 h-4 w-4" />
+                    Cast Your Vote
+                  </Link>
+                </Button>
+              )}
+              {canManageCPW && (
+                <>
+                  <Button asChild variant="outline">
+                    <Link href="/cpw/admin">
+                      <Settings2 className="mr-2 h-4 w-4" />
+                      Manage Session
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href="/cpw/display" target="_blank">
+                      <Monitor className="mr-2 h-4 w-4" />
+                      Open Display
+                    </Link>
+                  </Button>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">

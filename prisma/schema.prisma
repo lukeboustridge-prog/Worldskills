@@ -66,6 +66,11 @@ enum GateScheduleType {
   CMonth
 }
 
+enum CPWVoteStatus {
+  GREEN // Skill is on track
+  RED   // Skill has issues
+}
+
 enum DescriptorBatchStatus {
   DRAFT // SCM creating, not yet submitted
   PENDING_REVIEW // Submitted to SA, awaiting approval
@@ -124,6 +129,7 @@ model Skill {
   teamMembers         SkillMember[]
   emails              EmailSkill[]
   deliverableComments DeliverableComment[]
+  cpwVotes            CPWVote[]
 
   @@unique([name])
   @@index([scmId])
@@ -608,4 +614,35 @@ model WSOSSection {
   descriptors Descriptor[]
 
   @@index([name])
+}
+
+model CPWSession {
+  id        String   @id @default(cuid())
+  name      String   // e.g., "CPW 2025 Final Verdict"
+  isLocked  Boolean  @default(false)
+  isActive  Boolean  @default(true) // Only one active session at a time
+  createdAt DateTime @default(now())
+  lockedAt  DateTime?
+  createdBy String
+
+  votes CPWVote[]
+
+  @@index([isActive])
+}
+
+model CPWVote {
+  id        String        @id @default(cuid())
+  sessionId String
+  skillId   String
+  status    CPWVoteStatus
+  comment   String?       @db.Text // Required if RED
+  votedAt   DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  session CPWSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  skill   Skill      @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, skillId]) // One vote per skill per session
+  @@index([sessionId])
+  @@index([skillId])
 }
