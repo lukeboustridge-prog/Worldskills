@@ -310,3 +310,89 @@ export async function submitBatchAction() {
   const params = new URLSearchParams({ submitted: String(draftCount) });
   return redirect(`/hub/descriptors/my-descriptors?${params.toString()}`);
 }
+
+/**
+ * Update a RETURNED descriptor (SCM revising after SA feedback).
+ * Implements APPR-06: SCM can edit and resubmit returned descriptors.
+ *
+ * Behavior:
+ * - Only allowed for RETURNED status descriptors owned by user
+ * - Saves edits and changes status back to DRAFT
+ * - Clears reviewer fields so SCM can resubmit fresh
+ * - SCM must click "Submit for Review" to resend to SA
+ */
+export async function updateReturnedDescriptorAction(formData: FormData) {
+  const user = await requireUser();
+
+  if (user.role !== "SCM") {
+    throw new Error("Only SCMs can update returned descriptors");
+  }
+
+  const parsed = updateSCMDescriptorSchema.safeParse({
+    id: formData.get("id"),
+    code: formData.get("code"),
+    criterionName: formData.get("criterionName"),
+    wsosSectionId: formData.get("wsosSectionId"),
+    score3: formData.get("score3") || undefined,
+    score2: formData.get("score2") || undefined,
+    score1: formData.get("score1") || undefined,
+    score0: formData.get("score0") || undefined,
+    tags: formData.get("tags") || undefined,
+  });
+
+  if (!parsed.success) {
+    const error = parsed.error.errors[0]?.message ?? "Invalid input";
+    const id = formData.get("id") as string;
+    const params = new URLSearchParams({ error });
+    return redirect(`/hub/descriptors/my-descriptors/${id}/edit?${params.toString()}`);
+  }
+
+  const data = parsed.data;
+  const tags = parseCommaSeparated(data.tags);
+
+  // Verify ownership and RETURNED status (different from DRAFT check)
+  const existing = await prisma.descriptor.findFirst({
+    where: {
+      id: data.id,
+      createdById: user.id,
+      batchStatus: DescriptorBatchStatus.RETURNED,
+      deletedAt: null,
+    },
+  });
+
+  if (!existing) {
+    const params = new URLSearchParams({ error: "Descriptor not found or cannot be edited" });
+    return redirect(`/hub/descriptors/my-descriptors?${params.toString()}`);
+  }
+
+  try {
+    // Update and change status back to DRAFT for resubmission
+    // Clear reviewer fields so SCM can resubmit fresh
+    await prisma.$executeRaw`
+      UPDATE "Descriptor"
+      SET
+        code = ${data.code.trim()},
+        "criterionName" = ${data.criterionName.trim()},
+        score3 = ${data.score3?.trim() || null},
+        score2 = ${data.score2?.trim() || null},
+        score1 = ${data.score1?.trim() || null},
+        score0 = ${data.score0?.trim() || null},
+        "wsosSectionId" = ${data.wsosSectionId},
+        tags = ${tags}::text[],
+        "batchStatus" = ${DescriptorBatchStatus.DRAFT}::"DescriptorBatchStatus",
+        "reviewComment" = NULL,
+        "reviewerId" = NULL,
+        "reviewedAt" = NULL,
+        "updatedAt" = NOW()
+      WHERE id = ${data.id}
+    `;
+  } catch (error) {
+    console.error("Failed to update returned descriptor", error);
+    const params = new URLSearchParams({ error: "Failed to update descriptor" });
+    return redirect(`/hub/descriptors/my-descriptors/${data.id}/edit?${params.toString()}`);
+  }
+
+  revalidatePath("/hub/descriptors/my-descriptors");
+  const params = new URLSearchParams({ updated: "1" });
+  return redirect(`/hub/descriptors/my-descriptors?${params.toString()}`);
+}
