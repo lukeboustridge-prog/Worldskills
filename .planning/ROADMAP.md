@@ -168,10 +168,13 @@ Plans:
   5. SCM can add multiple descriptors to draft batch before submitting (no premature notifications to SA)
   6. Draft batch page shows pending descriptors with edit/delete actions before submission
   7. SCM clicks "Submit for Review" button to send entire batch to their skill's SA
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] TBD
+- [ ] 07-01-PLAN.md - Database schema extension (DescriptorBatchStatus enum, batch workflow fields)
+- [ ] 07-02-PLAN.md - SCM descriptor query utilities (getSCMDescriptors, getDraftDescriptors)
+- [ ] 07-03-PLAN.md - SCM descriptor Server Actions (CRUD + submitBatchAction)
+- [ ] 07-04-PLAN.md - SCM descriptor UI (My Descriptors page, create/edit forms, WSOS section selector)
 
 ### Phase 8: SA Approval Workflow
 **Goal**: Enable SAs to review, approve, edit, or return SCM-submitted descriptors with modification tracking
@@ -212,10 +215,10 @@ Phases execute in numeric order: 6 → 7 → 8 → 9
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 6. WSOS Section Management | 2/2 | Complete | 2026-02-04 |
-| 7. SCM Descriptor Creation & Batch Workflow | 0/? | Pending | — |
+| 7. SCM Descriptor Creation & Batch Workflow | 0/4 | Planned | — |
 | 8. SA Approval Workflow | 0/? | Pending | — |
 | 9. Email Notifications | 0/? | Pending | — |
 
 ---
 *Roadmap created: 2026-02-04*
-*Last updated: 2026-02-04 after Phase 6 completion*
+*Last updated: 2026-02-04 after Phase 7 planning*
