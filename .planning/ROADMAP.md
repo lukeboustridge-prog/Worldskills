@@ -187,10 +187,13 @@ Plans:
   4. System sets wasModifiedDuringApproval flag when SA changes descriptor wording before approving
   5. SA can return descriptor to SCM with rejection comments (descriptor stays NEEDS_REVIEW, visible to SCM)
   6. SCM can see returned descriptors with SA comments, edit them, and resubmit for review
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] TBD
+- [ ] 08-01-PLAN.md - Schema migration (add wasModifiedDuringApproval field)
+- [ ] 08-02-PLAN.md - SA approval query utilities (getPendingDescriptorsForSA, canSAReviewDescriptor)
+- [ ] 08-03-PLAN.md - Server Actions (approveDescriptorAction, returnDescriptorAction, updateReturnedDescriptorAction)
+- [ ] 08-04-PLAN.md - SA pending review UI + SCM returned descriptor editing
 
 ### Phase 9: Email Notifications
 **Goal**: Send email notifications to SA and SCM at key approval workflow events using existing Resend infrastructure
@@ -216,9 +219,9 @@ Phases execute in numeric order: 6 → 7 → 8 → 9
 |-------|----------------|--------|-----------|
 | 6. WSOS Section Management | 2/2 | Complete | 2026-02-04 |
 | 7. SCM Descriptor Creation & Batch Workflow | 4/4 | Complete | 2026-02-04 |
-| 8. SA Approval Workflow | 0/? | Pending | — |
+| 8. SA Approval Workflow | 0/4 | Planned | — |
 | 9. Email Notifications | 0/? | Pending | — |
 
 ---
 *Roadmap created: 2026-02-04*
-*Last updated: 2026-02-04 after Phase 7 completion*
+*Last updated: 2026-02-04 after Phase 8 planning*
