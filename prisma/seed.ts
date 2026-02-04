@@ -194,8 +194,8 @@ async function main() {
         name: skill.name,
         sector: skill.sector,
         notes: `Skill Code ${skill.code} — ${skill.sector}`,
-        saId: assignedSAId,
-        scmId: null // SCMs assigned manually as needed
+        saId: assignedSAId
+        // Don't overwrite scmId - SCMs are assigned manually
       },
       create: {
         id: skill.id,
@@ -204,7 +204,7 @@ async function main() {
         sector: skill.sector,
         notes: `Skill Code ${skill.code} — ${skill.sector}`,
         saId: assignedSAId,
-        scmId: null // SCMs assigned manually as needed
+        scmId: null // SCMs assigned manually after skill creation
       }
     });
   }
