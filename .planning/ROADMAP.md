@@ -150,10 +150,11 @@ This roadmap enables SCMs to contribute new descriptors to the library with SA a
   2. SCM can create new WSOS section by entering a name
   3. System warns SCM when creating section similar to existing ones (duplicate detection using trigram similarity)
   4. New WSOS sections are immediately available in descriptor creation form (no approval delay)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] TBD
+- [ ] 06-01-PLAN.md - Database schema, migration with GIN trigram index, query utilities
+- [ ] 06-02-PLAN.md - Server Actions, duplicate warning component, management page UI
 
 ### Phase 7: SCM Descriptor Creation & Batch Workflow
 **Goal**: Enable SCMs to create descriptors linked to WSOS sections and batch multiple descriptors before submitting for SA review
@@ -210,11 +211,11 @@ Phases execute in numeric order: 6 → 7 → 8 → 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 6. WSOS Section Management | 0/? | Pending | — |
+| 6. WSOS Section Management | 0/2 | Planned | — |
 | 7. SCM Descriptor Creation & Batch Workflow | 0/? | Pending | — |
 | 8. SA Approval Workflow | 0/? | Pending | — |
 | 9. Email Notifications | 0/? | Pending | — |
 
 ---
 *Roadmap created: 2026-02-04*
-*Last updated: 2026-02-04*
+*Last updated: 2026-02-04 after Phase 6 planning*
