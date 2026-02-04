@@ -14,8 +14,14 @@ import { SKILL_CATALOG } from "@/lib/skill-catalog";
 import { getUserDisplayName } from "@/lib/users";
 import { deleteSkillAction } from "./actions";
 import { CreateSkillDialog } from "./create-skill-dialog";
+import { EditSkillDialog } from "./edit-skill-dialog";
 import { BroadcastMessageForm } from "./broadcast-message-form";
 import { SABroadcastMessageForm } from "./sa-broadcast-message-form";
+
+interface SelectOption {
+  id: string;
+  label: string;
+}
 
 interface SkillCardProps {
   skill: {
@@ -31,23 +37,32 @@ interface SkillCardProps {
   };
   catalogEntry?: { code: string } | null;
   isAdmin: boolean;
+  advisors?: SelectOption[];
 }
 
-function SkillCard({ skill, catalogEntry, isAdmin }: SkillCardProps) {
+function SkillCard({ skill, catalogEntry, isAdmin, advisors }: SkillCardProps) {
   const scmLabel = skill.scm ? getUserDisplayName(skill.scm) : "Unassigned";
 
   return (
     <Card className="h-full">
       <CardContent className="p-6">
         <div className="flex flex-col gap-4">
-          {/* Header with skill code */}
-          {catalogEntry && (
-            <div className="flex flex-wrap items-center gap-2">
+          {/* Header with skill code and edit button */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {catalogEntry && (
               <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium uppercase text-muted-foreground">
                 Skill {catalogEntry.code}
               </span>
-            </div>
-          )}
+            )}
+            {isAdmin && advisors && (
+              <EditSkillDialog
+                skillId={skill.id}
+                skillName={skill.name}
+                currentSaId={skill.saId}
+                advisors={advisors}
+              />
+            )}
+          </div>
 
           {/* Skill name and SCM info */}
           <div className="space-y-1">
@@ -450,6 +465,7 @@ export default async function SkillsPage({
                         skill={skill}
                         catalogEntry={catalogByName.get(skill.name)}
                         isAdmin={isAdmin}
+                        advisors={advisorOptions}
                       />
                     ))}
                 </div>
@@ -502,6 +518,7 @@ export default async function SkillsPage({
                           skill={skill}
                           catalogEntry={catalogByName.get(skill.name)}
                           isAdmin={isAdmin}
+                          advisors={advisorOptions}
                         />
                       ))}
                   </div>
