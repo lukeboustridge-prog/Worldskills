@@ -6,6 +6,10 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireUser } from "@/lib/auth";
+import {
+  sendBatchSubmittedNotification,
+  sendDescriptorsResubmittedNotification,
+} from "@/lib/email/descriptor-notifications";
 import { prisma } from "@/lib/prisma";
 
 // Helper to parse comma-separated string into array
@@ -282,6 +286,17 @@ export async function submitBatchAction() {
     return redirect(`/hub/descriptors/my-descriptors?${params.toString()}`);
   }
 
+  // Check if this is a resubmission (any descriptors were previously submitted)
+  const hasResubmittedDescriptors =
+    (await prisma.descriptor.count({
+      where: {
+        createdById: user.id,
+        batchStatus: DescriptorBatchStatus.DRAFT,
+        deletedAt: null,
+        batchId: { not: null }, // Was previously part of a batch submission
+      },
+    })) > 0;
+
   const batchId = crypto.randomUUID();
   const now = new Date();
 
@@ -304,7 +319,38 @@ export async function submitBatchAction() {
     return redirect(`/hub/descriptors/my-descriptors?${params.toString()}`);
   }
 
-  // TODO: Phase 9 - Send email notification to SA here
+  // Send email notification to SA (non-blocking)
+  try {
+    // Find the skill where this user is SCM to get the SA
+    const skill = await prisma.skill.findFirst({
+      where: { scmId: user.id },
+      include: { sa: { select: { email: true, name: true } } },
+    });
+
+    if (skill?.sa?.email) {
+      if (hasResubmittedDescriptors) {
+        // NOTIF-05: Resubmission notification
+        await sendDescriptorsResubmittedNotification({
+          to: skill.sa.email,
+          scmName: user.name ?? "Your SCM",
+          descriptorCount: draftCount,
+        });
+      } else {
+        // NOTIF-01: New submission notification
+        await sendBatchSubmittedNotification({
+          to: skill.sa.email,
+          scmName: user.name ?? "Your SCM",
+          descriptorCount: draftCount,
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Failed to send batch submission notification", {
+      scmId: user.id,
+      draftCount,
+      error,
+    });
+  }
 
   revalidatePath("/hub/descriptors/my-descriptors");
   const params = new URLSearchParams({ submitted: String(draftCount) });
