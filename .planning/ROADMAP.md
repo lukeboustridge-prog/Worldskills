@@ -123,3 +123,98 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 ---
 *Roadmap created: 2026-02-01*
 *Last updated: 2026-02-02 after Phase 3 planning*
+
+---
+
+# Roadmap: SCM Descriptor Creation & Approval v2.0
+
+## Overview
+
+This roadmap enables SCMs to contribute new descriptors to the library with SA approval workflow. SCMs create descriptors linked to WSOS sections (with duplicate detection), batch multiple descriptors before submitting for review, and SAs approve or return descriptors with modification tracking. Email notifications keep both roles informed throughout the approval lifecycle. The focus is on collaborative descriptor creation with clear approval boundaries—version history and AI generation are out of scope.
+
+## Phases
+
+- [ ] **Phase 6: WSOS Section Management** - Create WSOS section entity with duplicate detection and SCM browsing
+- [ ] **Phase 7: SCM Descriptor Creation & Batch Workflow** - Enable SCMs to create descriptors and batch submissions
+- [ ] **Phase 8: SA Approval Workflow** - Build SA review interface with approve/edit/return actions
+- [ ] **Phase 9: Email Notifications** - Implement notification emails for submission and approval events
+
+## Phase Details
+
+### Phase 6: WSOS Section Management
+**Goal**: Enable SCMs to browse and create WSOS sections with duplicate detection to organize descriptors
+**Depends on**: Phase 5 (requires existing descriptor schema and auth system)
+**Requirements**: WSOS-01, WSOS-02, WSOS-03, WSOS-04
+**Success Criteria** (what must be TRUE):
+  1. SCM can view list of all existing WSOS sections with section names
+  2. SCM can create new WSOS section by entering a name
+  3. System warns SCM when creating section similar to existing ones (duplicate detection using trigram similarity)
+  4. New WSOS sections are immediately available in descriptor creation form (no approval delay)
+**Plans**: TBD
+
+Plans:
+- [ ] TBD
+
+### Phase 7: SCM Descriptor Creation & Batch Workflow
+**Goal**: Enable SCMs to create descriptors linked to WSOS sections and batch multiple descriptors before submitting for SA review
+**Depends on**: Phase 6 (requires WSOS sections to link descriptors)
+**Requirements**: DESC-01, DESC-02, DESC-03, DESC-04, BATCH-01, BATCH-02, BATCH-03
+**Success Criteria** (what must be TRUE):
+  1. SCM can create new descriptor with same fields admins use (criterion name, performance levels, tags)
+  2. Every new descriptor must link to exactly one WSOS section (validation prevents orphaned descriptors)
+  3. SCM can select existing WSOS section from dropdown or create new section inline during descriptor creation
+  4. New SCM-created descriptors automatically have NEEDS_REVIEW status (distinguishable from approved descriptors)
+  5. SCM can add multiple descriptors to draft batch before submitting (no premature notifications to SA)
+  6. Draft batch page shows pending descriptors with edit/delete actions before submission
+  7. SCM clicks "Submit for Review" button to send entire batch to their skill's SA
+**Plans**: TBD
+
+Plans:
+- [ ] TBD
+
+### Phase 8: SA Approval Workflow
+**Goal**: Enable SAs to review, approve, edit, or return SCM-submitted descriptors with modification tracking
+**Depends on**: Phase 7 (requires SCM-created descriptors in NEEDS_REVIEW status)
+**Requirements**: APPR-01, APPR-02, APPR-03, APPR-04, APPR-05, APPR-06
+**Success Criteria** (what must be TRUE):
+  1. SA sees list of pending descriptors from their skill's SCM (filtered by skill relationship)
+  2. SA can approve descriptor without changes (status changes from NEEDS_REVIEW to GOOD)
+  3. SA can edit descriptor text/performance levels before approving (inline editing or edit form)
+  4. System sets wasModifiedDuringApproval flag when SA changes descriptor wording before approving
+  5. SA can return descriptor to SCM with rejection comments (descriptor stays NEEDS_REVIEW, visible to SCM)
+  6. SCM can see returned descriptors with SA comments, edit them, and resubmit for review
+**Plans**: TBD
+
+Plans:
+- [ ] TBD
+
+### Phase 9: Email Notifications
+**Goal**: Send email notifications to SA and SCM at key approval workflow events using existing Resend infrastructure
+**Depends on**: Phase 8 (requires approval workflow actions to trigger emails)
+**Requirements**: NOTIF-01, NOTIF-02, NOTIF-03, NOTIF-04, NOTIF-05
+**Success Criteria** (what must be TRUE):
+  1. SA receives email when SCM submits batch for review (includes count and link to review page)
+  2. SCM receives email when SA approves descriptors (lists approved descriptors)
+  3. Approval email clearly indicates if any descriptors had wording modified by SA
+  4. SCM receives email when SA returns descriptors with rejection comments (includes SA comments)
+  5. SA receives email when SCM resubmits previously returned descriptors (notification of resubmission)
+**Plans**: TBD
+
+Plans:
+- [ ] TBD
+
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 6 → 7 → 8 → 9
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 6. WSOS Section Management | 0/? | Pending | — |
+| 7. SCM Descriptor Creation & Batch Workflow | 0/? | Pending | — |
+| 8. SA Approval Workflow | 0/? | Pending | — |
+| 9. Email Notifications | 0/? | Pending | — |
+
+---
+*Roadmap created: 2026-02-04*
+*Last updated: 2026-02-04*
