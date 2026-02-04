@@ -5,6 +5,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireUser } from "@/lib/auth";
+import {
+  sendDescriptorApprovedNotification,
+  sendDescriptorReturnedNotification,
+} from "@/lib/email/descriptor-notifications";
 import { prisma } from "@/lib/prisma";
 import { canSAReviewDescriptor } from "@/lib/sa-approval";
 
@@ -109,6 +113,31 @@ export async function approveDescriptorAction(formData: FormData) {
     return { error: "Failed to approve descriptor" };
   }
 
+  // Send approval notification to SCM (non-blocking) - NOTIF-02/03
+  try {
+    const descriptor = await prisma.descriptor.findUnique({
+      where: { id },
+      select: {
+        criterionName: true,
+        createdBy: { select: { email: true } },
+      },
+    });
+
+    if (descriptor?.createdBy?.email) {
+      await sendDescriptorApprovedNotification({
+        to: descriptor.createdBy.email,
+        criterionName: descriptor.criterionName,
+        saName: user.name ?? "Your Skill Advisor",
+        wasModified,
+      });
+    }
+  } catch (error) {
+    console.error("Failed to send approval notification", {
+      descriptorId: id,
+      error,
+    });
+  }
+
   revalidatePath("/hub/descriptors/pending-review");
   revalidatePath("/hub/descriptors/my-descriptors");
 
@@ -164,6 +193,31 @@ export async function returnDescriptorAction(formData: FormData) {
   } catch (error) {
     console.error("Failed to return descriptor", error);
     return { error: "Failed to return descriptor" };
+  }
+
+  // Send return notification to SCM (non-blocking) - NOTIF-04
+  try {
+    const descriptor = await prisma.descriptor.findUnique({
+      where: { id },
+      select: {
+        criterionName: true,
+        createdBy: { select: { email: true } },
+      },
+    });
+
+    if (descriptor?.createdBy?.email) {
+      await sendDescriptorReturnedNotification({
+        to: descriptor.createdBy.email,
+        criterionName: descriptor.criterionName,
+        saName: user.name ?? "Your Skill Advisor",
+        comment,
+      });
+    }
+  } catch (error) {
+    console.error("Failed to send return notification", {
+      descriptorId: id,
+      error,
+    });
   }
 
   revalidatePath("/hub/descriptors/pending-review");
