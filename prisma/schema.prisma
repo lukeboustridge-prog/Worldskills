@@ -450,6 +450,9 @@ model Descriptor {
   reviewedAt    DateTime? // When review completed
   reviewComment String?                @db.Text // SA's feedback if returned
 
+  // Modification tracking for SA approval workflow (APPR-04)
+  wasModifiedDuringApproval Boolean @default(false)
+
   // B-tree indexes for common filters (GIN indexes for arrays added via raw SQL)
   @@index([source])
   @@index([sector])
