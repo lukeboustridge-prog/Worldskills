@@ -1,152 +1,115 @@
-# Requirements: Descriptor Library v1.0
+# Requirements: SCM Descriptor Creation & Approval v2.0
 
 **Project:** WorldSkills Competition Management System
-**Milestone:** v1.0 Descriptor Library
-**Defined:** 2026-02-01
-**Core Value:** Enable SCMs to write better marking schemes by providing searchable access to proven descriptors from WSC2024
+**Milestone:** v2.0 SCM Descriptor Creation & Approval Workflow
+**Defined:** 2026-02-04
+**Core Value:** Enable SCMs to contribute descriptors with SA approval workflow
 
-## v1 Requirements
+## v2 Requirements
 
-### Data Import & Analysis
+### WSOS Section Management
 
-- [ ] **IMPORT-01**: Parse all 58 WSC2024 Excel marking schemes from source directory
-- [ ] **IMPORT-02**: Handle Excel file variance (merged cells, varying terminology, inconsistent column structures)
-- [ ] **IMPORT-03**: Extract descriptor text with complete performance levels (Excellent, Good, Pass, Below Pass)
-- [ ] **IMPORT-04**: Normalize extracted text content (convert smart quotes, bullets, handle Unicode artifacts)
-- [ ] **IMPORT-05**: Capture source skill metadata for each descriptor (skill name, sector, WSC2024 attribution)
-- [ ] **IMPORT-06**: Validate data quality during import (detect encoding issues, flag extraction artifacts, log failures)
-- [ ] **IMPORT-07**: Bulk import with transaction safety (all-or-nothing, rollback on failure)
-- [x] **IMPORT-08**: Manual curation interface for admins to review, edit, and approve imported descriptors
+- [ ] **WSOS-01**: SCM can browse existing WSOS sections
+- [ ] **WSOS-02**: SCM can create new WSOS section with name
+- [ ] **WSOS-03**: System detects similar WSOS sections when creating (duplicate prevention)
+- [ ] **WSOS-04**: New WSOS sections are immediately usable (no approval needed)
 
-### Descriptor Management (Admin CRUD)
+### SCM Descriptor Creation
 
-- [x] **MANAGE-01**: Admin can manually add new descriptor (not just from import - for creating custom descriptors)
-- [x] **MANAGE-02**: Admin can edit existing descriptor (text content, performance levels, tags, quality indicator, source attribution)
-- [x] **MANAGE-03**: Admin can delete descriptor from library (with confirmation prompt)
-- [x] **MANAGE-04**: Soft delete support (mark as deleted, preserve for audit trail, option to restore)
-- [x] **MANAGE-05**: Descriptor edit form with all fields (criterion name, performance levels, skill area, criterion type, tags, quality indicator)
-- [x] **MANAGE-06**: Validation for required fields (criterion name, at least one performance level, source skill)
-- [x] **MANAGE-07**: Duplicate detection when creating descriptors (warn if similar descriptor exists)
+- [ ] **DESC-01**: SCM can create new descriptors (extend from admin-only)
+- [ ] **DESC-02**: Descriptor must link to a WSOS section
+- [ ] **DESC-03**: SCM can select existing WSOS section or create new during descriptor creation
+- [ ] **DESC-04**: New SCM-created descriptors default to NEEDS_REVIEW status
 
-### Descriptor Library Structure
+### Batch Workflow
 
-- [ ] **LIBRARY-01**: Store descriptors with performance level grouping (complete criteria, not isolated levels)
-- [x] **LIBRARY-02**: Support tag-based categorization with flexible multi-dimensional tags (e.g., "teamwork", "safety", "precision")
-- [x] **LIBRARY-03**: Store quality indicators to mark descriptors as "excellent example" vs "reference only"
-- [ ] **LIBRARY-04**: Schema versioning for descriptors (version field, backward-compatible migrations, rollback support)
-- [ ] **LIBRARY-05**: Database indexes for performance (GIN indexes for full-text search and JSONB tag arrays)
-- [x] **LIBRARY-06**: Data-driven category/tag taxonomy (emerge from imported corpus, minimum 5+ descriptors per category)
+- [ ] **BATCH-01**: SCM can add multiple descriptors before submitting
+- [ ] **BATCH-02**: Pending descriptors shown in draft state before submission
+- [ ] **BATCH-03**: SCM clicks "Submit for Review" to send batch to SA
 
-### Search & Discovery
+### SA Approval
 
-- [ ] **SEARCH-01**: Full-text keyword search across descriptor text with relevance ranking (PostgreSQL FTS with ts_rank)
-- [ ] **SEARCH-02**: Multi-criteria filtering (skill area, criterion type, performance level) with faceted filter pattern
-- [ ] **SEARCH-03**: Combine search and filters seamlessly (filters narrow search results, not replace)
-- [ ] **SEARCH-04**: Pagination for search results (default 20 per page, configurable)
-- [ ] **SEARCH-05**: Search performance optimization (<100ms target with GIN indexes, query plan analysis)
-- [ ] **SEARCH-06**: Save frequently used search queries (saved searches with URL persistence)
-- [ ] **SEARCH-07**: Favorite/bookmark descriptors for quick access (personal workspace per SCM)
-- [ ] **SEARCH-08**: Related descriptor suggestions (recommendation engine showing similar descriptors)
+- [ ] **APPR-01**: SA sees pending descriptors from their skill's SCM
+- [ ] **APPR-02**: SA can approve descriptor (status changes to GOOD)
+- [ ] **APPR-03**: SA can edit descriptor wording before approving
+- [ ] **APPR-04**: System tracks modification flag when wording was changed
+- [ ] **APPR-05**: SA can return descriptor with comments (not approved)
+- [ ] **APPR-06**: SCM can edit and resubmit returned descriptors
 
-### Library UI
+### Email Notifications
 
-- [ ] **UI-01**: Search interface with debounced input (300ms delay to reduce server load)
-- [ ] **UI-02**: Faceted filter panels with counts (e.g., "Safety (23)", "Teamwork (15)")
-- [ ] **UI-03**: Preview modal showing complete criterion with all performance levels grouped together
-- [ ] **UI-04**: Copy to clipboard with single-click and visual confirmation (toast: "Copied to clipboard")
-- [ ] **UI-05**: Source attribution display (badge showing origin WSC2024 skill for trust signal)
-- [ ] **UI-06**: Performance level grouping in display (show Excellent/Good/Pass/Below Pass as complete criterion, not isolated)
-- [ ] **UI-07**: Clear visual hierarchy (typography/spacing to separate descriptor content from metadata/tags)
-- [ ] **UI-08**: Responsive design (mobile-friendly search/browse, no horizontal scroll, readable on tablets)
-- [ ] **UI-09**: Comparison view (side-by-side display of 2-3 selected descriptors to aid decision-making)
-- [ ] **UI-10**: Multi-select UI pattern for batch operations (select multiple descriptors for comparison)
+- [ ] **NOTIF-01**: Email to SA when SCM submits batch for review
+- [ ] **NOTIF-02**: Email to SCM when descriptors approved
+- [ ] **NOTIF-03**: Approval email indicates if wording was modified
+- [ ] **NOTIF-04**: Email to SCM when descriptors returned with comments
+- [ ] **NOTIF-05**: Email to SA when SCM resubmits revised descriptors
 
-### Access Control
+## Previous Milestone (v1.0) — Complete
 
-- [ ] **ACCESS-01**: SCMs can search and view descriptor library (read access to all descriptors)
-- [ ] **ACCESS-02**: Admins can curate library (add, edit, delete descriptors, assign tags/quality indicators)
-- [ ] **ACCESS-03**: Skill Advisors can search and view descriptor library (read access)
-- [ ] **ACCESS-04**: Extend existing permission patterns from skills management (canAccessDescriptorLibrary follows canManageSkill)
+All v1.0 Descriptor Library requirements have been completed:
 
-## v2 Requirements (Deferred)
+- [x] Data Import & Analysis (IMPORT-01 through IMPORT-08)
+- [x] Descriptor Management (MANAGE-01 through MANAGE-07)
+- [x] Descriptor Library Structure (LIBRARY-01 through LIBRARY-06)
+- [x] Search & Discovery (SEARCH-01 through SEARCH-08)
+- [x] Library UI (UI-01 through UI-10)
+- [x] Access Control (ACCESS-01 through ACCESS-04)
 
-Features explicitly deferred to future versions after v1.0 is validated:
+## Future Requirements (Deferred)
 
-- [ ] **FUTURE-01**: Cross-skill pattern discovery — "See how other skills describe teamwork/safety/precision" (requires mature taxonomy, value unclear without usage data)
-- [ ] **FUTURE-02**: Advanced recommendation engine — ML-powered suggestions based on descriptor similarity scoring (requires data science investment)
-- [ ] **FUTURE-03**: Collaborative contribution workflow — SCMs suggest descriptors → Admin reviews → Approve/Reject (requires submission + moderation system)
-- [ ] **FUTURE-04**: Bulk import UI for admins — CSV upload interface for adding descriptors (manual entry sufficient for v1.0)
-- [ ] **FUTURE-05**: Descriptor usage analytics dashboard — "Most used descriptors", "trending in similar skills" (needs 3+ months of usage data)
-- [ ] **FUTURE-06**: API access for external integrations — REST API for third-party marking scheme tools (not requested, evaluate demand)
+Features explicitly deferred to future milestones:
+
+- Test Project management workflows
+- Issue/Dispute tracking
+- Full CIS integration
+- Management meetings (SA coordination meetings)
+- Descriptor version history (full history, not just modification flag)
+- Multi-language descriptor support
 
 ## Out of Scope
 
-Features explicitly excluded from v1.0 milestone:
+Features explicitly excluded from v2.0 milestone:
 
 | Feature | Reason |
 |---------|--------|
-| In-app marking scheme builder | Marking schemes managed in external systems, users copy/paste descriptors into those tools |
-| Export functionality (Excel/PDF/Word) | Not needed since marking schemes are external |
-| AI-generated descriptors | Quality control nightmare, marking schemes need precision, AI hallucinates measurements/criteria |
-| Collaborative editing of descriptor library | Quality dilution risk, becomes dumping ground without admin curation |
-| Real-time updates via WebSocket | Complexity without value for stable reference data (library is not collaborative document) |
-| Multi-language support | English only for v1.0, defer translation until library proven valuable |
-| Auto-validation of inserted descriptors | False confidence, automation can't judge if descriptor fits skill context |
+| AI-generated descriptors | Quality control requires human judgment |
+| Automated descriptor validation | Can't judge if descriptor fits skill context |
+| SA approval for WSOS sections | Reduces friction, duplicate detection sufficient |
+| Version history for edits | Flag modification is sufficient, simpler |
+| Multi-language support | English only, defer translation |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| IMPORT-01 | Phase 1 | Pending |
-| IMPORT-02 | Phase 1 | Pending |
-| IMPORT-03 | Phase 1 | Pending |
-| IMPORT-04 | Phase 1 | Pending |
-| IMPORT-05 | Phase 1 | Pending |
-| IMPORT-06 | Phase 1 | Pending |
-| IMPORT-07 | Phase 1 | Pending |
-| IMPORT-08 | Phase 2 | Complete |
-| MANAGE-01 | Phase 2 | Complete |
-| MANAGE-02 | Phase 2 | Complete |
-| MANAGE-03 | Phase 2 | Complete |
-| MANAGE-04 | Phase 2 | Complete |
-| MANAGE-05 | Phase 2 | Complete |
-| MANAGE-06 | Phase 2 | Complete |
-| MANAGE-07 | Phase 2 | Complete |
-| LIBRARY-01 | Phase 1 | Pending |
-| LIBRARY-02 | Phase 2 | Complete |
-| LIBRARY-03 | Phase 2 | Complete |
-| LIBRARY-04 | Phase 1 | Pending |
-| LIBRARY-05 | Phase 1 | Pending |
-| LIBRARY-06 | Phase 2 | Complete |
-| SEARCH-01 | Phase 3 | Pending |
-| SEARCH-02 | Phase 3 | Pending |
-| SEARCH-03 | Phase 3 | Pending |
-| SEARCH-04 | Phase 3 | Pending |
-| SEARCH-05 | Phase 3 | Pending |
-| SEARCH-06 | Phase 3 | Pending |
-| SEARCH-07 | Phase 3 | Pending |
-| SEARCH-08 | Phase 3 | Pending |
-| UI-01 | Phase 4 | Pending |
-| UI-02 | Phase 4 | Pending |
-| UI-03 | Phase 4 | Pending |
-| UI-04 | Phase 4 | Pending |
-| UI-05 | Phase 4 | Pending |
-| UI-06 | Phase 4 | Pending |
-| UI-07 | Phase 4 | Pending |
-| UI-08 | Phase 4 | Pending |
-| UI-09 | Phase 4 | Pending |
-| UI-10 | Phase 4 | Pending |
-| ACCESS-01 | Phase 5 | Pending |
-| ACCESS-02 | Phase 5 | Pending |
-| ACCESS-03 | Phase 5 | Pending |
-| ACCESS-04 | Phase 5 | Pending |
+| WSOS-01 | Phase 6 | Pending |
+| WSOS-02 | Phase 6 | Pending |
+| WSOS-03 | Phase 6 | Pending |
+| WSOS-04 | Phase 6 | Pending |
+| DESC-01 | Phase 7 | Pending |
+| DESC-02 | Phase 7 | Pending |
+| DESC-03 | Phase 7 | Pending |
+| DESC-04 | Phase 7 | Pending |
+| BATCH-01 | Phase 7 | Pending |
+| BATCH-02 | Phase 7 | Pending |
+| BATCH-03 | Phase 7 | Pending |
+| APPR-01 | Phase 8 | Pending |
+| APPR-02 | Phase 8 | Pending |
+| APPR-03 | Phase 8 | Pending |
+| APPR-04 | Phase 8 | Pending |
+| APPR-05 | Phase 8 | Pending |
+| APPR-06 | Phase 8 | Pending |
+| NOTIF-01 | Phase 9 | Pending |
+| NOTIF-02 | Phase 9 | Pending |
+| NOTIF-03 | Phase 9 | Pending |
+| NOTIF-04 | Phase 9 | Pending |
+| NOTIF-05 | Phase 9 | Pending |
 
 **Coverage Summary:**
-- v1 requirements: 39 total across 6 categories
-- Phase mapping: 39/39 requirements mapped (100% coverage)
-- v2 requirements: 6 deferred features
-- Out of scope: 7 explicit exclusions
+- v2 requirements: 17 total across 5 categories
+- Phase mapping: To be finalized during roadmap creation
+- All requirements will be mapped to phases
 
 ---
-*Requirements defined: 2026-02-01*
-*Last updated: 2026-02-01 (traceability added)*
+*Requirements defined: 2026-02-04*
+*Last updated: 2026-02-04*
