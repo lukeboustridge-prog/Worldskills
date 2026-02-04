@@ -9,23 +9,23 @@
 
 ### WSOS Section Management
 
-- [ ] **WSOS-01**: SCM can browse existing WSOS sections
-- [ ] **WSOS-02**: SCM can create new WSOS section with name
-- [ ] **WSOS-03**: System detects similar WSOS sections when creating (duplicate prevention)
-- [ ] **WSOS-04**: New WSOS sections are immediately usable (no approval needed)
+- [x] **WSOS-01**: SCM can browse existing WSOS sections
+- [x] **WSOS-02**: SCM can create new WSOS section with name
+- [x] **WSOS-03**: System detects similar WSOS sections when creating (duplicate prevention)
+- [x] **WSOS-04**: New WSOS sections are immediately usable (no approval needed)
 
 ### SCM Descriptor Creation
 
-- [ ] **DESC-01**: SCM can create new descriptors (extend from admin-only)
-- [ ] **DESC-02**: Descriptor must link to a WSOS section
-- [ ] **DESC-03**: SCM can select existing WSOS section or create new during descriptor creation
-- [ ] **DESC-04**: New SCM-created descriptors default to NEEDS_REVIEW status
+- [x] **DESC-01**: SCM can create new descriptors (extend from admin-only)
+- [x] **DESC-02**: Descriptor must link to a WSOS section
+- [x] **DESC-03**: SCM can select existing WSOS section or create new during descriptor creation
+- [x] **DESC-04**: New SCM-created descriptors default to NEEDS_REVIEW status
 
 ### Batch Workflow
 
-- [ ] **BATCH-01**: SCM can add multiple descriptors before submitting
-- [ ] **BATCH-02**: Pending descriptors shown in draft state before submission
-- [ ] **BATCH-03**: SCM clicks "Submit for Review" to send batch to SA
+- [x] **BATCH-01**: SCM can add multiple descriptors before submitting
+- [x] **BATCH-02**: Pending descriptors shown in draft state before submission
+- [x] **BATCH-03**: SCM clicks "Submit for Review" to send batch to SA
 
 ### SA Approval
 
@@ -82,17 +82,17 @@ Features explicitly excluded from v2.0 milestone:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| WSOS-01 | Phase 6 | Pending |
-| WSOS-02 | Phase 6 | Pending |
-| WSOS-03 | Phase 6 | Pending |
-| WSOS-04 | Phase 6 | Pending |
-| DESC-01 | Phase 7 | Pending |
-| DESC-02 | Phase 7 | Pending |
-| DESC-03 | Phase 7 | Pending |
-| DESC-04 | Phase 7 | Pending |
-| BATCH-01 | Phase 7 | Pending |
-| BATCH-02 | Phase 7 | Pending |
-| BATCH-03 | Phase 7 | Pending |
+| WSOS-01 | Phase 6 | Complete |
+| WSOS-02 | Phase 6 | Complete |
+| WSOS-03 | Phase 6 | Complete |
+| WSOS-04 | Phase 6 | Complete |
+| DESC-01 | Phase 7 | Complete |
+| DESC-02 | Phase 7 | Complete |
+| DESC-03 | Phase 7 | Complete |
+| DESC-04 | Phase 7 | Complete |
+| BATCH-01 | Phase 7 | Complete |
+| BATCH-02 | Phase 7 | Complete |
+| BATCH-03 | Phase 7 | Complete |
 | APPR-01 | Phase 8 | Pending |
 | APPR-02 | Phase 8 | Pending |
 | APPR-03 | Phase 8 | Pending |
