@@ -136,7 +136,7 @@ This roadmap enables SCMs to contribute new descriptors to the library with SA a
 
 - [x] **Phase 6: WSOS Section Management** - Create WSOS section entity with duplicate detection and SCM browsing
 - [x] **Phase 7: SCM Descriptor Creation & Batch Workflow** - Enable SCMs to create descriptors and batch submissions
-- [ ] **Phase 8: SA Approval Workflow** - Build SA review interface with approve/edit/return actions
+- [x] **Phase 8: SA Approval Workflow** - Build SA review interface with approve/edit/return actions
 - [ ] **Phase 9: Email Notifications** - Implement notification emails for submission and approval events
 
 ## Phase Details
@@ -190,10 +190,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 08-01-PLAN.md - Schema migration (add wasModifiedDuringApproval field)
-- [ ] 08-02-PLAN.md - SA approval query utilities (getPendingDescriptorsForSA, canSAReviewDescriptor)
-- [ ] 08-03-PLAN.md - Server Actions (approveDescriptorAction, returnDescriptorAction, updateReturnedDescriptorAction)
-- [ ] 08-04-PLAN.md - SA pending review UI + SCM returned descriptor editing
+- [x] 08-01-PLAN.md - Schema migration (add wasModifiedDuringApproval field)
+- [x] 08-02-PLAN.md - SA approval query utilities (getPendingDescriptorsForSA, canSAReviewDescriptor)
+- [x] 08-03-PLAN.md - Server Actions (approveDescriptorAction, returnDescriptorAction, updateReturnedDescriptorAction)
+- [x] 08-04-PLAN.md - SA pending review UI + SCM returned descriptor editing
 
 ### Phase 9: Email Notifications
 **Goal**: Send email notifications to SA and SCM at key approval workflow events using existing Resend infrastructure
@@ -219,9 +219,9 @@ Phases execute in numeric order: 6 → 7 → 8 → 9
 |-------|----------------|--------|-----------|
 | 6. WSOS Section Management | 2/2 | Complete | 2026-02-04 |
 | 7. SCM Descriptor Creation & Batch Workflow | 4/4 | Complete | 2026-02-04 |
-| 8. SA Approval Workflow | 0/4 | Planned | — |
+| 8. SA Approval Workflow | 4/4 | Complete | 2026-02-04 |
 | 9. Email Notifications | 0/? | Pending | — |
 
 ---
 *Roadmap created: 2026-02-04*
-*Last updated: 2026-02-04 after Phase 8 planning*
+*Last updated: 2026-02-04 after Phase 8 completion*

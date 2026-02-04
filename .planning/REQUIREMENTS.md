@@ -29,12 +29,12 @@
 
 ### SA Approval
 
-- [ ] **APPR-01**: SA sees pending descriptors from their skill's SCM
-- [ ] **APPR-02**: SA can approve descriptor (status changes to GOOD)
-- [ ] **APPR-03**: SA can edit descriptor wording before approving
-- [ ] **APPR-04**: System tracks modification flag when wording was changed
-- [ ] **APPR-05**: SA can return descriptor with comments (not approved)
-- [ ] **APPR-06**: SCM can edit and resubmit returned descriptors
+- [x] **APPR-01**: SA sees pending descriptors from their skill's SCM
+- [x] **APPR-02**: SA can approve descriptor (status changes to GOOD)
+- [x] **APPR-03**: SA can edit descriptor wording before approving
+- [x] **APPR-04**: System tracks modification flag when wording was changed
+- [x] **APPR-05**: SA can return descriptor with comments (not approved)
+- [x] **APPR-06**: SCM can edit and resubmit returned descriptors
 
 ### Email Notifications
 
@@ -93,12 +93,12 @@ Features explicitly excluded from v2.0 milestone:
 | BATCH-01 | Phase 7 | Complete |
 | BATCH-02 | Phase 7 | Complete |
 | BATCH-03 | Phase 7 | Complete |
-| APPR-01 | Phase 8 | Pending |
-| APPR-02 | Phase 8 | Pending |
-| APPR-03 | Phase 8 | Pending |
-| APPR-04 | Phase 8 | Pending |
-| APPR-05 | Phase 8 | Pending |
-| APPR-06 | Phase 8 | Pending |
+| APPR-01 | Phase 8 | Complete |
+| APPR-02 | Phase 8 | Complete |
+| APPR-03 | Phase 8 | Complete |
+| APPR-04 | Phase 8 | Complete |
+| APPR-05 | Phase 8 | Complete |
+| APPR-06 | Phase 8 | Complete |
 | NOTIF-01 | Phase 9 | Pending |
 | NOTIF-02 | Phase 9 | Pending |
 | NOTIF-03 | Phase 9 | Pending |
