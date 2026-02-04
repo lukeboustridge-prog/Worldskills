@@ -109,11 +109,12 @@ model User {
 }
 
 model Skill {
-  id        String   @id @default(cuid())
-  name      String
-  sector    String?
-  notes     String?  @db.Text
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  skillNumber Int?     // WorldSkills skill number for sorting
+  name        String
+  sector      String?
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
 
   scmId String?
   saId  String

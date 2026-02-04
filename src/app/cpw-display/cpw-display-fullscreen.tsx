@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { CPWVoteStatus } from "@prisma/client";
@@ -8,6 +8,7 @@ import { Lock, AlertCircle, CheckCircle2, Clock, X } from "lucide-react";
 
 interface SkillVote {
   id: string;
+  skillNumber: number | null;
   name: string;
   vote: {
     status: CPWVoteStatus;
@@ -22,6 +23,60 @@ interface CPWDisplayFullscreenProps {
   skills: SkillVote[];
 }
 
+// Confetti component
+function Confetti({ active }: { active: boolean }) {
+  if (!active) return null;
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+      {Array.from({ length: 150 }).map((_, i) => (
+        <div
+          key={i}
+          className="confetti-piece"
+          style={{
+            left: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 3}s`,
+            animationDuration: `${3 + Math.random() * 2}s`,
+            backgroundColor: ['#22c55e', '#16a34a', '#4ade80', '#86efac', '#fbbf24', '#f59e0b'][Math.floor(Math.random() * 6)],
+          }}
+        />
+      ))}
+      <style jsx>{`
+        .confetti-piece {
+          position: absolute;
+          width: 10px;
+          height: 10px;
+          top: -10px;
+          opacity: 0;
+          animation: confetti-fall linear forwards;
+        }
+        .confetti-piece:nth-child(odd) {
+          width: 8px;
+          height: 16px;
+          border-radius: 2px;
+        }
+        .confetti-piece:nth-child(even) {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+        }
+        @keyframes confetti-fall {
+          0% {
+            opacity: 1;
+            top: -10px;
+            transform: translateX(0) rotateZ(0deg);
+          }
+          100% {
+            opacity: 0;
+            top: 100vh;
+            transform: translateX(${Math.random() > 0.5 ? '' : '-'}${50 + Math.random() * 100}px) rotateZ(${360 + Math.random() * 720}deg);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 export function CPWDisplayFullscreen({
   sessionId,
   sessionName,
@@ -32,6 +87,8 @@ export function CPWDisplayFullscreen({
   const [skills, setSkills] = useState<SkillVote[]>(initialSkills);
   const [isLocked, setIsLocked] = useState(initialLocked);
   const [animatingSkills, setAnimatingSkills] = useState<Set<string>>(new Set());
+  const [showConfetti, setShowConfetti] = useState(false);
+  const prevSkillsRef = useRef<SkillVote[]>(initialSkills);
 
   // ESC to exit
   useEffect(() => {
@@ -54,30 +111,44 @@ export function CPWDisplayFullscreen({
 
       // Check for new or changed votes
       const newAnimating = new Set<string>();
+      let hasNewGreen = false;
+
       data.skills.forEach((newSkill: SkillVote) => {
-        const oldSkill = skills.find((s) => s.id === newSkill.id);
+        const oldSkill = prevSkillsRef.current.find((s) => s.id === newSkill.id);
         if (
           (!oldSkill?.vote && newSkill.vote) ||
           (oldSkill?.vote?.status !== newSkill.vote?.status)
         ) {
           newAnimating.add(newSkill.id);
+          // Check if this is a new green vote
+          if (newSkill.vote?.status === CPWVoteStatus.GREEN &&
+              oldSkill?.vote?.status !== CPWVoteStatus.GREEN) {
+            hasNewGreen = true;
+          }
         }
       });
 
       if (newAnimating.size > 0) {
         setAnimatingSkills(newAnimating);
-        setTimeout(() => setAnimatingSkills(new Set()), 1000);
+        setTimeout(() => setAnimatingSkills(new Set()), 1500);
+
+        // Trigger confetti for green votes
+        if (hasNewGreen) {
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 4000);
+        }
       }
 
+      prevSkillsRef.current = data.skills;
       setSkills(data.skills);
       setIsLocked(data.isLocked);
     } catch (error) {
       console.error("Failed to fetch updates", error);
     }
-  }, [sessionId, skills]);
+  }, [sessionId]);
 
   useEffect(() => {
-    const interval = setInterval(fetchUpdates, 2000);
+    const interval = setInterval(fetchUpdates, 1500); // Faster polling for 64 simultaneous votes
     return () => clearInterval(interval);
   }, [fetchUpdates]);
 
@@ -91,6 +162,8 @@ export function CPWDisplayFullscreen({
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900 overflow-hidden">
+      <Confetti active={showConfetti} />
+
       {/* Close button */}
       <button
         onClick={() => router.back()}
@@ -154,7 +227,7 @@ export function CPWDisplayFullscreen({
         {/* Progress Bar */}
         <div className="h-2 bg-slate-200">
           <div
-            className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-500 ease-out"
+            className="h-full bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -197,7 +270,12 @@ export function CPWDisplayFullscreen({
                   key={skill.id}
                   className="rounded-xl border border-red-200 bg-red-50 p-4 animate-in fade-in slide-in-from-right duration-300"
                 >
-                  <h3 className="font-semibold text-red-700 text-lg">{skill.name}</h3>
+                  <div className="flex items-center gap-2">
+                    {skill.skillNumber && (
+                      <span className="text-sm font-bold text-red-400">#{skill.skillNumber}</span>
+                    )}
+                    <h3 className="font-semibold text-red-700 text-lg">{skill.name}</h3>
+                  </div>
                   {skill.vote?.comment && (
                     <p className="mt-2 text-base text-red-600">{skill.vote.comment}</p>
                   )}
@@ -220,8 +298,11 @@ export function CPWDisplayFullscreen({
                 {pendingSkills.map((skill) => (
                   <div
                     key={skill.id}
-                    className="rounded-lg px-3 py-2 text-base text-slate-600 bg-slate-100"
+                    className="rounded-lg px-3 py-2 text-base text-slate-600 bg-slate-100 flex items-center gap-2"
                   >
+                    {skill.skillNumber && (
+                      <span className="text-sm font-bold text-slate-400">#{skill.skillNumber}</span>
+                    )}
                     {skill.name}
                   </div>
                 ))}
@@ -246,39 +327,56 @@ function SkillCard({
   skill: SkillVote;
   isAnimating: boolean;
 }) {
+  const isGreen = skill.vote?.status === CPWVoteStatus.GREEN;
+  const isRed = skill.vote?.status === CPWVoteStatus.RED;
+
   const getStatusStyles = () => {
     if (!skill.vote) {
       return "bg-slate-100 border-slate-300 text-slate-600";
     }
-    if (skill.vote.status === CPWVoteStatus.GREEN) {
-      return "bg-green-100 border-green-400 text-green-700 shadow-md shadow-green-200";
+    if (isGreen) {
+      return "bg-gradient-to-br from-green-100 to-green-200 border-green-400 text-green-700 shadow-lg shadow-green-200";
     }
-    return "bg-red-100 border-red-400 text-red-700 shadow-md shadow-red-200";
+    return "bg-gradient-to-br from-red-100 to-red-200 border-red-400 text-red-700 shadow-lg shadow-red-200";
   };
 
   const getIcon = () => {
     if (!skill.vote) return null;
-    if (skill.vote.status === CPWVoteStatus.GREEN) {
-      return <CheckCircle2 className="h-[1.2vw] min-h-[14px] max-h-[20px] w-[1.2vw] min-w-[14px] max-w-[20px]" />;
+    if (isGreen) {
+      return <CheckCircle2 className="h-[1.5vw] min-h-[16px] max-h-[24px] w-[1.5vw] min-w-[16px] max-w-[24px] text-green-500" />;
     }
-    return <AlertCircle className="h-[1.2vw] min-h-[14px] max-h-[20px] w-[1.2vw] min-w-[14px] max-w-[20px]" />;
+    return <AlertCircle className="h-[1.5vw] min-h-[16px] max-h-[24px] w-[1.5vw] min-w-[16px] max-w-[24px] text-red-500" />;
   };
 
   return (
     <div
       className={`
         relative flex flex-col items-center justify-center rounded-lg border-2 p-1
-        transition-all duration-300 ease-out overflow-hidden
+        transition-all duration-500 ease-out overflow-hidden
         ${getStatusStyles()}
-        ${isAnimating ? "scale-105 ring-4 ring-blue-400 ring-opacity-50" : ""}
+        ${isAnimating && isGreen ? "scale-110 ring-4 ring-green-400 animate-pulse" : ""}
+        ${isAnimating && isRed ? "scale-105 ring-4 ring-red-400" : ""}
+        ${isAnimating && !skill.vote ? "scale-105 ring-4 ring-blue-400" : ""}
       `}
       title={skill.name}
     >
       <div className="absolute top-1 right-1">{getIcon()}</div>
+
+      {/* Skill Number */}
+      {skill.skillNumber && (
+        <span
+          className="font-bold opacity-60"
+          style={{ fontSize: 'clamp(0.5rem, 0.9vw, 0.75rem)' }}
+        >
+          #{skill.skillNumber}
+        </span>
+      )}
+
+      {/* Skill Name */}
       <span
         className="font-medium text-center leading-tight px-1"
         style={{
-          fontSize: 'clamp(0.5rem, 1vw, 0.875rem)',
+          fontSize: 'clamp(0.45rem, 0.85vw, 0.8rem)',
           wordBreak: 'break-word',
           hyphens: 'auto',
         }}

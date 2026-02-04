@@ -41,11 +41,15 @@ export default async function CPWDisplayFullscreenPage() {
     );
   }
 
-  // Get all skills
+  // Get all skills sorted by skill number
   const skills = await prisma.skill.findMany({
-    orderBy: { name: "asc" },
+    orderBy: [
+      { skillNumber: "asc" },
+      { name: "asc" },
+    ],
     select: {
       id: true,
+      skillNumber: true,
       name: true,
     },
   });
@@ -58,6 +62,7 @@ export default async function CPWDisplayFullscreenPage() {
   // Build skill data with vote status
   const skillsWithVotes = skills.map((skill) => ({
     id: skill.id,
+    skillNumber: skill.skillNumber,
     name: skill.name,
     vote: votesMap.get(skill.id) ?? null,
   }));
