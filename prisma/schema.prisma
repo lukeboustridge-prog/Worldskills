@@ -85,6 +85,7 @@ model User {
   emailsSent            Email[]               @relation("EmailSender")
   emailsReceived        EmailRecipient[]      @relation("EmailRecipients")
   deliverableComments   DeliverableComment[]  @relation("DeliverableComments")
+  createdWSOSSections   WSOSSection[]         @relation("WSOSSectionCreator")
 }
 
 model Skill {
@@ -554,4 +555,17 @@ model DeliverableComment {
   @@index([skillId])
   @@index([userId])
   @@index([createdAt])
+}
+
+model WSOSSection {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  createdBy   String
+  updatedAt   DateTime @updatedAt
+
+  creator User @relation("WSOSSectionCreator", fields: [createdBy], references: [id])
+
+  @@index([name])
 }
