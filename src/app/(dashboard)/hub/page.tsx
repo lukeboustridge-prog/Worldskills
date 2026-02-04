@@ -223,8 +223,8 @@ export default async function SkillsHubPage() {
         </Card>
       </div>
 
-      {/* CPW Section - Only shown when there's an active session and user can participate */}
-      {activeCPWSession && (canVoteCPW || canManageCPW) && (
+      {/* CPW Section - Show for SCMs when active session, always show for Admin/Secretariat */}
+      {(activeCPWSession && canVoteCPW) || canManageCPW ? (
         <Card className="border-primary/50 bg-primary/5">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
@@ -232,13 +232,14 @@ export default async function SkillsHubPage() {
               CPW Final Verdict
             </CardTitle>
             <CardDescription>
-              {activeCPWSession.name}
-              {activeCPWSession.isLocked && " - Voting Locked"}
+              {activeCPWSession
+                ? `${activeCPWSession.name}${activeCPWSession.isLocked ? " - Voting Locked" : ""}`
+                : "No active voting session"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-3">
-              {canVoteCPW && !activeCPWSession.isLocked && (
+              {canVoteCPW && activeCPWSession && !activeCPWSession.isLocked && (
                 <Button asChild>
                   <Link href="/cpw/vote">
                     <Vote className="mr-2 h-4 w-4" />
@@ -248,24 +249,26 @@ export default async function SkillsHubPage() {
               )}
               {canManageCPW && (
                 <>
-                  <Button asChild variant="outline">
+                  <Button asChild variant={activeCPWSession ? "outline" : "default"}>
                     <Link href="/cpw/admin">
                       <Settings2 className="mr-2 h-4 w-4" />
-                      Manage Session
+                      {activeCPWSession ? "Manage Session" : "Create a Vote"}
                     </Link>
                   </Button>
-                  <Button asChild variant="outline">
-                    <Link href="/cpw/display" target="_blank">
-                      <Monitor className="mr-2 h-4 w-4" />
-                      Open Display
-                    </Link>
-                  </Button>
+                  {activeCPWSession && (
+                    <Button asChild variant="outline">
+                      <Link href="/cpw/display" target="_blank">
+                        <Monitor className="mr-2 h-4 w-4" />
+                        Open Display
+                      </Link>
+                    </Button>
+                  )}
                 </>
               )}
             </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
