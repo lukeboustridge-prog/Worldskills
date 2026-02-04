@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 8 - SA Approval Workflow (IN PROGRESS)
-Plan: 2 of 4 complete
+Plan: 3 of 4 complete
 Status: In progress
-Last activity: 2026-02-04 — Completed 08-02-PLAN.md (SA Query Utilities)
+Last activity: 2026-02-04 — Completed 08-03-PLAN.md (SA Approval Server Actions)
 
-Progress: [██████░░░░] 60% (Phase 8 plan 2/4 complete)
+Progress: [███████░░░] 70% (Phase 8 plan 3/4 complete)
 
 ## Performance Metrics
 
@@ -47,7 +47,7 @@ Progress: [██████░░░░] 60% (Phase 8 plan 2/4 complete)
 |-------|-------|-------|----------|
 | 06-wsos-section-management | 2/2 | 9m 3s | 4m 32s |
 | 07-scm-descriptor-creation-batch-workflow | 4/4 | 16m 18s | 4m 5s |
-| 08-sa-approval-workflow | 2/4 | 5m | 2m 30s |
+| 08-sa-approval-workflow | 3/4 | 8m | 2m 40s |
 
 **Recent Trend:**
 - 06-01: 5m 31s (WSOS Section Data Layer)
@@ -58,6 +58,7 @@ Progress: [██████░░░░] 60% (Phase 8 plan 2/4 complete)
 - 07-04: 4m 8s (SCM Descriptor UI Pages)
 - 08-01: 3m (Schema Extension - Modification Tracking)
 - 08-02: 2m (SA Query Utilities)
+- 08-03: 3m (SA Approval Server Actions)
 
 *Updated after each plan completion*
 
@@ -100,6 +101,7 @@ Recent decisions affecting current work:
 | BATCH-004 | Ownership + status double-check | Edit restriction | createdById AND batchStatus must match before edit/delete |
 | UI-001 | Badge default variant for WSOS sections | UI consistency | Project Badge component only has default/outline/destructive variants |
 | APPR-SCHEMA-001 | Use db push instead of migrate dev | Shadow database issue | Appropriate for dev, schema synced successfully |
+| APPR-ACT-001 | Clear all reviewer fields when RETURNED -> DRAFT | Fresh resubmission flow | SA sees descriptor without stale comments |
 
 ### Pending Todos
 
@@ -112,10 +114,10 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 08-02-PLAN.md (SA Query Utilities)
+Stopped at: Completed 08-03-PLAN.md (SA Approval Server Actions)
 Resume file: None
-Next: 08-03-PLAN.md (SA Approval Server Actions)
+Next: 08-04-PLAN.md (SA Approval UI)
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 — Completed 08-02-PLAN.md*
+*Last updated: 2026-02-04 — Completed 08-03-PLAN.md*
