@@ -14,10 +14,10 @@ CREATE INDEX IF NOT EXISTS descriptor_all_fts_idx ON "Descriptor"
 USING gin(
   to_tsvector('english',
     coalesce("criterionName", '') || ' ' ||
-    coalesce("excellent", '') || ' ' ||
-    coalesce("good", '') || ' ' ||
-    coalesce("pass", '') || ' ' ||
-    coalesce("belowPass", '')
+    coalesce("score3", '') || ' ' ||
+    coalesce("score2", '') || ' ' ||
+    coalesce("score1", '') || ' ' ||
+    coalesce("score0", '')
   )
 );
 
