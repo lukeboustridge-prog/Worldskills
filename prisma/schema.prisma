@@ -60,6 +60,13 @@ enum GateScheduleType {
   CMonth
 }
 
+enum DescriptorBatchStatus {
+  DRAFT // SCM creating, not yet submitted
+  PENDING_REVIEW // Submitted to SA, awaiting approval
+  APPROVED // SA approved (qualityIndicator set to GOOD)
+  RETURNED // SA returned with comments, SCM can revise
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String?
@@ -82,10 +89,12 @@ model User {
   favoriteDescriptors  DescriptorFavorite[]
   scmQuestionsCreated  SCMQuestion[]         @relation("SCMQuestionCreator")
   scmQuestionResponses SCMQuestionResponse[] @relation("SCMQuestionResponses")
-  emailsSent            Email[]               @relation("EmailSender")
-  emailsReceived        EmailRecipient[]      @relation("EmailRecipients")
-  deliverableComments   DeliverableComment[]  @relation("DeliverableComments")
-  createdWSOSSections   WSOSSection[]         @relation("WSOSSectionCreator")
+  emailsSent           Email[]               @relation("EmailSender")
+  emailsReceived       EmailRecipient[]      @relation("EmailRecipients")
+  deliverableComments  DeliverableComment[]  @relation("DeliverableComments")
+  createdWSOSSections  WSOSSection[]         @relation("WSOSSectionCreator")
+  descriptorsCreated   Descriptor[]          @relation("DescriptorCreator")
+  descriptorsReviewed  Descriptor[]          @relation("DescriptorReviewer")
 }
 
 model Skill {
@@ -101,14 +110,14 @@ model Skill {
   scm User? @relation("SkillSCM", fields: [scmId], references: [id])
   sa  User  @relation("SkillSA", fields: [saId], references: [id])
 
-  deliverables Deliverable[]
-  gates        Gate[]
-  messages     Message[]
-  activity     ActivityLog[]
-  meetings     Meeting[]
-  teamMembers          SkillMember[]
-  emails               EmailSkill[]
-  deliverableComments  DeliverableComment[]
+  deliverables        Deliverable[]
+  gates               Gate[]
+  messages            Message[]
+  activity            ActivityLog[]
+  meetings            Meeting[]
+  teamMembers         SkillMember[]
+  emails              EmailSkill[]
+  deliverableComments DeliverableComment[]
 
   @@unique([name])
   @@index([scmId])
@@ -401,9 +410,9 @@ model Descriptor {
   score3 String? @db.Text // Excellent - 3 points
 
   // Source metadata
-  source     String   // "WSC2024" for imported, "Manual" for admin-added
+  source     String // "WSC2024" for imported, "Manual" for admin-added
   skillNames String[] @default([]) // Skills this descriptor applies to
-  sector     String?  // Sector category if available
+  sector     String? // Sector category if available
 
   // Categories and tags (for filtering)
   categories String[] @default([]) // Categories this descriptor belongs to
@@ -426,10 +435,29 @@ model Descriptor {
   // User favorites
   favoritedBy DescriptorFavorite[]
 
+  // WSOS Section linking (required for SCM-created descriptors)
+  wsosSectionId String?
+  wsosSection   WSOSSection? @relation(fields: [wsosSectionId], references: [id])
+
+  // Batch workflow fields
+  batchStatus   DescriptorBatchStatus? // null for admin/imported descriptors
+  batchId       String? // Groups descriptors in same submission
+  createdById   String? // SCM who created (null for imported)
+  createdBy     User?                  @relation("DescriptorCreator", fields: [createdById], references: [id])
+  submittedAt   DateTime? // When batch was submitted
+  reviewerId    String? // SA who reviewed
+  reviewer      User?                  @relation("DescriptorReviewer", fields: [reviewerId], references: [id])
+  reviewedAt    DateTime? // When review completed
+  reviewComment String?                @db.Text // SA's feedback if returned
+
   // B-tree indexes for common filters (GIN indexes for arrays added via raw SQL)
   @@index([source])
   @@index([sector])
   @@index([version])
+  @@index([wsosSectionId])
+  @@index([batchStatus])
+  @@index([batchId])
+  @@index([createdById])
 }
 
 model DescriptorFavorite {
@@ -565,7 +593,8 @@ model WSOSSection {
   createdBy   String
   updatedAt   DateTime @updatedAt
 
-  creator User @relation("WSOSSectionCreator", fields: [createdBy], references: [id])
+  creator     User         @relation("WSOSSectionCreator", fields: [createdBy], references: [id])
+  descriptors Descriptor[]
 
   @@index([name])
 }
