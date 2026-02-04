@@ -28,53 +28,56 @@ Existing capabilities already built and deployed:
 - ✓ User invitations with expiration — existing
 - ✓ File storage integration (AWS S3) — existing
 - ✓ Email service integration (Resend) — existing
+- ✓ Descriptor library with 228 curated descriptors linked to WSOS sections — v1.0
+- ✓ Full-text search across descriptors with relevance ranking — v1.0
+- ✓ Filter descriptors by skill area, criterion type, performance level — v1.0
+- ✓ Admin CRUD for descriptor management with quality indicators — v1.0
+- ✓ Descriptor preview modal with clipboard integration — v1.0
+- ✓ Related descriptors via similarity matching — v1.0
+- ✓ Descriptor favorites/bookmarks — v1.0
 
-## Current Milestone: v1.0 Descriptor Library & Marking Scheme Support
+## Current Milestone: v2.0 SCM Descriptor Creation & Approval Workflow
 
-**Goal:** Enable SCMs to create high-quality judgment marking schemes using a curated library of proven descriptors extracted from WSC2024 marking schemes.
+**Goal:** Enable SCMs to contribute new descriptors to the library with SA approval, including WSOS section management and batch review workflow with email notifications.
 
 **Target features:**
-- Analyze 58 WSC2024 marking schemes to extract excellent descriptor examples
-- Build searchable descriptor library with categorization (skill area, criterion type, performance level)
-- Create marking scheme builder interface for SCMs
-- Enable search, filter, and insert descriptors into marking schemes
-- Support exporting marking schemes to Excel/PDF
+- SCMs can create new descriptors linked to WSOS sections
+- WSOS section management with duplicate detection
+- Batch submission workflow with explicit "Submit for Review" action
+- SA approval workflow (approve as-is or modify wording)
+- Email notifications for review requests and approvals
 
 ### Active
 
 Current milestone requirements:
 
-- [ ] Analyze all WSC2024 marking schemes and extract descriptor patterns
-- [ ] Identify excellent descriptor examples (clear, measurable, differentiated)
-- [ ] Identify poor descriptor anti-patterns
-- [ ] Find common criterion types across skills
-- [ ] Database schema for descriptor library with metadata (skill, criterion, tags)
-- [ ] Full-text search across descriptors
-- [ ] Filter descriptors by skill area, criterion type, performance level
-- [ ] Tag-based organization for flexible categorization
-- [ ] SCM can browse descriptor library
-- [ ] SCM can search descriptors by keyword
-- [ ] SCM can view descriptor with full context (skill, criterion, performance levels)
-- [ ] SCM can copy descriptor to clipboard
-- [ ] SCM can create marking schemes in the system
-- [ ] SCM can search and insert descriptors directly into marking scheme forms
-- [ ] Export marking schemes to Excel format
-- [ ] Export marking schemes to PDF format
+- [ ] WSOS Section entity with duplicate detection (similarity matching)
+- [ ] SCMs can create new WSOS sections if needed (no SA approval required)
+- [ ] SCMs can create descriptors linked to WSOS sections
+- [ ] New SCM-created descriptors start with NEEDS_REVIEW status
+- [ ] Batch workflow: SCM adds multiple descriptors, then submits for review
+- [ ] Email notification to SA when SCM submits batch for review
+- [ ] SA can view pending descriptors from their skill's SCM
+- [ ] SA can approve descriptors (status changes to GOOD)
+- [ ] SA can modify descriptor wording before approving
+- [ ] Track whether descriptor was modified during approval (flag, not version history)
+- [ ] Email notification to SCM when descriptors approved
+- [ ] Approval email indicates if wording was modified
 
 ### Out of Scope
 
 Features explicitly excluded from current milestone:
 
-- AI-generated descriptors — focus on curated library from proven examples
-- Automated marking scheme validation — manual review sufficient for v1.0
+- AI-generated descriptors — focus on human-curated library
+- Automated marking scheme validation — manual review sufficient
 - Collaborative editing of marking schemes — single-author workflow sufficient
-- Version history for marking schemes — defer to future milestone
-- Descriptor rating/voting system — admin-curated library sufficient
-- Multi-language descriptor support — English only for v1.0
+- Version history for descriptors — flag modification, don't track full history
+- Descriptor rating/voting system — SA approval workflow sufficient
+- Multi-language descriptor support — English only
 - Test Project management workflows — future milestone
 - Issue/Dispute tracking — future milestone
 - Full CIS integration — future milestone
-- Management meetings (phases 3-4) — deferred, focus on descriptor library
+- Management meetings — deferred
 
 ## Context
 
@@ -115,6 +118,10 @@ Features explicitly excluded from current milestone:
 | Per-meeting attendee selection for Secretariat | Not all Secretariat need to attend every meeting, flexibility required | — Pending |
 | Same meetings interface for both types | Reduce complexity, SAs see all their meetings in one place | — Pending |
 | Preserve all existing meeting functionality | Email/calendar invites already working, users expect this | — Pending |
+| SCM descriptors route to SCM's assigned skill SA | Clear ownership, SA knows their SCM's work | — Pending |
+| WSOS sections don't need SA approval | Reduces friction, duplicate detection prevents proliferation | — Pending |
+| Flag modification rather than version history | Simpler implementation, user knows if wording changed | — Pending |
+| Explicit batch submission vs auto-submit | SCM controls when to notify SA, can refine before submitting | — Pending |
 
 ---
-*Last updated: 2026-02-01 after v1.0 milestone start*
+*Last updated: 2026-02-04 after v2.0 milestone start*
