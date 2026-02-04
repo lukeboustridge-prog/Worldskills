@@ -8,7 +8,7 @@ import { Lock, AlertCircle, CheckCircle2, Clock, X } from "lucide-react";
 
 interface SkillVote {
   id: string;
-  skillNumber: number | null;
+  code: string | null;
   name: string;
   vote: {
     status: CPWVoteStatus;
@@ -23,60 +23,6 @@ interface CPWDisplayFullscreenProps {
   skills: SkillVote[];
 }
 
-// Confetti component
-function Confetti({ active }: { active: boolean }) {
-  if (!active) return null;
-
-  return (
-    <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
-      {Array.from({ length: 150 }).map((_, i) => (
-        <div
-          key={i}
-          className="confetti-piece"
-          style={{
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 3}s`,
-            animationDuration: `${3 + Math.random() * 2}s`,
-            backgroundColor: ['#22c55e', '#16a34a', '#4ade80', '#86efac', '#fbbf24', '#f59e0b'][Math.floor(Math.random() * 6)],
-          }}
-        />
-      ))}
-      <style jsx>{`
-        .confetti-piece {
-          position: absolute;
-          width: 10px;
-          height: 10px;
-          top: -10px;
-          opacity: 0;
-          animation: confetti-fall linear forwards;
-        }
-        .confetti-piece:nth-child(odd) {
-          width: 8px;
-          height: 16px;
-          border-radius: 2px;
-        }
-        .confetti-piece:nth-child(even) {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-        }
-        @keyframes confetti-fall {
-          0% {
-            opacity: 1;
-            top: -10px;
-            transform: translateX(0) rotateZ(0deg);
-          }
-          100% {
-            opacity: 0;
-            top: 100vh;
-            transform: translateX(${Math.random() > 0.5 ? '' : '-'}${50 + Math.random() * 100}px) rotateZ(${360 + Math.random() * 720}deg);
-          }
-        }
-      `}</style>
-    </div>
-  );
-}
-
 export function CPWDisplayFullscreen({
   sessionId,
   sessionName,
@@ -87,8 +33,10 @@ export function CPWDisplayFullscreen({
   const [skills, setSkills] = useState<SkillVote[]>(initialSkills);
   const [isLocked, setIsLocked] = useState(initialLocked);
   const [animatingSkills, setAnimatingSkills] = useState<Set<string>>(new Set());
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [celebratingSkills, setCelebratingSkills] = useState<Set<string>>(new Set());
+  const [confettiParticles, setConfettiParticles] = useState<Array<{ id: number; x: number; color: string }>>([]);
   const prevSkillsRef = useRef<SkillVote[]>(initialSkills);
+  const confettiIdRef = useRef(0);
 
   // ESC to exit
   useEffect(() => {
@@ -101,6 +49,22 @@ export function CPWDisplayFullscreen({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router]);
 
+  // Trigger confetti
+  const triggerConfetti = useCallback(() => {
+    const colors = ['#22c55e', '#16a34a', '#4ade80', '#86efac', '#fbbf24', '#f59e0b', '#10b981'];
+    const newParticles = Array.from({ length: 100 }, () => ({
+      id: confettiIdRef.current++,
+      x: Math.random() * 100,
+      color: colors[Math.floor(Math.random() * colors.length)],
+    }));
+    setConfettiParticles(prev => [...prev, ...newParticles]);
+
+    // Clean up after animation
+    setTimeout(() => {
+      setConfettiParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)));
+    }, 4000);
+  }, []);
+
   // Polling for updates
   const fetchUpdates = useCallback(async () => {
     try {
@@ -111,6 +75,7 @@ export function CPWDisplayFullscreen({
 
       // Check for new or changed votes
       const newAnimating = new Set<string>();
+      const newCelebrating = new Set<string>();
       let hasNewGreen = false;
 
       data.skills.forEach((newSkill: SkillVote) => {
@@ -124,19 +89,20 @@ export function CPWDisplayFullscreen({
           if (newSkill.vote?.status === CPWVoteStatus.GREEN &&
               oldSkill?.vote?.status !== CPWVoteStatus.GREEN) {
             hasNewGreen = true;
+            newCelebrating.add(newSkill.id);
           }
         }
       });
 
       if (newAnimating.size > 0) {
         setAnimatingSkills(newAnimating);
-        setTimeout(() => setAnimatingSkills(new Set()), 1500);
+        setTimeout(() => setAnimatingSkills(new Set()), 2000);
+      }
 
-        // Trigger confetti for green votes
-        if (hasNewGreen) {
-          setShowConfetti(true);
-          setTimeout(() => setShowConfetti(false), 4000);
-        }
+      if (newCelebrating.size > 0) {
+        setCelebratingSkills(newCelebrating);
+        triggerConfetti();
+        setTimeout(() => setCelebratingSkills(new Set()), 2000);
       }
 
       prevSkillsRef.current = data.skills;
@@ -145,10 +111,10 @@ export function CPWDisplayFullscreen({
     } catch (error) {
       console.error("Failed to fetch updates", error);
     }
-  }, [sessionId]);
+  }, [sessionId, triggerConfetti]);
 
   useEffect(() => {
-    const interval = setInterval(fetchUpdates, 1500); // Faster polling for 64 simultaneous votes
+    const interval = setInterval(fetchUpdates, 1500);
     return () => clearInterval(interval);
   }, [fetchUpdates]);
 
@@ -162,7 +128,21 @@ export function CPWDisplayFullscreen({
 
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900 overflow-hidden">
-      <Confetti active={showConfetti} />
+      {/* Confetti */}
+      <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+        {confettiParticles.map((particle) => (
+          <div
+            key={particle.id}
+            className="absolute w-3 h-3 animate-confetti-fall"
+            style={{
+              left: `${particle.x}%`,
+              backgroundColor: particle.color,
+              borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+              animationDelay: `${Math.random() * 0.5}s`,
+            }}
+          />
+        ))}
+      </div>
 
       {/* Close button */}
       <button
@@ -242,6 +222,7 @@ export function CPWDisplayFullscreen({
                 key={skill.id}
                 skill={skill}
                 isAnimating={animatingSkills.has(skill.id)}
+                isCelebrating={celebratingSkills.has(skill.id)}
               />
             ))}
           </div>
@@ -271,8 +252,8 @@ export function CPWDisplayFullscreen({
                   className="rounded-xl border border-red-200 bg-red-50 p-4 animate-in fade-in slide-in-from-right duration-300"
                 >
                   <div className="flex items-center gap-2">
-                    {skill.skillNumber && (
-                      <span className="text-sm font-bold text-red-400">#{skill.skillNumber}</span>
+                    {skill.code && (
+                      <span className="text-sm font-bold text-red-400">#{skill.code}</span>
                     )}
                     <h3 className="font-semibold text-red-700 text-lg">{skill.name}</h3>
                   </div>
@@ -300,8 +281,8 @@ export function CPWDisplayFullscreen({
                     key={skill.id}
                     className="rounded-lg px-3 py-2 text-base text-slate-600 bg-slate-100 flex items-center gap-2"
                   >
-                    {skill.skillNumber && (
-                      <span className="text-sm font-bold text-slate-400">#{skill.skillNumber}</span>
+                    {skill.code && (
+                      <span className="text-sm font-bold text-slate-400">#{skill.code}</span>
                     )}
                     {skill.name}
                   </div>
@@ -316,6 +297,37 @@ export function CPWDisplayFullscreen({
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-sm text-slate-400">
         Press ESC to exit fullscreen
       </div>
+
+      {/* CSS for confetti animation */}
+      <style jsx global>{`
+        @keyframes confetti-fall {
+          0% {
+            transform: translateY(-10px) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+          }
+        }
+        .animate-confetti-fall {
+          animation: confetti-fall 3s ease-out forwards;
+        }
+        @keyframes celebrate-spin {
+          0% {
+            transform: scale(1) rotateY(0deg);
+          }
+          50% {
+            transform: scale(1.15) rotateY(180deg);
+          }
+          100% {
+            transform: scale(1.1) rotateY(360deg);
+          }
+        }
+        .animate-celebrate {
+          animation: celebrate-spin 0.6s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }
@@ -323,9 +335,11 @@ export function CPWDisplayFullscreen({
 function SkillCard({
   skill,
   isAnimating,
+  isCelebrating,
 }: {
   skill: SkillVote;
   isAnimating: boolean;
+  isCelebrating: boolean;
 }) {
   const isGreen = skill.vote?.status === CPWVoteStatus.GREEN;
   const isRed = skill.vote?.status === CPWVoteStatus.RED;
@@ -352,23 +366,26 @@ function SkillCard({
     <div
       className={`
         relative flex flex-col items-center justify-center rounded-lg border-2 p-1
-        transition-all duration-500 ease-out overflow-hidden
+        transition-all duration-300 ease-out overflow-hidden
         ${getStatusStyles()}
-        ${isAnimating && isGreen ? "scale-110 ring-4 ring-green-400 animate-pulse" : ""}
+        ${isCelebrating ? "animate-celebrate ring-4 ring-green-400 ring-opacity-75" : ""}
         ${isAnimating && isRed ? "scale-105 ring-4 ring-red-400" : ""}
         ${isAnimating && !skill.vote ? "scale-105 ring-4 ring-blue-400" : ""}
       `}
       title={skill.name}
+      style={{
+        perspective: '1000px',
+      }}
     >
       <div className="absolute top-1 right-1">{getIcon()}</div>
 
-      {/* Skill Number */}
-      {skill.skillNumber && (
+      {/* Skill Code */}
+      {skill.code && (
         <span
           className="font-bold opacity-60"
           style={{ fontSize: 'clamp(0.5rem, 0.9vw, 0.75rem)' }}
         >
-          #{skill.skillNumber}
+          #{skill.code}
         </span>
       )}
 

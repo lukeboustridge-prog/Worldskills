@@ -32,15 +32,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    // Get all skills sorted by skill number
+    // Get all skills sorted by code
     const skills = await prisma.skill.findMany({
       orderBy: [
-        { skillNumber: "asc" },
+        { code: "asc" },
         { name: "asc" },
       ],
       select: {
         id: true,
-        skillNumber: true,
+        code: true,
         name: true,
       },
     });
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     // Build skill data with vote status
     const skillsWithVotes = skills.map((skill) => ({
       id: skill.id,
-      skillNumber: skill.skillNumber,
+      code: skill.code,
       name: skill.name,
       vote: votesMap.get(skill.id) ?? null,
     }));

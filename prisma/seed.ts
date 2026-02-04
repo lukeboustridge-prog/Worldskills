@@ -190,6 +190,7 @@ async function main() {
     await prisma.skill.upsert({
       where: { id: skill.id },
       update: {
+        code: skill.code,
         name: skill.name,
         sector: skill.sector,
         notes: `Skill Code ${skill.code} — ${skill.sector}`,
@@ -198,6 +199,7 @@ async function main() {
       },
       create: {
         id: skill.id,
+        code: skill.code,
         name: skill.name,
         sector: skill.sector,
         notes: `Skill Code ${skill.code} — ${skill.sector}`,
