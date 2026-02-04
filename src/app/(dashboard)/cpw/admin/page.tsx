@@ -116,7 +116,7 @@ export default async function CPWAdminPage() {
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/cpw/display" target="_blank">
+          <Link href="/cpw-display">
             <Monitor className="mr-2 h-4 w-4" />
             Open Display
           </Link>
