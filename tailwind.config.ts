@@ -38,6 +38,10 @@ const config: Config = {
         card: {
           DEFAULT: "hsl(0 0% 100%)",
           foreground: "hsl(222.2 47.4% 11.2%)"
+        },
+        popover: {
+          DEFAULT: "hsl(0 0% 100%)",
+          foreground: "hsl(222.2 47.4% 11.2%)"
         }
       },
       borderRadius: {
