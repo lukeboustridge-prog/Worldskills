@@ -1,6 +1,6 @@
 "use server";
 
-import { ResourceCategory } from "@prisma/client";
+import { ResourceCategory, ResourceVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -13,6 +13,7 @@ const resourceSchema = z.object({
   description: z.string().optional(),
   url: z.string().url("Provide a valid URL"),
   category: z.nativeEnum(ResourceCategory),
+  visibility: z.nativeEnum(ResourceVisibility),
   isFeatured: z.string().optional(),
   position: z.coerce.number().int().min(0).optional(),
 });
@@ -26,6 +27,7 @@ export async function createResourceLinkAction(formData: FormData) {
     description: formData.get("description") || undefined,
     url: formData.get("url"),
     category: formData.get("category"),
+    visibility: formData.get("visibility"),
     isFeatured: rawIsFeatured === null ? undefined : rawIsFeatured,
     position: formData.get("position") || undefined,
   });
@@ -47,6 +49,7 @@ export async function createResourceLinkAction(formData: FormData) {
         description: parsed.description?.trim() || null,
         url: parsed.url.trim(),
         category: parsed.category,
+        visibility: parsed.visibility,
         isFeatured,
         position: parsed.position ?? 0,
       },
@@ -73,6 +76,7 @@ const updateResourceSchema = z.object({
   description: z.string().optional(),
   url: z.string().url("Provide a valid URL"),
   category: z.nativeEnum(ResourceCategory),
+  visibility: z.nativeEnum(ResourceVisibility),
   isFeatured: z.string().optional(),
   position: z.coerce.number().int().min(0).optional(),
 });
@@ -87,6 +91,7 @@ export async function updateResourceLinkAction(formData: FormData) {
     description: formData.get("description") || undefined,
     url: formData.get("url"),
     category: formData.get("category"),
+    visibility: formData.get("visibility"),
     isFeatured: rawIsFeatured === null ? undefined : rawIsFeatured,
     position: formData.get("position") || undefined,
   });
@@ -109,6 +114,7 @@ export async function updateResourceLinkAction(formData: FormData) {
         description: parsed.description?.trim() || null,
         url: parsed.url.trim(),
         category: parsed.category,
+        visibility: parsed.visibility,
         isFeatured,
         position: parsed.position ?? 0,
       },

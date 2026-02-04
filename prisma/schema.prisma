@@ -43,6 +43,12 @@ enum ResourceCategory {
   EXTERNAL
 }
 
+enum ResourceVisibility {
+  SA   // Only visible to Skill Advisors
+  SCM  // Only visible to Skill Coordinator Managers
+  BOTH // Visible to both SA and SCM
+}
+
 enum QualityIndicator {
   EXCELLENT // Exemplary descriptor, showcase quality
   GOOD // Solid descriptor, ready for use
@@ -384,18 +390,20 @@ model VerificationToken {
 }
 
 model ResourceLink {
-  id          String           @id @default(cuid())
+  id          String             @id @default(cuid())
   title       String
   description String?
-  url         String           @db.Text
+  url         String             @db.Text
   category    ResourceCategory
-  isFeatured  Boolean          @default(false)
-  position    Int              @default(0)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  visibility  ResourceVisibility @default(BOTH)
+  isFeatured  Boolean            @default(false)
+  position    Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   @@index([category])
   @@index([isFeatured])
+  @@index([visibility])
 }
 
 model Descriptor {

@@ -5,8 +5,9 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
+  addDocumentEvidenceItem,
   createDocumentEvidenceRecord,
-  findDocumentEvidence,
+  findAllDocumentEvidences,
   normaliseEvidenceItems,
   serialiseEvidenceItems,
   upsertDocumentEvidenceItem,
@@ -137,8 +138,9 @@ export async function POST(request: NextRequest, { params }: { params: { deliver
   }
 
   const evidenceItems = normaliseEvidenceItems(deliverable.evidenceItems);
-  const existing = findDocumentEvidence(evidenceItems);
-  const nextVersion = existing ? (existing.version ?? 1) + 1 : 1;
+  const existingDocuments = findAllDocumentEvidences(evidenceItems);
+  const highestVersion = existingDocuments.reduce((max, doc) => Math.max(max, doc.version ?? 1), 0);
+  const nextVersion = highestVersion + 1;
 
   const documentRecord = createDocumentEvidenceRecord({
     storageKey: parsed.data.storageKey,
@@ -149,13 +151,28 @@ export async function POST(request: NextRequest, { params }: { params: { deliver
     version: nextVersion
   });
 
-  const upserted = upsertDocumentEvidenceItem({
-    items: evidenceItems,
-    next: documentRecord,
-    replaceId: parsed.data.replaceEvidenceId ?? undefined
-  });
+  // Use upsert only when explicitly replacing a specific document
+  // Otherwise, add the new document without removing existing ones
+  const replaceId = parsed.data.replaceEvidenceId;
+  let updatedItems: typeof evidenceItems;
+  let removed: typeof existingDocuments[number] | null = null;
 
-  const payload = serialiseEvidenceItems(upserted.items);
+  if (replaceId) {
+    const upserted = upsertDocumentEvidenceItem({
+      items: evidenceItems,
+      next: documentRecord,
+      replaceId
+    });
+    updatedItems = upserted.items;
+    removed = upserted.removed;
+  } else {
+    updatedItems = addDocumentEvidenceItem({
+      items: evidenceItems,
+      document: documentRecord
+    });
+  }
+
+  const payload = serialiseEvidenceItems(updatedItems);
 
   await prisma.deliverable.update({
     where: { id: deliverable.id },
@@ -168,7 +185,7 @@ export async function POST(request: NextRequest, { params }: { params: { deliver
   await logActivity({
     skillId: deliverable.skillId,
     userId: user.id,
-    action: upserted.removed ? "DeliverableDocumentReplaced" : "DeliverableDocumentUploaded",
+    action: removed ? "DeliverableDocumentReplaced" : "DeliverableDocumentUploaded",
     payload: {
       deliverableId: deliverable.id,
       documentId: documentRecord.id,
@@ -181,9 +198,9 @@ export async function POST(request: NextRequest, { params }: { params: { deliver
   revalidatePath("/dashboard");
 
   let warning: string | null = null;
-  if (upserted.removed) {
+  if (removed) {
     try {
-      await deleteStoredObject(upserted.removed.storageKey);
+      await deleteStoredObject(removed.storageKey);
     } catch (error) {
       warning = "The previous document could not be removed. We'll clean it up shortly.";
       console.error("Failed to delete replaced document", error);

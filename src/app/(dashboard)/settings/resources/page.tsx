@@ -1,4 +1,4 @@
-import { ResourceCategory } from "@prisma/client";
+import { ResourceCategory, ResourceVisibility } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
@@ -31,6 +31,12 @@ const CATEGORY_LABELS: Record<ResourceCategory, string> = {
   [ResourceCategory.ONBOARDING]: "Onboarding",
   [ResourceCategory.POLICY]: "Policy",
   [ResourceCategory.EXTERNAL]: "External Link",
+};
+
+const VISIBILITY_LABELS: Record<ResourceVisibility, string> = {
+  [ResourceVisibility.SA]: "SA Only",
+  [ResourceVisibility.SCM]: "SCM Only",
+  [ResourceVisibility.BOTH]: "Both SA & SCM",
 };
 
 export default async function ResourcesSettingsPage({
@@ -161,6 +167,26 @@ export default async function ResourcesSettingsPage({
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="visibility">Visible To</Label>
+              <select
+                id="visibility"
+                name="visibility"
+                required
+                defaultValue={editingResource?.visibility ?? ResourceVisibility.BOTH}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-1/2"
+              >
+                {Object.entries(VISIBILITY_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Choose who can see this resource (admins always see all resources)
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="url">URL</Label>
               <Input
                 id="url"
@@ -257,6 +283,9 @@ export default async function ResourcesSettingsPage({
                     <div className="mt-1 flex flex-wrap items-center gap-2">
                       <Badge variant="outline">
                         {CATEGORY_LABELS[resource.category]}
+                      </Badge>
+                      <Badge variant="outline" className="bg-muted">
+                        {VISIBILITY_LABELS[resource.visibility]}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
                         Position: {resource.position}

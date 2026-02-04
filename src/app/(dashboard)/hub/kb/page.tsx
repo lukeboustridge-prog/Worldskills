@@ -1,4 +1,5 @@
-import { ResourceCategory, Role } from "@prisma/client";
+import { ResourceCategory, ResourceVisibility, Role } from "@prisma/client";
+import type { ResourceLink } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ExternalLink, Globe, Settings } from "lucide-react";
@@ -53,6 +54,27 @@ const CATEGORY_ORDER: ResourceCategory[] = [
   ResourceCategory.ONBOARDING,
 ];
 
+function canUserSeeResource(
+  resource: ResourceLink,
+  userRole: Role,
+  isAdmin: boolean
+): boolean {
+  // Admins can see everything
+  if (isAdmin) return true;
+
+  // Check visibility based on user role
+  switch (resource.visibility) {
+    case ResourceVisibility.SA:
+      return userRole === Role.SA;
+    case ResourceVisibility.SCM:
+      return userRole === Role.SCM;
+    case ResourceVisibility.BOTH:
+      return userRole === Role.SA || userRole === Role.SCM;
+    default:
+      return true;
+  }
+}
+
 export default async function KnowledgeBasePage() {
   const user = await getCurrentUser();
 
@@ -60,14 +82,21 @@ export default async function KnowledgeBasePage() {
     redirect("/login");
   }
 
-  const resources = await getAllResources();
+  const allResources = await getAllResources();
 
-  const externalLinks = resources.filter((r) => r.category === ResourceCategory.EXTERNAL);
+  // Filter resources based on user role and visibility
+  const visibleResources = allResources.filter((r) =>
+    canUserSeeResource(r, user.role, user.isAdmin)
+  );
+
+  const externalLinks = visibleResources.filter(
+    (r) => r.category === ResourceCategory.EXTERNAL
+  );
 
   const resourcesByCategory = CATEGORY_ORDER.map((category) => ({
     category,
     config: CATEGORY_CONFIG[category],
-    resources: resources.filter((r) => r.category === category),
+    resources: visibleResources.filter((r) => r.category === category),
   })).filter((group) => group.resources.length > 0);
 
   return (
@@ -91,9 +120,9 @@ export default async function KnowledgeBasePage() {
         )}
       </div>
 
-      <KBSearch resources={resources} />
+      <KBSearch resources={visibleResources} />
 
-      {(user.role === Role.SA || user.isAdmin) && externalLinks.length > 0 && (
+      {externalLinks.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -101,7 +130,7 @@ export default async function KnowledgeBasePage() {
               External Links
             </CardTitle>
             <CardDescription>
-              Useful external websites and tools for Skill Advisors
+              Useful external websites and tools
             </CardDescription>
           </CardHeader>
           <CardContent>

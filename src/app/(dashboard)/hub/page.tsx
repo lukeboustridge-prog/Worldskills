@@ -1,4 +1,5 @@
-import { DeliverableState, Role } from "@prisma/client";
+import { DeliverableState, ResourceVisibility, Role } from "@prisma/client";
+import type { ResourceLink } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { differenceInCalendarDays, format } from "date-fns";
@@ -38,6 +39,25 @@ const QUICK_ACTIONS = [
     icon: Receipt,
   },
 ];
+
+function canUserSeeResource(
+  resource: ResourceLink,
+  userRole: Role,
+  isAdmin: boolean
+): boolean {
+  if (isAdmin) return true;
+
+  switch (resource.visibility) {
+    case ResourceVisibility.SA:
+      return userRole === Role.SA;
+    case ResourceVisibility.SCM:
+      return userRole === Role.SCM;
+    case ResourceVisibility.BOTH:
+      return userRole === Role.SA || userRole === Role.SCM;
+    default:
+      return true;
+  }
+}
 
 export default async function SkillsHubPage() {
   const user = await getCurrentUser();
@@ -107,7 +127,10 @@ export default async function SkillsHubPage() {
       })
     : [];
 
-  const featuredResources = await getFeaturedResources();
+  const allFeaturedResources = await getFeaturedResources();
+  const featuredResources = allFeaturedResources.filter((r) =>
+    canUserSeeResource(r, user.role, user.isAdmin)
+  );
 
   const nextMeeting = skillIds.length
     ? await prisma.meeting.findFirst({
