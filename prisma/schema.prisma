@@ -57,8 +57,9 @@ enum QualityIndicator {
 }
 
 enum EmailType {
-  SKILL_BROADCAST // SA broadcast to their skills
-  INTERNAL // SA/Secretariat internal communication
+  SKILL_BROADCAST  // SA broadcast to their skills
+  INTERNAL         // SA/Secretariat internal communication
+  INBOUND_REPLY    // Reply received via inbound email webhook
 }
 
 enum GateScheduleType {
@@ -106,6 +107,7 @@ model User {
   createdWSOSSections  WSOSSection[]         @relation("WSOSSectionCreator")
   descriptorsCreated   Descriptor[]          @relation("DescriptorCreator")
   descriptorsReviewed  Descriptor[]          @relation("DescriptorReviewer")
+  pushSubscriptions    PushSubscription[]
 }
 
 model Skill {
@@ -530,14 +532,31 @@ model Email {
   senderId  String
   createdAt DateTime  @default(now())
 
+  // Threading support
+  threadId  String?   // ID of the root email in the thread (null for root emails)
+  parentId  String?   // ID of the email this is a direct reply to (null for root emails)
+
+  // Inbound email tracking
+  resendEmailId   String?  // Resend's email ID for tracking
+  inboundFromEmail String? // Original sender's email for inbound replies
+  inboundFromName  String? // Original sender's name for inbound replies
+
   sender      User              @relation("EmailSender", fields: [senderId], references: [id])
   recipients  EmailRecipient[]
   attachments EmailAttachment[]
   skills      EmailSkill[]
 
+  // Self-relations for threading
+  thread      Email?   @relation("EmailThread", fields: [threadId], references: [id], onDelete: SetNull)
+  threadReplies Email[] @relation("EmailThread")
+  parent      Email?   @relation("EmailParent", fields: [parentId], references: [id], onDelete: SetNull)
+  replies     Email[]  @relation("EmailParent")
+
   @@index([senderId])
   @@index([type])
   @@index([createdAt])
+  @@index([threadId])
+  @@index([parentId])
 }
 
 model EmailRecipient {
@@ -646,4 +665,18 @@ model CPWVote {
   @@unique([sessionId, skillId]) // One vote per skill per session
   @@index([sessionId])
   @@index([skillId])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

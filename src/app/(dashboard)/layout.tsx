@@ -6,6 +6,7 @@ import { SignOutButton } from "@/components/layout/sign-out-button";
 import { NavLink } from "@/components/layout/nav-link";
 import { SCMQuestionsModal } from "@/components/scm-questions/SCMQuestionsModal";
 import { ImpersonationBanner } from "@/components/impersonation-banner";
+import { PushNotificationPrompt } from "@/components/push-notification-prompt";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserDisplayName } from "@/lib/users";
 import { getUnansweredQuestionsForUser } from "./settings/scm-questions-actions";
@@ -98,7 +99,10 @@ export default async function DashboardLayout({
             <NavLink key={item.href} href={item.href} label={item.label} />
           ))}
         </aside>
-        <main className="flex-1 pb-12">{children}</main>
+        <main className="flex-1 pb-12">
+          <PushNotificationPrompt />
+          {children}
+        </main>
       </div>
     </div>
   );

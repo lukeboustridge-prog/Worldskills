@@ -26,7 +26,8 @@ import {
   normaliseEvidenceItems,
   serialiseEvidenceItems
 } from "@/lib/deliverables";
-import { sendDeliverableStatusNotification, sendSkillConversationNotification } from "@/lib/email/notifications";
+import { sendDeliverableStatusNotification } from "@/lib/email/notifications";
+import { sendPushNotificationToUsers } from "@/lib/push";
 import { requireAppSettings } from "@/lib/settings";
 import { canManageSkill } from "@/lib/permissions";
 
@@ -935,19 +936,21 @@ export async function createMessageAction(formData: FormData) {
         skillWithParticipants.scm,
         ...skillWithParticipants.teamMembers.map((member) => member.user)
       ];
-      const recipientEmails = participants
+      const recipientIds = participants
         .filter((participant): participant is NonNullable<typeof participant> => Boolean(participant))
         .filter((participant) => participant.id !== user.id)
-        .map((participant) => participant.email)
-        .filter((email): email is string => Boolean(email));
+        .map((participant) => participant.id);
 
-      if (recipientEmails.length > 0) {
-        await sendSkillConversationNotification({
-          skillId: skillWithParticipants.id,
-          skillName: skillWithParticipants.name,
-          messageContent: parsed.data.body,
-          authorName: user.name ?? "Unknown user",
-          to: recipientEmails
+      if (recipientIds.length > 0) {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://skill-tracker.worldskills2026.com";
+        const messagePreview = parsed.data.body.length > 100
+          ? parsed.data.body.slice(0, 100) + "..."
+          : parsed.data.body;
+
+        await sendPushNotificationToUsers(recipientIds, {
+          title: `New message in ${skillWithParticipants.name}`,
+          body: `${user.name ?? "Someone"}: ${messagePreview}`,
+          url: `${baseUrl}/skills/${skillWithParticipants.id}`,
         });
       }
     }

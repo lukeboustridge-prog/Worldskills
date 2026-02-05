@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 import { Inter } from "next/font/google";
@@ -13,8 +13,19 @@ export const metadata: Metadata = {
   description:
     "Track WorldSkills deliverables, milestones, and conversations between Skill Advisors and Skill Competition Managers.",
   icons: {
-    icon: "/favicon.png"
+    icon: "/favicon.png",
+    apple: "/logo.png"
+  },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Skill Tracker"
   }
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2563eb"
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
