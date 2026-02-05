@@ -42,7 +42,7 @@ export type FileUploadPolicy = {
   allowedMimeTypes: readonly string[];
 };
 
-const DEFAULT_MAX_MB = 25;
+const DEFAULT_MAX_MB = 100;
 const DEFAULT_ALLOWED_MIME =
   "application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,application/csv,image/jpeg,image/png";
 

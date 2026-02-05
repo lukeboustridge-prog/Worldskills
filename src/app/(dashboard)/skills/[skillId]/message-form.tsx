@@ -170,7 +170,7 @@ export function MessageForm({ skillId }: { skillId: string }) {
         />
       </div>
       <p className="text-xs text-muted-foreground">
-        Supported: PDF, Word, Excel, PowerPoint, images. Max 25MB per file.
+        Supported: PDF, Word, Excel, PowerPoint, images. Max 100MB per file.
       </p>
     </form>
   );

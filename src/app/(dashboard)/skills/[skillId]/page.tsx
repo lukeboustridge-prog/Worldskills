@@ -4,6 +4,7 @@ import {
   GateStatus as MilestoneStatus,
   Role
 } from "@prisma/client";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { format } from "date-fns";
 
@@ -22,6 +23,7 @@ import { deleteMilestoneAction, updateMilestoneStatusAction, inviteSkillTeamMemb
 import { DeliverablesTable, type DeliverableRow } from "./deliverables-table";
 import { CreateMilestoneForm } from "./create-milestone-form";
 import { SkillEmailForm } from "./skill-email-form";
+import { SkillMessageForm } from "./skill-message-form";
 import { MessageList } from "./message-list";
 import { MeetingList, type MeetingData, type TeamMemberOption } from "./meeting-list";
 import { SkillNotes } from "./skill-notes";
@@ -285,6 +287,11 @@ export default async function SkillDetailPage({
   const inviteSuccess = (Array.isArray(inviteParam) ? inviteParam[0] : inviteParam) === "sent";
   const inviteError = Array.isArray(inviteErrorParam) ? inviteErrorParam[0] : inviteErrorParam ?? null;
 
+  const tabParam = searchParams?.tab;
+  const activeTab = (Array.isArray(tabParam) ? tabParam[0] : tabParam) ?? "deliverables";
+  const validTabs = ["deliverables", "meetings", "emails", "messages", "milestones", "team", "notes"];
+  const defaultTab = validTabs.includes(activeTab) ? activeTab : "deliverables";
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -318,12 +325,14 @@ export default async function SkillDetailPage({
               ) : null}
             </CardHeader>
           </Card>
-          <Card className="min-w-[160px]">
-            <CardHeader className="p-4 pb-2">
-              <CardDescription className="min-h-[2.5rem]">Overdue deliverables</CardDescription>
-              <CardTitle className={summary.overdue > 0 ? "text-red-600" : ""}>{summary.overdue}</CardTitle>
-            </CardHeader>
-          </Card>
+          <Link href={`/skills/${skill.id}?tab=deliverables`} className="block">
+            <Card className={`min-w-[160px] transition-colors ${summary.overdue > 0 ? "hover:border-red-300 cursor-pointer" : ""}`}>
+              <CardHeader className="p-4 pb-2">
+                <CardDescription className="min-h-[2.5rem]">Overdue deliverables</CardDescription>
+                <CardTitle className={summary.overdue > 0 ? "text-red-600" : ""}>{summary.overdue}</CardTitle>
+              </CardHeader>
+            </Card>
+          </Link>
         </div>
       </div>
 
@@ -338,10 +347,11 @@ export default async function SkillDetailPage({
         </div>
       ) : null}
 
-      <Tabs defaultValue="deliverables" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
           <TabsTrigger value="meetings">Meetings</TabsTrigger>
+          <TabsTrigger value="messages">Messages</TabsTrigger>
           <TabsTrigger value="emails">Emails</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
@@ -388,6 +398,52 @@ export default async function SkillDetailPage({
             canManage={canManageMeetings}
             teamMembers={teamMembersForMeetings}
           />
+        </TabsContent>
+
+        <TabsContent value="messages" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Post a Message</CardTitle>
+              <CardDescription>
+                Post a message for the entire skill team. All team members will be notified by email.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {canPostMessage ? (
+                <SkillMessageForm skillId={skill.id} skillName={skill.name} />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  You do not have permission to post messages for this skill.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Message History</CardTitle>
+              <CardDescription>Previous messages posted to the team.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MessageList
+                messages={skill.messages.map((m) => ({
+                  id: m.id,
+                  body: m.body,
+                  createdAt: m.createdAt.toISOString(),
+                  author: {
+                    id: m.author.id,
+                    name: m.author.name,
+                    email: m.author.email,
+                  },
+                  attachments: m.attachments.map((a) => ({
+                    id: a.id,
+                    fileName: a.fileName,
+                    fileSize: a.fileSize,
+                    mimeType: a.mimeType,
+                  })),
+                }))}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="milestones" className="space-y-6">

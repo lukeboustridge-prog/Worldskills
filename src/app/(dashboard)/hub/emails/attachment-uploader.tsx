@@ -20,7 +20,7 @@ interface AttachmentUploaderProps {
   maxTotalBytes?: number;
 }
 
-const DEFAULT_MAX_TOTAL_BYTES = 25 * 1024 * 1024; // 25MB
+const DEFAULT_MAX_TOTAL_BYTES = 100 * 1024 * 1024; // 100MB
 
 export function AttachmentUploader({
   attachments,
