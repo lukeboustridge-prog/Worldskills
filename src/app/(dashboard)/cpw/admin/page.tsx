@@ -100,10 +100,10 @@ export default async function CPWAdminPage() {
 
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">
-          CPW Voting Admin
+          Skill Preparedness Vote Admin
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Manage Competition Preparation Week final verdict voting sessions.
+          Manage Skill Preparedness voting sessions.
         </p>
       </div>
 

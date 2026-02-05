@@ -229,7 +229,7 @@ export default async function SkillsHubPage() {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <Vote className="h-5 w-5" />
-              CPW Final Verdict
+              Skill Preparedness Vote
             </CardTitle>
             <CardDescription>
               {activeCPWSession
