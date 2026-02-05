@@ -279,7 +279,7 @@ export default async function CPWAdminPage() {
           <CardHeader>
             <CardTitle>Create New Session</CardTitle>
             <CardDescription>
-              Start a new CPW voting session. This will deactivate any existing sessions.
+              Start a new voting session. This will deactivate any existing sessions.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -289,7 +289,7 @@ export default async function CPWAdminPage() {
                 <Input
                   id="name"
                   name="name"
-                  placeholder="e.g., CPW 2025 Final Verdict"
+                  placeholder="e.g., Lyon 2024 Day 1"
                   required
                 />
               </div>
@@ -318,7 +318,7 @@ export default async function CPWAdminPage() {
                 <Input
                   id="name"
                   name="name"
-                  placeholder="e.g., CPW 2025 Final Verdict"
+                  placeholder="e.g., Lyon 2024 Day 1"
                   required
                 />
               </div>
@@ -337,7 +337,7 @@ export default async function CPWAdminPage() {
           <CardHeader>
             <CardTitle>Past Sessions</CardTitle>
             <CardDescription>
-              Historical CPW voting sessions
+              Historical voting sessions
             </CardDescription>
           </CardHeader>
           <CardContent>
