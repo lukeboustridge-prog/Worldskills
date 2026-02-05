@@ -5,9 +5,11 @@ import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/layout/sign-out-button";
 import { NavLink } from "@/components/layout/nav-link";
 import { SCMQuestionsModal } from "@/components/scm-questions/SCMQuestionsModal";
+import { ImpersonationBanner } from "@/components/impersonation-banner";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserDisplayName } from "@/lib/users";
 import { getUnansweredQuestionsForUser } from "./settings/scm-questions-actions";
+import { stopImpersonationAction } from "./settings/actions";
 
 const ROLE_LABELS: Record<Role, string> = {
   [Role.Pending]: "Pending access",
@@ -83,6 +85,13 @@ export default async function DashboardLayout({
           </div>
         </div>
       </header>
+      {"isImpersonating" in user && user.isImpersonating && (
+        <ImpersonationBanner
+          userName={user.name}
+          userEmail={user.email}
+          stopAction={stopImpersonationAction}
+        />
+      )}
       <div className="mx-auto flex max-w-6xl gap-8 px-6 py-8">
         <aside className="w-56 space-y-2">
           {navItems.map((item) => (

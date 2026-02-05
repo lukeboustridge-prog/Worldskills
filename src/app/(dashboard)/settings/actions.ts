@@ -973,3 +973,62 @@ export async function sendPasswordResetAction(formData: FormData) {
   const params = new URLSearchParams({ passwordResetSent: "1", resetEmail: targetUser.email });
   return redirect(`/settings?${params.toString()}`);
 }
+
+const impersonateSchema = z.object({
+  userId: z.string().min(1, "User ID is required")
+});
+
+export async function startImpersonationAction(formData: FormData) {
+  const currentUser = await requireAdminUser();
+
+  const parsedResult = impersonateSchema.safeParse({
+    userId: formData.get("userId")
+  });
+
+  if (!parsedResult.success) {
+    const firstError = parsedResult.error.errors[0]?.message ?? "Unable to impersonate user.";
+    const params = new URLSearchParams({ userError: firstError });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  const { userId } = parsedResult.data;
+
+  // Prevent self-impersonation
+  if (userId === currentUser.id) {
+    const params = new URLSearchParams({ userError: "You cannot impersonate yourself." });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  // Verify target user exists
+  const targetUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, name: true, email: true }
+  });
+
+  if (!targetUser) {
+    const params = new URLSearchParams({ userError: "User not found." });
+    return redirect(`/settings?${params.toString()}`);
+  }
+
+  // Import and set impersonation
+  const { setImpersonation } = await import("@/lib/impersonation");
+  await setImpersonation(currentUser.id, userId);
+
+  // Redirect to dashboard as the impersonated user
+  redirect("/dashboard");
+}
+
+export async function stopImpersonationAction() {
+  const { clearImpersonation, getImpersonationData } = await import("@/lib/impersonation");
+
+  const impersonation = await getImpersonationData();
+  if (!impersonation) {
+    redirect("/dashboard");
+    return;
+  }
+
+  await clearImpersonation();
+
+  revalidatePath("/");
+  redirect("/settings");
+}

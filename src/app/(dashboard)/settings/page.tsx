@@ -32,7 +32,8 @@ import {
   updateUserRoleAction,
   updateUserDetailsAction,
   deleteUserAction,
-  sendPasswordResetAction
+  sendPasswordResetAction,
+  startImpersonationAction
 } from "./actions";
 import {
   createSCMQuestionAction,
@@ -331,6 +332,14 @@ export default async function SettingsPage({
           </div>
         </form>
         <div className="mt-3 flex justify-end gap-2 border-t pt-3">
+          {record.id !== user.id && (
+            <form action={startImpersonationAction}>
+              <input type="hidden" name="userId" value={record.id} />
+              <Button type="submit" variant="outline" size="sm">
+                Impersonate
+              </Button>
+            </form>
+          )}
           <form action={sendPasswordResetAction}>
             <input type="hidden" name="userId" value={record.id} />
             <Button type="submit" variant="outline" size="sm">

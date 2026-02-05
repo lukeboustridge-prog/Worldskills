@@ -5,6 +5,7 @@ import { type NextAuthOptions, getServerSession } from "next-auth";
 
 import { env } from "@/env";
 import { prisma } from "@/lib/prisma";
+import { getImpersonatedUser } from "@/lib/impersonation";
 
 const defaultHostEmail = "luke.boustridge@gmail.com";
 const hostEmailValue = env.HOST_EMAIL ?? defaultHostEmail;
@@ -111,7 +112,25 @@ export function auth() {
 
 export async function getCurrentUser() {
   const session = await auth();
-  return session?.user ?? null;
+  if (!session?.user) {
+    return null;
+  }
+
+  // Check for impersonation
+  const impersonatedUser = await getImpersonatedUser();
+  if (impersonatedUser) {
+    return {
+      id: impersonatedUser.id,
+      email: impersonatedUser.email,
+      name: impersonatedUser.name,
+      role: impersonatedUser.role,
+      isAdmin: impersonatedUser.isAdmin,
+      isImpersonating: true,
+      originalAdminId: impersonatedUser.originalAdminId
+    };
+  }
+
+  return session.user;
 }
 
 export async function requireUser() {

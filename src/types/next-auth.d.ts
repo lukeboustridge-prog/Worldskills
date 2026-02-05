@@ -9,6 +9,8 @@ declare module "next-auth" {
       email: string;
       role: Role;
       isAdmin: boolean;
+      isImpersonating?: boolean;
+      originalAdminId?: string;
     };
   }
 
