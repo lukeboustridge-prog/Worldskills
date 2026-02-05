@@ -343,9 +343,10 @@ export default async function CPWAdminPage() {
           <CardContent>
             <div className="space-y-2">
               {pastSessions.map((session) => (
-                <div
+                <Link
                   key={session.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
+                  href={`/cpw/admin/sessions/${session.id}`}
+                  className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors"
                 >
                   <div>
                     <p className="font-medium">{session.name}</p>
@@ -353,8 +354,8 @@ export default async function CPWAdminPage() {
                       {format(session.createdAt, "PPp")} - {session._count.votes} votes
                     </p>
                   </div>
-                  <Badge variant="outline">Ended</Badge>
-                </div>
+                  <Badge variant="outline">View Results</Badge>
+                </Link>
               ))}
             </div>
           </CardContent>

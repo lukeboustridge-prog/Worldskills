@@ -95,7 +95,7 @@ export default async function CPWVotePage() {
     <div className="flex min-h-[60vh] items-center justify-center px-4">
       <div className="w-full max-w-lg">
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight">CPW Final Verdict</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Skill Preparedness Vote (Green / Red)</h1>
           <p className="mt-2 text-lg text-muted-foreground">
             {activeSession.name}
           </p>
