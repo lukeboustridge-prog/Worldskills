@@ -184,28 +184,32 @@ export default async function SkillsHubPage() {
             <p className="text-3xl font-bold">{decoratedSkills.length}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Overdue</CardTitle>
-            <CardDescription>Requires attention</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p
-              className={`text-3xl font-bold ${overdueCount > 0 ? "text-destructive" : ""}`}
-            >
-              {overdueCount}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Due Soon</CardTitle>
-            <CardDescription>Within 30 days</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{dueSoonCount}</p>
-          </CardContent>
-        </Card>
+        <Link href="/skills">
+          <Card className={`transition-colors ${overdueCount > 0 ? "hover:border-destructive/50 cursor-pointer" : ""}`}>
+            <CardHeader className="pb-2">
+              <CardTitle>Overdue</CardTitle>
+              <CardDescription>Requires attention</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p
+                className={`text-3xl font-bold ${overdueCount > 0 ? "text-destructive" : ""}`}
+              >
+                {overdueCount}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/skills">
+          <Card className={`transition-colors ${dueSoonCount > 0 ? "hover:border-amber-500/50 cursor-pointer" : ""}`}>
+            <CardHeader className="pb-2">
+              <CardTitle>Due Soon</CardTitle>
+              <CardDescription>Within 30 days</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{dueSoonCount}</p>
+            </CardContent>
+          </Card>
+        </Link>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle>Next Meeting</CardTitle>
@@ -365,7 +369,7 @@ export default async function SkillsHubPage() {
                       <tr key={deliverable.id} className="border-b last:border-0">
                         <td className="py-3 pr-4">
                           <Link
-                            href={`/skills/${skill.id}`}
+                            href={`/skills/${skill.id}?tab=deliverables`}
                             className="font-medium hover:underline"
                           >
                             {deliverable.label}
