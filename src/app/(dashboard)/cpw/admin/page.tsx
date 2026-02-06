@@ -75,8 +75,18 @@ export default async function CPWAdminPage() {
       _count: {
         select: { votes: true },
       },
+      votes: {
+        include: {
+          skill: {
+            select: { name: true },
+          },
+        },
+      },
     },
   });
+
+  // Get the most recent ended session for display when no active session
+  const mostRecentSession = pastSessions[0];
 
   // Calculate stats for active session
   const greenVotes = activeSession?.votes.filter(
@@ -275,31 +285,115 @@ export default async function CPWAdminPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Create New Session</CardTitle>
-            <CardDescription>
-              Start a new voting session. This will deactivate any existing sessions.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form action={createSessionAction} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Session Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="e.g., Lyon 2024 Day 1"
-                  required
-                />
-              </div>
-              <Button type="submit">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Session
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        <>
+          {/* Show most recent session results */}
+          {mostRecentSession && (
+            <Card className="border-slate-300">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      {mostRecentSession.name}
+                      <Badge variant="outline" className="ml-2">
+                        Ended
+                      </Badge>
+                    </CardTitle>
+                    <CardDescription>
+                      Completed {format(mostRecentSession.createdAt, "PPp")}
+                    </CardDescription>
+                  </div>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/cpw/admin/sessions/${mostRecentSession.id}`}>
+                      View Full Results
+                    </Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Stats */}
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="rounded-lg border bg-muted/50 p-4 text-center">
+                    <p className="text-3xl font-bold">{mostRecentSession.votes.length}</p>
+                    <p className="text-sm text-muted-foreground">Votes Cast</p>
+                  </div>
+                  <div className="rounded-lg border bg-green-50 dark:bg-green-950 p-4 text-center">
+                    <p className="text-3xl font-bold text-green-600">
+                      {mostRecentSession.votes.filter((v) => v.status === CPWVoteStatus.GREEN).length}
+                    </p>
+                    <p className="text-sm text-green-600">On Track</p>
+                  </div>
+                  <div className="rounded-lg border bg-red-50 dark:bg-red-950 p-4 text-center">
+                    <p className="text-3xl font-bold text-red-600">
+                      {mostRecentSession.votes.filter((v) => v.status === CPWVoteStatus.RED).length}
+                    </p>
+                    <p className="text-sm text-red-600">Issues</p>
+                  </div>
+                  <div className="rounded-lg border bg-muted/50 p-4 text-center">
+                    <p className="text-3xl font-bold">
+                      {totalSkills - mostRecentSession.votes.length}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Did Not Vote</p>
+                  </div>
+                </div>
+
+                {/* Red Skills List */}
+                {mostRecentSession.votes.filter((v) => v.status === CPWVoteStatus.RED).length > 0 && (
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-3">
+                      Issues Raised ({mostRecentSession.votes.filter((v) => v.status === CPWVoteStatus.RED).length})
+                    </h3>
+                    <div className="space-y-2">
+                      {mostRecentSession.votes
+                        .filter((v) => v.status === CPWVoteStatus.RED)
+                        .map((vote) => (
+                          <div
+                            key={vote.id}
+                            className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950 p-3"
+                          >
+                            <p className="font-medium text-red-700 dark:text-red-400">
+                              {vote.skill.name}
+                            </p>
+                            {vote.comment && (
+                              <p className="mt-1 text-sm text-red-600 dark:text-red-300">
+                                {vote.comment}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Create New Session */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Session</CardTitle>
+              <CardDescription>
+                Start a new voting session. This will deactivate any existing sessions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form action={createSessionAction} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Session Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    placeholder="e.g., Lyon 2024 Day 1"
+                    required
+                  />
+                </div>
+                <Button type="submit">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Session
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {/* Create New Session (when active exists) */}
