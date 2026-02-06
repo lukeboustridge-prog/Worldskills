@@ -56,6 +56,10 @@ export default async function DashboardLayout({
   navItems.push({ href: "/instructions", label: "User guide" });
   navItems.push({ href: "/skills", label: "Skills" });
 
+  if (user.isAdmin || user.role === Role.Secretariat) {
+    navItems.push({ href: "/cpw/admin", label: "Voting" });
+  }
+
   if (user.isAdmin) {
     navItems.push({ href: "/settings", label: "Settings" });
     navItems.push({ href: "/storage-debug", label: "Storage debug" });
