@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/layout/sign-out-button";
 import { NavLink } from "@/components/layout/nav-link";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { SCMQuestionsModal } from "@/components/scm-questions/SCMQuestionsModal";
 import { ImpersonationBanner } from "@/components/impersonation-banner";
 import { PushNotificationPrompt } from "@/components/push-notification-prompt";
@@ -73,15 +74,19 @@ export default async function DashboardLayout({
         <SCMQuestionsModal questions={unansweredQuestions} />
       )}
       <header className="border-b bg-background">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/dashboard" className="flex items-center gap-3 text-lg font-semibold">
-            <img src="/logo.png" alt="WorldSkills logo" className="h-8 w-auto" />
-            <span>Worldskills Skill Tracker</span>
-          </Link>
-          <div className="flex items-center gap-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6 md:py-4">
+          <div className="flex items-center gap-2">
+            <MobileNav navItems={navItems} />
+            <Link href="/dashboard" className="flex items-center gap-2 md:gap-3 text-base md:text-lg font-semibold">
+              <img src="/logo.png" alt="WorldSkills logo" className="h-7 md:h-8 w-auto" />
+              <span className="hidden sm:inline">Worldskills Skill Tracker</span>
+              <span className="sm:hidden">Skill Tracker</span>
+            </Link>
+          </div>
+          <div className="flex items-center gap-2 md:gap-4">
             <div className="text-right text-sm">
               <p className="font-medium text-foreground">{getUserDisplayName(user)}</p>
-              <p className="uppercase text-xs text-muted-foreground">
+              <p className="uppercase text-xs text-muted-foreground hidden sm:block">
                 {ROLE_LABELS[user.role] ?? user.role}
                 {user.isAdmin ? " · ADMIN" : ""}
               </p>
@@ -97,13 +102,13 @@ export default async function DashboardLayout({
           stopAction={stopImpersonationAction}
         />
       )}
-      <div className="mx-auto flex max-w-6xl gap-8 px-6 py-8">
-        <aside className="w-56 space-y-2">
+      <div className="mx-auto flex max-w-6xl gap-8 px-4 py-6 md:px-6 md:py-8">
+        <aside className="hidden md:block w-56 space-y-2 flex-shrink-0">
           {navItems.map((item) => (
             <NavLink key={item.href} href={item.href} label={item.label} />
           ))}
         </aside>
-        <main className="flex-1 pb-12">
+        <main className="flex-1 min-w-0 pb-12">
           <PushNotificationPrompt />
           {children}
         </main>
