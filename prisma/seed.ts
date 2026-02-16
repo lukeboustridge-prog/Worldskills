@@ -154,7 +154,7 @@ async function main() {
     }
   }
 
-  const competitionStart = new Date(process.env.SEED_COMPETITION_START ?? "2026-09-01");
+  const competitionStart = new Date(process.env.SEED_COMPETITION_START ?? "2026-09-22");
   const competitionEnd = new Date(process.env.SEED_COMPETITION_END ?? "2026-09-10");
 
   await prisma.appSettings.upsert({
@@ -261,6 +261,7 @@ async function main() {
         },
         update: {
           label: definition.label,
+          templateKey: definition.key,
           scheduleType: definition.scheduleType,
           cMonthOffset: usingCMonth ? offset ?? null : null,
           cMonthLabel:
@@ -270,6 +271,7 @@ async function main() {
         create: {
           skillId: skill.id,
           key: definition.key,
+          templateKey: definition.key,
           label: definition.label,
           scheduleType: definition.scheduleType,
           cMonthOffset: usingCMonth ? offset ?? null : null,

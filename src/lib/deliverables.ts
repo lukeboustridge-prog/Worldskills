@@ -111,7 +111,7 @@ export const DEFAULT_DELIVERABLE_TEMPLATES: DefaultDeliverableTemplate[] = [
     label: "SAG Final Ready for MAT",
     description: "Standards and Assessment Guide finalized and ready for Mandatory Assessment Training. New Experts complete Access Programme. Familiarization time extensions approved.",
     scheduleType: DeliverableScheduleType.CMonth,
-    offsetMonths: 3,
+    offsetMonths: 2,
     position: 11
   },
   {
