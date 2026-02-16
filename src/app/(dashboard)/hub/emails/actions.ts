@@ -504,6 +504,124 @@ export async function getRecipientsAction() {
   return users;
 }
 
+export async function getEmailThreadAction(emailId: string) {
+  const user = await requireUser();
+
+  if (user.role !== Role.SA && user.role !== Role.Secretariat && !user.isAdmin) {
+    throw new Error("You do not have permission to view emails");
+  }
+
+  const email = await prisma.email.findUnique({
+    where: { id: emailId },
+    include: {
+      sender: { select: { id: true, name: true, email: true, role: true } },
+      recipients: {
+        select: { id: true, recipientEmail: true, recipientName: true, recipientRole: true },
+      },
+      attachments: {
+        select: { id: true, fileName: true, fileSize: true, mimeType: true },
+      },
+      skills: { include: { skill: { select: { id: true, name: true } } } },
+    },
+  });
+
+  if (!email) return [];
+
+  return [email];
+}
+
+export async function replyToEmailAction(formData: FormData) {
+  const user = await requireUser();
+
+  if (user.role !== Role.SA && user.role !== Role.Secretariat && !user.isAdmin) {
+    throw new Error("You do not have permission to send emails");
+  }
+
+  const parentEmailId = formData.get("parentEmailId") as string;
+  const body = formData.get("body") as string;
+
+  if (!parentEmailId || !body?.trim()) {
+    throw new Error("Parent email and body are required");
+  }
+
+  const parentEmail = await prisma.email.findUnique({
+    where: { id: parentEmailId },
+    include: {
+      sender: { select: { id: true, email: true, name: true } },
+      recipients: true,
+      skills: { include: { skill: true } },
+    },
+  });
+
+  if (!parentEmail) {
+    throw new Error("Parent email not found");
+  }
+
+  // Collect recipients: original sender + original recipients, excluding current user
+  const recipientEmails = new Set<string>();
+  if (parentEmail.sender && parentEmail.sender.id !== user.id) {
+    recipientEmails.add(parentEmail.sender.email);
+  }
+  for (const r of parentEmail.recipients) {
+    if (r.userId !== user.id && r.recipientEmail) {
+      recipientEmails.add(r.recipientEmail);
+    }
+  }
+
+  const recipients = Array.from(recipientEmails);
+  if (recipients.length === 0) {
+    throw new Error("No recipients for reply");
+  }
+
+  const subject = `Re: ${parentEmail.subject}`;
+
+  const html = buildEmailHtml({
+    senderName: user.name ?? "Team Member",
+    subject,
+    body: body.trim(),
+    attachmentCount: 0,
+  });
+
+  const text = `${user.name ?? "Team Member"} replied:\n\n${body.trim()}`;
+
+  const replyEmail = await prisma.email.create({
+    data: {
+      type: parentEmail.type,
+      subject,
+      body: body.trim(),
+      senderId: user.id,
+      skills: {
+        create: parentEmail.skills.map((s) => ({ skillId: s.skillId })),
+      },
+      recipients: {
+        create: recipients.map((email) => ({
+          recipientEmail: email,
+          recipientName: null,
+          recipientRole: null,
+        })),
+      },
+    },
+  });
+
+  const emailPromises = recipients.map((to) =>
+    sendEmail({
+      to,
+      subject: `[Skill Tracker] ${subject}`,
+      html,
+      text,
+    }).catch((err) => {
+      console.error(`Failed to send reply to ${to}`, err);
+      return null;
+    })
+  );
+
+  await Promise.all(emailPromises);
+
+  revalidatePath("/hub/emails");
+
+  return { success: true, emailId: replyEmail.id };
+}
+
 export async function getSkillsForEmailAction() {
   const user = await requireUser();
 
