@@ -31,7 +31,7 @@ export async function sendPasswordResetEmail({
             <div style="background-color: #2563eb; padding: 24px 24px 18px; text-align: center; border-bottom: 1px solid #1d4ed8;">
               <img src="${logoUrl}" alt="WorldSkills logo" style="height: 48px; width: auto; display: block; margin: 0 auto 16px; border-radius: 8px; background: #f8fafc; padding: 6px;">
               <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">
-                Worldskills Skill Tracker
+                WorldSkills Skill Tracker
               </h1>
             </div>
 
@@ -53,7 +53,7 @@ export async function sendPasswordResetEmail({
 
               <div style="background-color: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
                 <p style="margin: 0; font-size: 14px; color: #92400e; line-height: 1.5;">
-                  This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.
+                  This link will expire in 7 days. If you didn't request a password reset, you can safely ignore this email.
                 </p>
               </div>
 
@@ -69,7 +69,7 @@ export async function sendPasswordResetEmail({
 
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
 
@@ -91,11 +91,11 @@ We received a request to reset your password for WorldSkills Skill Tracker.
 Click the link below to reset your password:
 ${resetUrl}
 
-This link will expire in 1 hour.
+This link will expire in 7 days.
 
 If you didn't request a password reset, you can safely ignore this email.
 
-Sent via Worldskills Skill Tracker`;
+Sent via WorldSkills Skill Tracker`;
 
   await sendEmail({
     to,

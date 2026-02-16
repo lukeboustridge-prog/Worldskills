@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
     // Generate cryptographically secure token
     const token = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     // Create password reset token
     await prisma.passwordResetToken.create({

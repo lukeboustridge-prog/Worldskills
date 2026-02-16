@@ -112,7 +112,7 @@ function buildEmailHtml(params: {
             <div style="background-color: #2563eb; padding: 24px 24px 18px; text-align: center; border-bottom: 1px solid #1d4ed8;">
               <img src="${logoUrl}" alt="WorldSkills logo" style="height: 48px; width: auto; display: block; margin: 0 auto 16px; border-radius: 8px; background: #f8fafc; padding: 6px;">
               <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">
-                Worldskills Skill Tracker
+                WorldSkills Skill Tracker
               </h1>
             </div>
             <div style="padding: 28px 24px 32px;">
@@ -134,7 +134,7 @@ function buildEmailHtml(params: {
           </div>
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
           <div style="text-align: center; margin-top: 12px;">

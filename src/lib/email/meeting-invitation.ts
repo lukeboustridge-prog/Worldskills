@@ -202,7 +202,7 @@ export async function sendMeetingInvitation({
 
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
 
@@ -230,7 +230,7 @@ Add to Google Calendar: ${googleCalendarLink}
 
 A calendar file (.ics) is attached for other calendar apps.
 
-Sent via Worldskills Skill Tracker`
+Sent via WorldSkills Skill Tracker`
     : `Meeting Invitation: ${meeting.title}
 
 Skill: ${meeting.skillName}
@@ -243,7 +243,7 @@ Add to Google Calendar: ${googleCalendarLink}
 
 A calendar file (.ics) is attached for other calendar apps.
 
-Sent via Worldskills Skill Tracker`;
+Sent via WorldSkills Skill Tracker`;
 
   const icsContent = generateICS(meeting);
   const icsBase64 = Buffer.from(icsContent).toString("base64");

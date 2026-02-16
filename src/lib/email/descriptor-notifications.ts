@@ -55,7 +55,7 @@ export async function sendBatchSubmittedNotification({
 
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
 
@@ -76,7 +76,7 @@ ${scmName} has submitted ${descriptorCount} ${descriptorWord} for your review.
 
 Review descriptors: ${reviewUrl}
 
-Sent via Worldskills Skill Tracker`;
+Sent via WorldSkills Skill Tracker`;
 
   await sendEmail({
     to,
@@ -152,7 +152,7 @@ export async function sendDescriptorApprovedNotification({
 
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
 
@@ -177,7 +177,7 @@ Your descriptor '${criterionName}' has been approved by ${saName}.${modification
 
 View my descriptors: ${viewUrl}
 
-Sent via Worldskills Skill Tracker`;
+Sent via WorldSkills Skill Tracker`;
 
   await sendEmail({
     to,
@@ -245,7 +245,7 @@ export async function sendDescriptorReturnedNotification({
 
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
 
@@ -268,7 +268,7 @@ Feedback: ${comment}
 
 Review feedback: ${viewUrl}
 
-Sent via Worldskills Skill Tracker`;
+Sent via WorldSkills Skill Tracker`;
 
   await sendEmail({
     to,
@@ -330,7 +330,7 @@ export async function sendDescriptorsResubmittedNotification({
 
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
 
@@ -351,7 +351,7 @@ ${scmName} has resubmitted ${descriptorCount} revised ${descriptorWord} for your
 
 Review descriptors: ${reviewUrl}
 
-Sent via Worldskills Skill Tracker`;
+Sent via WorldSkills Skill Tracker`;
 
   await sendEmail({
     to,

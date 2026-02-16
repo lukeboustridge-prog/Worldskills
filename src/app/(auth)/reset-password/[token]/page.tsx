@@ -121,7 +121,7 @@ export default function ResetPasswordPage() {
             {tokenError}
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
-            Password reset links expire after 1 hour and can only be used once.
+            Password reset links expire after 7 days and can only be used once.
           </p>
           <div className="mt-8 space-y-2 text-xs text-muted-foreground">
             <p>

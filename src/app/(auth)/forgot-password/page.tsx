@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
             to reset your password. Check your inbox and spam folder.
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
-            The link will expire in 1 hour.
+            The link will expire in 7 days.
           </p>
           <div className="mt-8 space-y-2 text-xs text-muted-foreground">
             <p>

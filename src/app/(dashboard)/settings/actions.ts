@@ -941,7 +941,7 @@ export async function sendPasswordResetAction(formData: FormData) {
   try {
     // Generate cryptographically secure token
     const token = randomUUID();
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     // Create password reset token
     await prisma.passwordResetToken.create({

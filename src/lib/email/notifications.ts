@@ -51,7 +51,7 @@ export async function sendDeliverableStatusNotification({
             <div style="background-color: #2563eb; padding: 24px 24px 18px; text-align: center; border-bottom: 1px solid #1d4ed8;">
               <img src="${logoUrl}" alt="WorldSkills logo" style="height: 48px; width: auto; display: block; margin: 0 auto 16px; border-radius: 8px; background: #f8fafc; padding: 6px;">
               <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">
-                Worldskills Skill Tracker
+                WorldSkills Skill Tracker
               </h1>
             </div>
 
@@ -81,7 +81,7 @@ export async function sendDeliverableStatusNotification({
 
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
 
@@ -139,7 +139,7 @@ export async function sendBroadcastNotification({
             <div style="background-color: #2563eb; padding: 24px 24px 18px; text-align: center; border-bottom: 1px solid #1d4ed8;">
               <img src="${logoUrl}" alt="WorldSkills logo" style="height: 48px; width: auto; display: block; margin: 0 auto 16px; border-radius: 8px; background: #f8fafc; padding: 6px;">
               <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">
-                Worldskills Skill Tracker
+                WorldSkills Skill Tracker
               </h1>
             </div>
 
@@ -155,7 +155,7 @@ export async function sendBroadcastNotification({
 
               <div style="text-align: center;">
                 <a href="${dashboardUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; transition: background-color 0.2s;">
-                  View in Worldskills Skill Tracker
+                  View in WorldSkills Skill Tracker
                 </a>
               </div>
 
@@ -164,7 +164,7 @@ export async function sendBroadcastNotification({
 
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
 
@@ -179,7 +179,7 @@ export async function sendBroadcastNotification({
     </html>
   `;
 
-  const text = `Skill Tracker Announcement\n\n${authorName} wrote:\n\n${messageContent}\n\nView in Worldskills Skill Tracker: ${dashboardUrl}`;
+  const text = `Skill Tracker Announcement\n\n${authorName} wrote:\n\n${messageContent}\n\nView in WorldSkills Skill Tracker: ${dashboardUrl}`;
 
   await sendEmail({
     to,
@@ -227,7 +227,7 @@ export async function sendSkillConversationNotification({
             <div style="background-color: #2563eb; padding: 24px 24px 18px; text-align: center; border-bottom: 1px solid #1d4ed8;">
               <img src="${logoUrl}" alt="WorldSkills logo" style="height: 48px; width: auto; display: block; margin: 0 auto 16px; border-radius: 8px; background: #f8fafc; padding: 6px;">
               <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">
-                Worldskills Skill Tracker
+                WorldSkills Skill Tracker
               </h1>
             </div>
 
@@ -243,7 +243,7 @@ export async function sendSkillConversationNotification({
 
               <div style="text-align: center;">
                 <a href="${skillUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; transition: background-color 0.2s;">
-                  Reply in Worldskills Skill Tracker
+                  Reply in WorldSkills Skill Tracker
                 </a>
               </div>
 
@@ -252,7 +252,7 @@ export async function sendSkillConversationNotification({
           
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
 
@@ -267,7 +267,7 @@ export async function sendSkillConversationNotification({
     </html>
   `;
 
-  const text = `Skill Update: New message in ${skillName}\n\n${authorName} wrote:\n\n${messageContent}\n\nView in Worldskills Skill Tracker: ${skillUrl}`;
+  const text = `Skill Update: New message in ${skillName}\n\n${authorName} wrote:\n\n${messageContent}\n\nView in WorldSkills Skill Tracker: ${skillUrl}`;
 
   await sendEmail({
     to,

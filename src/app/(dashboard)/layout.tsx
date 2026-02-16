@@ -79,7 +79,7 @@ export default async function DashboardLayout({
             <MobileNav navItems={navItems} />
             <Link href="/dashboard" className="flex items-center gap-2 md:gap-3 text-base md:text-lg font-semibold">
               <img src="/logo.png" alt="WorldSkills logo" className="h-7 md:h-8 w-auto" />
-              <span className="hidden sm:inline">Worldskills Skill Tracker</span>
+              <span className="hidden sm:inline">WorldSkills Skill Tracker</span>
               <span className="sm:hidden">Skill Tracker</span>
             </Link>
           </div>

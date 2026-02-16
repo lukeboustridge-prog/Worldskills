@@ -9,7 +9,7 @@ import { auth } from "@/lib/auth";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Worldskills Skill Tracker",
+  title: "WorldSkills Skill Tracker",
   description:
     "Track WorldSkills deliverables, milestones, and conversations between Skill Advisors and Skill Competition Managers.",
   icons: {

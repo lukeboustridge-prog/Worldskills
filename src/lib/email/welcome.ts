@@ -85,7 +85,7 @@ export async function sendWelcomeEmail({
 
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
 
@@ -111,7 +111,7 @@ This link will expire in 24 hours.
 
 If you didn't expect this invitation, you can safely ignore this email.
 
-Sent via Worldskills Skill Tracker`;
+Sent via WorldSkills Skill Tracker`;
 
   await sendEmail({
     to,

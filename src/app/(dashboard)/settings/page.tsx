@@ -479,7 +479,7 @@ export default async function SettingsPage({
         ) : null}
         {passwordResetSent ? (
           <div className="rounded-md border border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
-            Password reset email sent{resetEmail ? ` to ${resetEmail}` : ""}. The link will expire in 1 hour.
+            Password reset email sent{resetEmail ? ` to ${resetEmail}` : ""}. The link will expire in 7 days.
           </div>
         ) : null}
         {scmQuestionCreated ? (

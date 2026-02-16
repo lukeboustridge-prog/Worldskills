@@ -69,7 +69,7 @@ async function sendWelcomeEmail(to: string, name: string, token: string, role: R
           </div>
           <div style="text-align: center; margin-top: 24px;">
             <p style="font-size: 12px; color: #94a3b8;">
-              Sent via Worldskills Skill Tracker
+              Sent via WorldSkills Skill Tracker
             </p>
           </div>
         </div>
@@ -88,7 +88,7 @@ This link will expire in 7 days.
 
 If you didn't expect this invitation, you can safely ignore this email.
 
-Sent via Worldskills Skill Tracker`;
+Sent via WorldSkills Skill Tracker`;
 
   return resend.emails.send({
     from: fromEmail,
