@@ -299,6 +299,27 @@ export async function sendSkillEmailAction(formData: FormData) {
 
   await Promise.all(emailPromises);
 
+  // Create a Message record for each skill so the email shows in skill Email History
+  await Promise.all(
+    skills.map((skill) =>
+      prisma.message.create({
+        data: {
+          skillId: skill.id,
+          authorId: user.id,
+          body: `**${subject}**\n\n${body}`,
+          attachments: {
+            create: attachments.map((a) => ({
+              storageKey: a.storageKey,
+              fileName: a.fileName,
+              fileSize: a.fileSize,
+              mimeType: a.mimeType,
+            })),
+          },
+        },
+      })
+    )
+  );
+
   revalidatePath("/hub/emails");
 
   return { success: true, emailId: email.id, recipientCount: recipients.length };

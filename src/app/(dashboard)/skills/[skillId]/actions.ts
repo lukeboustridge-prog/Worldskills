@@ -1147,6 +1147,23 @@ export async function sendSkillEmailWithRecipientsAction(formData: FormData) {
 
   await Promise.all(emailPromises);
 
+  // Create a Message record so the email shows in the skill's Email History
+  await prisma.message.create({
+    data: {
+      skillId,
+      authorId: user.id,
+      body: `**${subject}**\n\n${body}`,
+      attachments: {
+        create: attachments.map((a) => ({
+          storageKey: a.storageKey,
+          fileName: a.fileName,
+          fileSize: a.fileSize,
+          mimeType: a.mimeType,
+        })),
+      },
+    },
+  });
+
   await logActivity({
     skillId,
     userId: user.id,
