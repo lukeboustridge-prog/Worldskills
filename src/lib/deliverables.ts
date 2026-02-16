@@ -307,7 +307,7 @@ export function validateDocumentEvidenceInput(params: {
   const { mimeType, fileSize } = params;
 
   if (!DOCUMENT_MIME_TYPES.includes(mimeType as DocumentMimeType)) {
-    throw new Error("That file type isn\'t supported. Upload a PDF, Word, Excel, CSV, or image file.");
+    throw new Error("That file type isn\'t supported. Upload a PDF, Word, Excel, CSV, ZIP, or image file.");
   }
 
   if (!Number.isFinite(fileSize) || fileSize <= 0) {

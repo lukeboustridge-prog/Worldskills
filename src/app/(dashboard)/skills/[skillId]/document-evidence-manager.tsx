@@ -32,7 +32,8 @@ const MIME_EXTENSION_FALLBACKS: Record<string, string> = {
   csv: "text/csv",
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
-  png: "image/png"
+  png: "image/png",
+  zip: "application/zip"
 };
 
 const NOT_CONFIGURED_MESSAGE =
@@ -229,7 +230,7 @@ export function DocumentEvidenceManager({
       }
 
       if (!DOCUMENT_MIME_TYPES.includes(mimeType as (typeof DOCUMENT_MIME_TYPES)[number])) {
-        setError("That file type isn't supported. Upload a PDF, Word, Excel, CSV, or image file.");
+        setError("That file type isn't supported. Upload a PDF, Word, Excel, CSV, ZIP, or image file.");
         return;
       }
 

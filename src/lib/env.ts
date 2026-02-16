@@ -44,7 +44,7 @@ export type FileUploadPolicy = {
 
 const DEFAULT_MAX_MB = 100;
 const DEFAULT_ALLOWED_MIME =
-  "application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,application/csv,image/jpeg,image/png";
+  "application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,application/csv,image/jpeg,image/png,application/zip,application/x-zip-compressed";
 
 let uploadPolicyCache: FileUploadPolicy | null = null;
 
