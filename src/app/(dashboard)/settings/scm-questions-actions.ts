@@ -316,10 +316,8 @@ export async function getQuestionWithResponses(questionId: string) {
                 id: true,
                 name: true,
                 email: true,
-                skillMemberships: {
-                  include: {
-                    skill: { select: { name: true } }
-                  }
+                skillsAsSCM: {
+                  select: { code: true, name: true }
                 }
               }
             }
@@ -344,10 +342,8 @@ export async function getQuestionWithResponses(questionId: string) {
       id: true,
       name: true,
       email: true,
-      skillMemberships: {
-        include: {
-          skill: { select: { name: true } }
-        }
+      skillsAsSCM: {
+        select: { code: true, name: true }
       }
     },
     orderBy: { name: "asc" }
@@ -367,13 +363,13 @@ export async function getQuestionWithResponses(questionId: string) {
       user: {
         name: r.user.name,
         email: r.user.email,
-        skills: r.user.skillMemberships.map((sm) => sm.skill.name)
+        skills: r.user.skillsAsSCM.map((s) => s.code ? `${s.code} – ${s.name}` : s.name)
       }
     })),
     nonResponders: nonResponders.map((u) => ({
       name: u.name,
       email: u.email,
-      skills: u.skillMemberships.map((sm) => sm.skill.name)
+      skills: u.skillsAsSCM.map((s) => s.code ? `${s.code} – ${s.name}` : s.name)
     })),
     totalSCMs
   };
