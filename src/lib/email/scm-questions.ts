@@ -1,16 +1,17 @@
 import { sendEmail } from "./resend";
+import type { BatchEmailPayload } from "./resend";
 
-interface SendSCMQuestionsReminderEmailParams {
+interface SCMReminderEmailParams {
   to: string;
   name: string;
   unansweredCount: number;
 }
 
-export async function sendSCMQuestionsReminderEmail({
+export function buildSCMQuestionsReminderEmail({
   to,
   name,
   unansweredCount,
-}: SendSCMQuestionsReminderEmailParams) {
+}: SCMReminderEmailParams): BatchEmailPayload {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://skill-tracker.worldskills2026.com";
   const loginUrl = `${baseUrl}/login?showQuestions=1`;
   const logoUrl = "https://skill-tracker.worldskills2026.com/logo.png";
@@ -89,10 +90,15 @@ These questions help us better support you and improve the competition experienc
 
 - WorldSkills Skill Tracker`;
 
+  return { to, subject, html, text };
+}
+
+export async function sendSCMQuestionsReminderEmail(params: SCMReminderEmailParams) {
+  const payload = buildSCMQuestionsReminderEmail(params);
   await sendEmail({
-    to,
-    subject,
-    html,
-    text,
+    to: payload.to,
+    subject: payload.subject,
+    html: payload.html,
+    text: payload.text,
   });
 }

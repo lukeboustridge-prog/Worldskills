@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { getCurrentUser, requireAdminUser } from "@/lib/auth";
-import { sendSCMQuestionsReminderEmail } from "@/lib/email/scm-questions";
+import { buildSCMQuestionsReminderEmail } from "@/lib/email/scm-questions";
+import { sendBatchEmails } from "@/lib/email/resend";
 import { prisma } from "@/lib/prisma";
 
 const createQuestionSchema = z.object({
@@ -205,26 +206,25 @@ export async function sendSCMQuestionsReminderAction() {
     redirect(`/settings?${params.toString()}`);
   }
 
-  let sentCount = 0;
-  for (const user of usersWithPending) {
+  const payloads = usersWithPending.map((user) => {
     const answeredIds = new Set(user.scmQuestionResponses.map((r) => r.questionId));
     const unansweredCount = activeQuestionIds.filter((qId) => !answeredIds.has(qId)).length;
+    return buildSCMQuestionsReminderEmail({
+      to: user.email,
+      name: user.name ?? "SCM User",
+      unansweredCount
+    });
+  });
 
-    try {
-      await sendSCMQuestionsReminderEmail({
-        to: user.email,
-        name: user.name ?? "SCM User",
-        unansweredCount
-      });
-      sentCount++;
-    } catch (error) {
-      console.error(`Failed to send reminder to ${user.email}:`, error);
-    }
+  const { successCount, errors } = await sendBatchEmails(payloads);
+
+  if (errors.length > 0) {
+    console.error(`Batch email errors (${errors.length}):`, errors.slice(0, 5));
   }
 
   revalidatePath("/settings");
 
-  const params = new URLSearchParams({ scmReminderSent: String(sentCount) });
+  const params = new URLSearchParams({ scmReminderSent: String(successCount) });
   redirect(`/settings?${params.toString()}`);
 }
 
@@ -280,4 +280,101 @@ export async function getSCMQuestionsWithStats() {
     createdBy: q.creator.name ?? q.creator.email,
     responseCount: q._count.responses
   }));
+}
+
+export async function getActiveQuestionsWithResponseSummary() {
+  const [questions, totalSCMs] = await Promise.all([
+    prisma.sCMQuestion.findMany({
+      where: { isActive: true },
+      orderBy: { position: "asc" },
+      include: {
+        _count: { select: { responses: true } }
+      }
+    }),
+    prisma.user.count({ where: { role: Role.SCM } })
+  ]);
+
+  return questions.map((q) => ({
+    id: q.id,
+    question: q.question,
+    description: q.description,
+    position: q.position,
+    responseCount: q._count.responses,
+    totalSCMs
+  }));
+}
+
+export async function getQuestionWithResponses(questionId: string) {
+  const [question, totalSCMs] = await Promise.all([
+    prisma.sCMQuestion.findUnique({
+      where: { id: questionId },
+      include: {
+        responses: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                skillMemberships: {
+                  include: {
+                    skill: { select: { name: true } }
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { answeredAt: "desc" }
+        }
+      }
+    }),
+    prisma.user.count({ where: { role: Role.SCM } })
+  ]);
+
+  if (!question) return null;
+
+  const respondedUserIds = new Set(question.responses.map((r) => r.userId));
+
+  const nonResponders = await prisma.user.findMany({
+    where: {
+      role: Role.SCM,
+      id: { notIn: Array.from(respondedUserIds) }
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      skillMemberships: {
+        include: {
+          skill: { select: { name: true } }
+        }
+      }
+    },
+    orderBy: { name: "asc" }
+  });
+
+  return {
+    question: {
+      id: question.id,
+      question: question.question,
+      description: question.description,
+      isActive: question.isActive
+    },
+    responses: question.responses.map((r) => ({
+      id: r.id,
+      answer: r.answer,
+      answeredAt: r.answeredAt,
+      user: {
+        name: r.user.name,
+        email: r.user.email,
+        skills: r.user.skillMemberships.map((sm) => sm.skill.name)
+      }
+    })),
+    nonResponders: nonResponders.map((u) => ({
+      name: u.name,
+      email: u.email,
+      skills: u.skillMemberships.map((sm) => sm.skill.name)
+    })),
+    totalSCMs
+  };
 }

@@ -1103,7 +1103,7 @@ export default async function SettingsPage({
                 </form>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t pt-3">
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>{question.responseCount} response{question.responseCount === 1 ? "" : "s"}</span>
+                    <Link href={`/hub/scm-responses/${question.id}`} className="underline underline-offset-2 hover:text-foreground">{question.responseCount} response{question.responseCount === 1 ? "" : "s"}</Link>
                     <span>Created by {question.createdBy}</span>
                     <span>{question.isActive ? "Active" : "Inactive"}</span>
                   </div>

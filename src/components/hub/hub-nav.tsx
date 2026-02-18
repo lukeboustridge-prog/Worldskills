@@ -10,6 +10,7 @@ import {
   Sparkles,
   Library,
   Mail,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ const navItems: NavItem[] = [
   { href: "/hub/descriptors", label: "Descriptor Library", shortLabel: "Descriptors", icon: Library },
   { href: "/hub/meetings", label: "Meetings", icon: Calendar },
   { href: "/hub/emails", label: "Emails", icon: Mail, roles: ["SA", "Secretariat"] },
+  { href: "/hub/scm-responses", label: "SCM Responses", shortLabel: "Responses", icon: ClipboardList, roles: ["SA", "Secretariat"] },
   { href: "/hub/onboarding", label: "Getting Started", shortLabel: "Start", icon: Sparkles, highlighted: true },
 ];
 
