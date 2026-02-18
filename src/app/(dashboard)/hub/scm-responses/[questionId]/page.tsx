@@ -2,7 +2,7 @@ import { Role } from "@prisma/client";
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { format } from "date-fns";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 
 import { getCurrentUser } from "@/lib/auth";
 import { getQuestionWithResponses } from "../../../settings/scm-questions-actions";
@@ -50,9 +50,18 @@ export default async function SCMResponseDetailPage({
 
       <div className="rounded-lg border bg-card p-5">
         <div className="flex items-center justify-between text-sm">
-          <span className="font-medium">
-            {responseCount} of {totalSCMs} SCMs have responded
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="font-medium">
+              {responseCount} of {totalSCMs} SCMs have responded
+            </span>
+            <a
+              href={`/api/scm-responses/${params.questionId}/export`}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export CSV
+            </a>
+          </div>
           <span className="font-medium">{percentage}%</span>
         </div>
         <div className="mt-2 h-2 w-full rounded-full bg-muted">
