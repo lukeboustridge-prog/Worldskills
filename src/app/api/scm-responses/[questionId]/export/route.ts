@@ -50,7 +50,7 @@ export async function GET(
     })),
   ];
 
-  const csv = Papa.unparse(rows);
+  const csv = "\uFEFF" + Papa.unparse(rows);
 
   const safeQuestion = question.question
     .replace(/[^a-zA-Z0-9 ]/g, "")
